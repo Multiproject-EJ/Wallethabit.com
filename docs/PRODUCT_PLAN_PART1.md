@@ -1,5 +1,24 @@
 # Modular Personal Finance Suite — Product Plan (Part 1 of 2)
 
+> **Document purpose.** Capture the enduring product vision, user experience principles, and feature inventory for the Modular Personal Finance Suite. This is the “north star” narrative that accompanies the implementation-focused Part 2.
+
+> **Maintenance guidance.** When updating this file, prefer additive notes over destructive edits, keep headings stable, and surface any material changes in the “Document Changelog” list below. This makes it easy for Codex (and humans) to diff intent vs. execution across iterations.
+
+**Document Changelog**
+- 2024-XX-XX — Initial draft (imported from early discovery notes).
+- 2024-XX-XX — _Add future edits here._
+
+**Quick Navigation**
+1. [Product Vision](#1-product-vision)
+2. [Core Dashboard (Base Module)](#2-core-dashboard-base-module)
+3. [Add-On Modules](#3-add-on-modules-enable-as-needed)
+   - [Module Snapshot](#31-module-snapshot)
+4. [User Experience Principles](#4-user-experience-principles)
+5. [Data & Architecture Outline](#5-data--architecture-outline)
+6. [Monetization & Pricing Strategy](#6-monetization--pricing-strategy)
+
+---
+
 This document captures the first installment of the product vision and planning details for the Modular Personal Finance Suite. Future updates (e.g., Part 2) should expand upon this foundation without altering the historical context provided here.
 
 ## 1. Product Vision
@@ -28,62 +47,77 @@ Users can personalize the dashboard by reordering or hiding sections to keep the
 
 ## 3. Add-On Modules (Enable As Needed)
 
-Modules can be toggled on or off, feeding their data into the dashboard when active to keep the UI clean.
+Modules can be toggled on or off, feeding their data into the dashboard when active to keep the UI clean. The quick reference table below provides an at-a-glance map before the detailed sub-sections.
 
-### 3.1 Budget & Spending (Foundational)
-- Custom categories.
+### 3.1 Module Snapshot
+
+| Module | Purpose | Core Capabilities |
+| --- | --- | --- |
+| **Budget & Spending** | Foundational money-in/money-out management. | Custom categories, recurring transactions, AI-assisted categorization, multiple budgeting styles, month-end review wizard. |
+| **Debt Manager** | Provide clarity and payoff strategies for liabilities. | Balance tracking, Avalanche vs. Snowball simulations, payoff forecasting, payment alerts and celebrations. |
+| **Savings & Emergency Funds** | Help users build reserves aligned to goals. | Multiple buckets, smart allocation, challenge templates, rate comparisons/integrations. |
+| **Investments & Portfolio** | Monitor long-term assets holistically. | Manual & synced holdings, live quotes, allocation comparisons, dividend/interest tracking, goal-based investing views. |
+| **Income & Side Hustles** | Surface earnings and business expenses. | Multi-stream tracking, lightweight invoicing, P&L summaries, tax estimations for contractors. |
+| **Real Estate & Assets** | Centralize high-value tangible assets. | Property dashboards, vehicle depreciation, other asset logging, ROI & maintenance tracking. |
+| **Insurance & Protection** | Keep coverage information visible and timely. | Policy vault, renewal reminders, optional AI coverage analysis. |
+| **Taxes & Filing Prep** | Streamline annual and quarterly filing prep. | Income & deduction summaries, export utilities, quarterly estimate guidance. |
+| **Retirement & FIRE Planner** | Model long-horizon goals and withdrawal plans. | FIRE number calculator, Monte Carlo simulations, retirement withdrawal strategy tooling. |
+| **AI Advisor & Insights** *(Premium)* | Deliver proactive guidance and forecasts. | Monthly AI reports, trend-based goal forecasting, what-if simulations, lifestyle cost projections. |
+
+#### Budget & Spending (Foundational)
+- Custom categories and category hierarchies.
 - Recurring transactions and bill reminders.
 - AI-powered smart categorization for imported transactions.
-- Support for multiple budgeting methods (envelope, zero-based).
+- Support for multiple budgeting methods (envelope, zero-based, flexible).
 - Month-end review wizard to guide reflections and adjustments.
 
-### 3.2 Debt Manager
-- Track debts with balances, interest rates, and minimum payments.
+#### Debt Manager
+- Track debts with balances, interest rates, payoff schedules, and minimum payments.
 - Avalanche vs. Snowball payoff simulations with projected payoff dates.
 - Interest and timeline forecasts with “debt-free by” projections.
-- Alerts for due payments, new debt, and celebratory notifications when debts are cleared.
+- Alerts for due payments, new debt events, and celebratory notifications when debts are cleared.
 
-### 3.3 Savings & Emergency Funds
+#### Savings & Emergency Funds
 - Multiple savings buckets with targets and deadlines.
 - Smart allocation suggestions based on priorities and timelines.
 - Savings challenges (e.g., 52-week, no-spend month) with progress tracking.
 - Optional high-yield account integrations or rate comparisons.
 
-### 3.4 Investments & Portfolio
+#### Investments & Portfolio
 - Manual or automatic asset tracking (stocks, ETFs, crypto, real estate, etc.).
 - Real-time quotes via financial data APIs.
 - Asset allocation and performance comparisons against benchmarks.
 - Dividend, interest, and capital gains logging.
 - Goal-based investing with progress tracking.
 
-### 3.5 Income & Side Hustles
+#### Income & Side Hustles
 - Track multiple income streams with basic invoicing/logging.
 - Separate tracking for deductible business expenses.
 - Project-level profit and loss reporting.
-- Tax estimation for freelancers/contractors.
+- Tax estimation for freelancers and contractors.
 
-### 3.6 Real Estate & Assets
+#### Real Estate & Assets
 - Property dashboard with purchase price, current value, mortgage details, and equity trends.
 - Vehicle tracking with depreciation schedules and optional resale estimates.
 - Logging of other tangible assets.
 - ROI and maintenance tracking for rental properties or vehicles.
 
-### 3.7 Insurance & Protection
+#### Insurance & Protection
 - Repository for policy details (coverage, premiums, renewal dates).
 - Renewal reminders and expiring warranty alerts.
 - Optional AI-driven coverage analysis for premium users.
 
-### 3.8 Taxes & Filing Prep
+#### Taxes & Filing Prep
 - Annual tax summary of income and deductible expenses.
 - Export options (CSV, tax software formats).
 - Quarterly estimated tax guidance for self-employed users.
 
-### 3.9 Retirement & FIRE Planner
+#### Retirement & FIRE Planner
 - FIRE number calculator with adjustable assumptions.
 - Monte Carlo simulations for portfolio longevity.
 - Withdrawal strategy planning for retirement phases.
 
-### 3.10 AI Advisor & Insights (Premium)
+#### AI Advisor & Insights (Premium)
 - Monthly automated financial health reports.
 - Goal forecasts based on current trends.
 - What-if scenario modeling for major decisions.
@@ -123,6 +157,10 @@ Hybrid freemium model:
 - Balance between one-time purchases and subscriptions to reduce fatigue.
 - Premium support and potential coaching perks for paying users.
 - Revenue goals align with user success, emphasizing ethical monetization.
+
+---
+
+**Next companion document:** [Part 2 — Technical Spec & Build Blueprint](PRODUCT_PLAN_PART2.md) for implementation scaffolding and architectural decisions.
 
 ## 7. Technical Specification & File Structure (High-Level)
 
