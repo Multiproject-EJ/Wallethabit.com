@@ -16,7 +16,7 @@
 
 | Step | Focus | Goal | Key Actions (Codex Prompts / Tasks) | Verification & Tests | Out-of-Band Actions | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Repository Baseline | Create the Vite + React + TS scaffold inside `app/` and initialize Tailwind. | “Generate Vite React-TS project”, “configure Tailwind with base styles, fonts, accent palette placeholders.” Commit initial scaffold. | `npm run lint`, `npm run test` (Vitest sample), start dev server and confirm landing page renders. | None. | Not Started |
+| 1 | Repository Baseline | Create the Vite + React + TS scaffold inside `app/` and initialize Tailwind. | “Generate Vite React-TS project”, “configure Tailwind with base styles, fonts, accent palette placeholders.” Commit initial scaffold. | `npm run lint`, `npm run test` (Vitest sample), start dev server and confirm landing page renders. | None. | In Progress (awaiting dependency install for verification) |
 | 2 | Developer Tooling | Add ESLint + Prettier config, Tailwind base styles, and script aliases (`dev`, `build`, `test`, `lint`). | “Add ESLint config matching React + Tailwind best practices”, “create Prettier config if desired.” | `npm run lint`, `npm run format:check` (if added), ensure builds succeed. | None. | Not Started |
 | 3 | Supabase Project Link | Install Supabase CLI, initialize local config, and add `.env.example` with placeholders from Part 2. | “Create .env.example with keys from spec,” “set up Supabase client helper (`services/supabase.ts`).” | `supabase --version` (CLI available), `npm run typecheck` (if configured) to ensure env typings compile. | Run `supabase init` locally; create Supabase project via dashboard; paste project URL and anon key into personal `.env` (not committed). | Not Started |
 
