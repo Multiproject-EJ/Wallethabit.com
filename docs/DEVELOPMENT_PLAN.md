@@ -1,72 +1,73 @@
-# Modular Personal Finance Suite — Development Plan
+# Modular Personal Finance Suite — Remote-First Development Plan
 
-> **Purpose.** Translate the product and technical plans into a vibe-friendly execution roadmap that you and Codex can follow step by step. Each step calls out the goal, required artifacts, suggested prompts, verification checks, and any manual/offline tasks. Update the **Status** column as work progresses (Not Started → In Progress → Blocked → Done) so the roadmap doubles as a living tracker.
-
----
-
-## How to Use This Plan
-- Start at Step 1 and move sequentially unless a dependency is marked optional.
-- Every step includes testing or validation guidance — run the listed checks before marking a step complete.
-- When a task requires action outside the repository (e.g., running SQL in Supabase, configuring Stripe), the **Out-of-Band Actions** column explains exactly what to do.
-- Prompts and notes are written to help with a “vibe-coding” workflow: keep momentum by shipping small slices, reviewing the UI visually, and celebrating quick wins.
+> **Purpose.** Align the build roadmap with a workflow where every change is authored by Codex and executed entirely in the cloud. Each step below assumes no local tooling — GitHub handles all installs, builds, tests, and deployments. Update the **Status** column (Not Started → In Progress → Blocked → Done) as progress is made so this document doubles as the live tracker.
 
 ---
 
-## Phase A — Foundations & Developer Experience
+## How to Work This Plan
+- Codex edits files and pushes commits directly to GitHub; no local environment is required.
+- GitHub Actions runs linting, tests, and builds automatically after each push. Treat green checks as the signal to proceed.
+- Use GitHub Pages (Actions-based) for production deployments; every merge to `main` publishes the latest static build.
+- If an interactive preview is needed, spin up a GitHub Codespace — it provides a cloud dev server without local installs.
+- Supabase, Stripe, and other integrations are configured via their dashboards; environment keys are managed through repository secrets or Supabase project settings.
+
+---
+
+## Phase A — Cloud Infrastructure & DX
 
 | Step | Focus | Goal | Key Actions (Codex Prompts / Tasks) | Verification & Tests | Out-of-Band Actions | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Repository Baseline | Create the Vite + React + TS scaffold inside `app/` and initialize Tailwind. | “Generate Vite React-TS project”, “configure Tailwind with base styles, fonts, accent palette placeholders.” Commit initial scaffold. | `npm run lint`, `npm run test` (Vitest sample), start dev server and confirm landing page renders. | None. | In Progress (awaiting dependency install for verification) |
-| 2 | Developer Tooling | Add ESLint + Prettier config, Tailwind base styles, and script aliases (`dev`, `build`, `test`, `lint`). | “Add ESLint config matching React + Tailwind best practices”, “create Prettier config if desired.” | `npm run lint`, `npm run format:check` (if added), ensure builds succeed. | None. | Not Started |
-| 3 | Supabase Project Link | Install Supabase CLI, initialize local config, and add `.env.example` with placeholders from Part 2. | “Create .env.example with keys from spec,” “set up Supabase client helper (`services/supabase.ts`).” | `supabase --version` (CLI available), `npm run typecheck` (if configured) to ensure env typings compile. | Run `supabase init` locally; create Supabase project via dashboard; paste project URL and anon key into personal `.env` (not committed). | Not Started |
+| 0 | GitHub Actions Baseline | Establish automation so GitHub performs installs, builds, tests, and deployments. | “Add `.github/workflows/ci.yml` running “npm ci” + lint/tests,” “add `.github/workflows/pages.yml` that builds `app/` and deploys to GitHub Pages.” | Confirm both workflows succeed on push (green checks); review artifact logs in Actions UI. | Enable GitHub Pages (Actions workflow) and configure branch/environment; set repository secrets if needed. | Not Started |
+| 1 | Repo Scaffold Review | Ensure the Vite + React + TS scaffold inside `app/` is production-ready and tracked by Actions. | “Audit existing Vite scaffold,” “adjust package scripts so CI uses `npm run lint`, `npm run test`, `npm run build`.” | Let CI workflow run on push; confirm lint/test/build jobs pass. | None. | In Progress |
+| 2 | Shared Config & Formatting | Configure ESLint, Prettier, Tailwind base styles, and ensure scripts run entirely via Actions. | “Add ESLint + Prettier configs,” “define Tailwind base styles and fonts,” “update CI job to run lint + format check.” | Actions `ci` workflow should stay green; optionally review formatted diffs on GitHub. | None. | Not Started |
+| 3 | Cloud Environment Variables | Create `.env.example` and document required secrets; wire Supabase client helper with placeholders. | “Add `.env.example` with Supabase/Stripe keys placeholders,” “create `services/supabase.ts` using env vars.” | CI build succeeds using placeholder-safe defaults; Supabase client compiles without runtime secrets. | Add real secrets to Supabase Dashboard and GitHub repository secrets (Pages deployment). | Not Started |
 
-## Phase B — Core Architecture & Layout
+## Phase B — App Shell & Routing
 
-| Step | Focus | Goal | Key Actions (Codex Prompts / Tasks) | Verification & Tests | Out-of-Band Actions | Status |
+| Step | Focus | Goal | Key Actions | Verification & Tests | Out-of-Band Actions | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 4 | App Shell | Implement responsive layout with navbar, collapsible sidebar, and placeholder content areas. | “Create `Navbar`, `Sidebar`, `Layout` components,” “wire React Router with placeholder routes from spec.” | `npm run test` for layout snapshot/component tests; manually verify in browser dev server (mobile + desktop widths). | None. | Not Started |
-| 5 | Theme & Personalization | Add `ThemeContext`, light/dark toggle, accent color support, and persist choice via Supabase profile mock or local storage stub. | “Build theme context with Tailwind CSS variables,” “create `ThemeToggle` component.” | Unit tests for context default, manual check toggling theme in browser. | Later replace local storage stub with real profile data once Supabase tables exist. | Not Started |
-| 6 | Module Toggle Framework | Establish `ModulesContext` with available module metadata, gating badges, and sample data for dashboard widgets. | “Create modules registry JSON,” “display Modules Gallery page with cards + enable/disable state (local state for now).” | Component tests verifying toggle state updates, manual UX check. | None. | Not Started |
+| 4 | Layout Skeleton | Implement responsive navbar + sidebar + layout wrapper with React Router routes from product plan. | “Create `components/layout/` folder,” “set up router in `app/src/main.tsx` with placeholder pages.” | CI unit/component tests cover layout rendering; optionally add screenshot diffs via Actions artifact. | None. | Not Started |
+| 5 | Theme System | Implement `ThemeContext`, light/dark toggle, accent palette, and persistence via local storage (migrate to Supabase later). | “Build theme provider,” “expose `ThemeToggle` UI wired to context.” | Add unit tests for context defaults; ensure CI passes. | None. | Not Started |
+| 6 | Module Registry | Create `ModulesContext` with metadata, feature flags, and gallery UI backed by mock data. | “Define modules registry JSON,” “build Modules Gallery page with enable/disable state.” | CI tests verifying toggle state updates; review preview via GitHub Pages once merged. | None. | Not Started |
 
-## Phase C — Data Layer & Supabase Schema
+## Phase C — Supabase Schema & Cloud Data Flow
 
-| Step | Focus | Goal | Key Actions (Codex Prompts / Tasks) | Verification & Tests | Out-of-Band Actions | Status |
+| Step | Focus | Goal | Key Actions | Verification & Tests | Out-of-Band Actions | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 7 | Database Schema v1 | Author `supabase/migrations/0001_init.sql` covering tables + policies from spec. | “Draft SQL migration using schema in Part 2,” “include RLS and basic policies for `profiles`, `accounts`, `transactions`, `modules_enabled`, etc.” | Run `supabase db reset` locally; `supabase db lint`; optional `psql` queries to ensure tables exist. | Execute migration against Supabase project (`supabase db push`). | Not Started |
-| 8 | Seed & Fixtures | Create seed scripts or SQL to insert demo data for local development (one user, accounts, transactions). | “Add `supabase/seed/demo.sql`,” “write npm script to run `supabase db remote commit` or local copy.” | Run seed locally and confirm data visible via Supabase Studio; `npm run dev` verifying dashboard placeholders consume seed (mock fetch). | None. | Not Started |
-| 9 | Supabase Client Integration | Connect frontend auth flow to Supabase: sign in/up pages, `AuthContext`, secure route guard. | “Implement auth pages with Supabase client,” “create hooks for `useSupabase`, `useAuth`.” | Component tests for auth forms (React Testing Library), manual signup/signin via local Supabase dev server. | Configure Supabase Auth email templates if desired; set redirect URL. | Not Started |
+| 7 | Database Schema v1 | Draft Supabase SQL migrations stored in repo and run remotely via dashboard/CLI-in-cloud. | “Author `supabase/migrations/0001_init.sql` per product spec,” “add README instructions for running migrations from Supabase UI or Codespace.” | Optional: create GitHub Action job invoking Supabase CLI with service key (if feasible); otherwise rely on Supabase migration history. | Execute migration through Supabase web console or Codespace-based CLI session. | Not Started |
+| 8 | Seed Data | Provide SQL seed scripts for demo data and document how to apply them remotely. | “Add `supabase/seeds/demo.sql`,” “add npm script `seed:remote` that can run via Actions or Codespace.” | If automated, ensure CI workflow runs seed check (without mutating prod). | Run seed against Supabase dev project via dashboard or Codespace. | Not Started |
+| 9 | Supabase Client Integration | Wire Supabase auth flow, contexts, and guarded routes using SDK from the frontend. | “Implement `AuthContext`, sign in/up screens, route guards.” | Component tests and mocked Supabase client tests via CI. | Configure Supabase redirect URLs and email templates in dashboard. | Not Started |
 
-## Phase D — Dashboard & Budget MVP
+## Phase D — Dashboard & Budget Experience
 
-| Step | Focus | Goal | Key Actions (Codex Prompts / Tasks) | Verification & Tests | Out-of-Band Actions | Status |
+| Step | Focus | Goal | Key Actions | Verification & Tests | Out-of-Band Actions | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 10 | Dashboard Widgets | Implement Net Worth chart (mock data), Budget card, Goals card, Insights feed placeholder pulling from contexts. | “Create `NetWorthChart`, `BudgetCard`, `GoalsCard`, `InsightsFeed` with responsive design.” | Unit/component tests for rendering with sample props; storybook stories (optional) for visual check. | None. | Not Started |
-| 11 | Transactions CRUD | Build `AddTransactionForm`, transactions table/list, and integrate Supabase CRUD with optimistic updates. | “Use Zod for validation,” “update budget actuals view or local calc on submission.” | `npm run test` for form validation tests; manual add/edit/delete via dev server verifying Supabase entries. | Ensure Supabase Row Level Security covers operations (attempt cross-user request via CLI). | Not Started |
-| 12 | Budget Planner | Implement monthly budget setup UI, planned vs actual view, and carryover logic (front-end). | “Create `BudgetPage` with tabs for planning/review,” “pull aggregated actuals from Supabase view or local compute.” | Unit tests for carryover calculations, component tests for tab rendering; manual review of one-month cycle. | If using SQL views (`vw_budget_actuals`), create migration and refresh triggers. | Not Started |
+| 10 | Dashboard Widgets | Build Net Worth chart, Budget card, Goals card, and Insights feed using mock data or Supabase queries. | “Implement widgets with responsive Tailwind design,” “connect to contexts created earlier.” | Snapshot/component tests in CI; review deployed Pages preview. | None. | Not Started |
+| 11 | Transactions CRUD | Create forms and tables for transaction management with Supabase integration and optimistic updates. | “Build `AddTransactionForm`, transactions table,” “add Zod validation.” | CI tests covering form validation and reducer logic. | Ensure Supabase RLS policies allow CRUD for authenticated users only. | Not Started |
+| 12 | Budget Planner | Deliver monthly planning UI with planned vs actual tracking and carryover logic. | “Create `BudgetPage` with tabs,” “compute aggregates client-side or via Supabase view.” | CI tests for budget calculations; review UX via GitHub Pages deployment. | If using SQL views, add migration and run via Supabase dashboard. | Not Started |
 
-## Phase E — Enhancements & Integrations
+## Phase E — Premium Modules & Integrations
 
-| Step | Focus | Goal | Key Actions (Codex Prompts / Tasks) | Verification & Tests | Out-of-Band Actions | Status |
+| Step | Focus | Goal | Key Actions | Verification & Tests | Out-of-Band Actions | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 13 | Debts Module (Phase 2 starter) | Implement debt tracking UI, payoff simulator (Avalanche/Snowball), and integrate with dashboard. | “Create `DebtsPage` with cards, calculators,” “share utility for payoff math with tests.” | Vitest unit tests for payoff calculator; component test ensuring UI renders with sample data. | None. | Not Started |
-| 14 | Savings Goals Module | Enable savings buckets with progress bars and goal tracking. | “Implement `SavingsPage`, `AddGoalForm`, progress components.” | Component tests for goal completion logic; manual check linking to dashboard Goals card. | None. | Not Started |
-| 15 | Stripe Integration | Wire Upgrade flow with Stripe Checkout, Supabase subscription sync, and module gating for premium features. | “Create Edge Function `stripe-webhook`,” “frontend upgrade modal + success handling.” | Local webhook tests via Stripe CLI (`stripe listen --forward-to ...`), automated contract tests for webhook handler. | Configure Stripe products/prices in dashboard; set secrets in Supabase. | Not Started |
-| 16 | AI Advisor (Premium) | Build Edge Function `ai-generate-report`, prompt templates, and UI to display reports. | “Implement Supabase function calling OpenAI,” “create `AIAdvisorPage` to list/report insights.” | Unit tests for prompt builder (pure functions), integration test hitting Edge Function with mocked OpenAI, manual UI review. | Store OpenAI key in Supabase secrets; monitor usage. | Not Started |
+| 13 | Debts Module | Implement debt tracking UI and payoff simulator with tested calculation utilities. | “Create `DebtsPage`, payoff calculators, shared chart components.” | Vitest unit tests for payoff math; CI ensures passing. | None. | Not Started |
+| 14 | Savings Goals | Enable savings buckets and progress tracking integrated with dashboard goals. | “Implement `SavingsPage`, goal form, progress bars.” | Component tests; confirm Pages deployment renders correctly. | None. | Not Started |
+| 15 | Stripe Upgrade Flow | Connect premium module gating with Stripe Checkout and Supabase functions. | “Add Edge Function `stripe-webhook`,” “build upgrade modal UI.” | Add integration tests in CI using mocked Stripe SDK; monitor Action logs. | Configure Stripe products, webhook endpoint, and Supabase secrets in dashboards. | Not Started |
+| 16 | AI Advisor | Add Edge Function calling OpenAI and frontend reporting UI for premium users. | “Implement `ai-generate-report` function,” “create `AIAdvisorPage`.” | Unit tests for prompt builder; integration tests hitting mocked function in CI. | Store OpenAI key in Supabase secrets; monitor usage dashboard. | Not Started |
 
-## Phase F — Quality, Analytics, Launch Prep
+## Phase F — Quality, Analytics, Launch
 
-| Step | Focus | Goal | Key Actions (Codex Prompts / Tasks) | Verification & Tests | Out-of-Band Actions | Status |
+| Step | Focus | Goal | Key Actions | Verification & Tests | Out-of-Band Actions | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| 17 | E2E & Accessibility | Add Playwright/Cypress smoke tests (auth, add transaction, dashboard update) and accessibility audits. | “Generate Playwright tests,” “add `axe-core` checks for key pages.” | `npm run test:e2e`, `npm run lint:a11y` (if configured); manual keyboard nav check. | Set up CI (GitHub Actions) to run test matrix. | Not Started |
-| 18 | Analytics & Telemetry | Integrate privacy-friendly analytics (PostHog or Umami), error logging (Sentry), and feature usage events. | “Add analytics provider wrapper,” “log module toggles/upgrades.” | Ensure analytics events fire in dev console; unit test event helper functions. | Create analytics account(s); insert API keys via environment variables. | Not Started |
-| 19 | Documentation & Runbook | Update README with setup instructions, add `/docs` updates (ERD diagrams, API contracts), and document testing strategy. | “Revise README to include dev setup, scripts, Supabase instructions,” “generate architecture diagrams if helpful.” | Markdown lint (if available); manual review ensuring instructions are accurate. | None. | Not Started |
-| 20 | Launch Checklist | Final QA pass, performance budget checks, deploy to hosting (Netlify/Vercel), confirm Supabase policies & backups. | “Run Lighthouse,” “prepare release notes,” “toggle feature flags for launch modules.” | Lighthouse report ≥ targeted scores, manual regression, confirm production logs clean. | Deploy frontend, configure domain, enable Supabase backups/monitoring. | Not Started |
+| 17 | E2E & Accessibility | Add Playwright/Cypress smoke tests and accessibility checks run via GitHub Actions. | “Create `e2e/` tests triggered in CI,” “integrate axe-core for a11y assertions.” | Actions job executes `npm run test:e2e`; review reports stored as workflow artifacts. | None. | Not Started |
+| 18 | Analytics & Telemetry | Integrate privacy-friendly analytics and error monitoring with cloud-managed keys. | “Add analytics provider wrapper,” “emit feature usage events.” | Unit tests for event helpers; ensure CI passes. | Configure analytics dashboards and keys via hosted service UI. | Not Started |
+| 19 | Documentation & Runbook | Maintain README and `/docs` with remote-first onboarding, environment management, and troubleshooting. | “Update README with CI/Pages workflow details,” “document Supabase/Stripe procedures.” | Markdown lint (if configured) via CI; manual review in GitHub. | None. | Not Started |
+| 20 | Launch Checklist | Final QA, performance audits, and go-live review with GitHub Pages deployment. | “Run Lighthouse via GitHub Action,” “prepare release notes,” “verify Supabase backups/monitoring.” | Review Action artifacts for Lighthouse scores; confirm production deployment success. | Final domain DNS check, enable Supabase backups. | Not Started |
 
 ---
 
 ### Tracking Notes
-- Update this document after each completed step with learnings, blockers, or links to PRs.
-- If a step feels too large, split it into sub-steps underneath the table and keep the numbering stable (e.g., 11a, 11b) so history stays readable.
-- Keep referencing [Part 1](PRODUCT_PLAN_PART1.md) and [Part 2](PRODUCT_PLAN_PART2.md) to ensure feature intent matches implementation.
-
-Happy vibe-coding — celebrate each checkbox you flip to **Done**! 🎉
+- After each step, log learnings, blockers, and PR links here for future reference.
+- Split steps into sub-steps (e.g., 11a, 11b) if needed; keep numbering consistent to preserve history.
+- Reference [PRODUCT_PLAN_PART1.md](PRODUCT_PLAN_PART1.md) and [PRODUCT_PLAN_PART2.md](PRODUCT_PLAN_PART2.md) frequently to ensure implementation matches product vision.
+- Celebrate every green Actions check — they’re your signal that the cloud workflow is doing the heavy lifting. 🚀
