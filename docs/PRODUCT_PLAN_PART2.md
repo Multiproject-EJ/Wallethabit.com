@@ -1,5 +1,39 @@
 # Modular Personal Finance Suite — Technical Spec & Build Blueprint (Part 2 of 2)
 
+> **Document purpose.** Translate the Part 1 vision into implementation-ready guidance for the Modular Personal Finance Suite MVP and successive phases.
+
+> **Maintenance guidance.** Preserve section numbering, document rationale near decisions, and log structural changes in the changelog so Codex can track architectural evolution quickly.
+
+**Document Changelog**
+- 2024-XX-XX — Initial technical scaffolding drafted.
+- 2024-XX-XX — _Add future edits here._
+
+**Quick Navigation**
+0. [High-Level Architecture](#0-high-level-architecture)
+1. [Repos & Folders](#1-repos--folders)
+2. [Packages & Scaffolding](#2-packages--scaffolding)
+3. [Environment Variables](#3-environment-variables)
+4. [Data Model (ERD – text)](#4-data-model-erd--text)
+5. [Supabase: Core Migrations](#5-supabase-core-migrations-outline)
+6. [Access Control & Feature Flags](#6-access-control--feature-flags)
+7. [Edge Functions](#7-edge-functions-api-contracts)
+8. [Frontend Routing Map](#8-frontend-routing-map)
+9. [Core UI Components](#9-core-ui-components-mvp-stubs)
+10. [Theme / Personalization / i18n](#10-theme--personalization--i18n)
+11. [MVP Data Flows](#11-mvp-data-flows)
+12. [Payments & Plans](#12-payments--plans)
+13. [AI Advisor Prompts](#13-ai-advisor-prompts-outline)
+14. [Testing Strategy](#14-testing-strategy)
+15. [Telemetry & Analytics](#15-telemetry--analytics)
+16. [Accessibility](#16-accessibility)
+17. [Acceptance Criteria (MVP, Phase 1)](#17-acceptance-criteria-mvp-phase-1)
+18. [Phase 2–4 Acceptance Highlights](#18-phase-24-acceptance-highlights)
+19. [Backlog Priorities](#19-backlog-prioritized-must-have--nice-to-have)
+20. [Developer Runbook](#20-developer-runbook-quick-start)
+21. [UX Flows](#21-ux-flows-short)
+
+---
+
 This document extends the product plan with implementation-ready technical guidance for the Modular Personal Finance Suite MVP and its future phases.
 
 ## 0. High-Level Architecture
@@ -294,4 +328,4 @@ APP_BASE_URL=https://yourdomain.com
 
 ---
 
-This technical spec should be read alongside Part 1 to maintain continuity from vision through implementation planning.
+**Related reading:** [Part 1 — Product Plan](PRODUCT_PLAN_PART1.md) for vision, UX principles, and module intent. Validate new technical changes against that narrative to avoid scope drift.
