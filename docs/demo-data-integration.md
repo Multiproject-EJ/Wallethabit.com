@@ -4,6 +4,7 @@ This document explains how the demo data for Alex Rivera fits together so the da
 
 ## 1. Persona Backbone
 - **Primary profile:** Alex Rivera, 31-year-old product designer in London paid in GBP.
+- **Profile settings:** Locale `en-GB`, currency `GBP`, and region flag `uk` so downstream modules (e.g., taxes) know which experience to render.
 - **Lifecycle anchors:** PAYE salary (£3,600 net on the 28th), occasional freelance UX income (£400–£1,200 in May, September, and November), and consistent living costs tied to rent and utilities.
 - Every module references this timeline so that income spikes, spending, debt reduction, and savings all align with Alex’s narrative.
 
@@ -75,6 +76,7 @@ This document explains how the demo data for Alex Rivera fits together so the da
   - Insight feed surfaces upcoming renewal reminder.
 
 ## 10. Taxes Layer
+- Region-aware tax lab renders calculators, copy, and opportunity signals tuned to the demo profile’s `region` (`uk`, `us`, or `no`).
 - For freelance months, a 20–25% tax set-aside transaction leaves Monzo for a virtual “Tax Reserve” tag.
 - Annual summary aggregates side-hustle earnings vs. tax reserved.
 - **Feeds:**

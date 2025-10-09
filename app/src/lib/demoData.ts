@@ -4,6 +4,7 @@ export type DemoProfile = {
   fullName: string
   initials: string
   planId: string
+  region: 'uk' | 'us' | 'no'
   localeId: string
   currency: string
   firstDayOfWeek: 'Sunday' | 'Monday'
@@ -78,6 +79,7 @@ export const createDefaultDemoState = (): DemoState => ({
     fullName: 'Alex Rivera',
     initials: 'AR',
     planId: 'foundation',
+    region: 'uk',
     localeId: 'en-GB',
     currency: 'GBP',
     firstDayOfWeek: 'Monday',
