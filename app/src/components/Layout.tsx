@@ -24,13 +24,13 @@ const navItems = [
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
-          <NavLink to="/" end className="text-lg font-semibold">
-            Wallet<span className="text-brand">Habit</span>
+    <div className="min-h-screen bg-sand text-navy">
+      <header className="border-b border-sand-darker/60 bg-white/70 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-6 py-4">
+          <NavLink to="/" end className="text-lg font-semibold tracking-tight text-navy">
+            Wallet<span className="text-primary-light">Habit</span>
           </NavLink>
-          <nav className="flex flex-1 flex-wrap items-center gap-1 text-sm font-medium">
+          <nav className="flex flex-1 flex-wrap items-center gap-1 text-sm font-medium text-navy/80">
             {navItems.map(({ to, label, end }) => (
               <NavLink
                 key={to}
@@ -40,8 +40,8 @@ export default function Layout() {
                   [
                     'rounded-full px-3 py-2 transition-colors border border-transparent',
                     isActive
-                      ? 'bg-brand/10 text-brand border-brand/30'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
+                      ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
+                      : 'hover:text-primary-dark hover:bg-white/60',
                   ].join(' ')
                 }
               >
@@ -53,14 +53,14 @@ export default function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-6xl flex-1 flex-col px-6 py-10">
+      <main className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-7xl flex-1 flex-col px-6 py-12">
         <Outlet />
       </main>
 
-      <footer className="border-t border-slate-200 bg-white/80">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+      <footer className="border-t border-sand-darker/60 bg-white/70">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-6 py-6 text-sm text-navy/70 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} WalletHabit.com. All rights reserved.</p>
-          <a className="hover:text-slate-800" href="mailto:hello@wallethabit.com">
+          <a className="hover:text-primary-dark" href="mailto:hello@wallethabit.com">
             hello@wallethabit.com
           </a>
         </div>
