@@ -1,12 +1,6 @@
-import { type ChangeEvent, useMemo } from 'react'
+import { type ChangeEvent, useCallback, useMemo } from 'react'
 
 import { useDemoData } from '../lib/demoDataStore'
-
-const currency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
 
 type EnvelopeRowProps = {
   envelope: {
@@ -19,6 +13,7 @@ type EnvelopeRowProps = {
   }
   onAdjust: (id: string, planned: number) => void
   onRevert: () => void
+  formatCurrency: (value: number) => string
 }
 
 type SummaryItemProps = {
@@ -26,6 +21,7 @@ type SummaryItemProps = {
   value: number
   highlight?: boolean
   positive?: boolean
+  formatCurrency: (value: number) => string
 }
 
 type HeroMetricProps = {
@@ -38,12 +34,25 @@ type HeroMetricProps = {
 export default function Budget() {
   const {
     state: {
+      profile,
       budget: { envelopes, monthlyIncome, lastReconciledAt },
     },
     updateEnvelopePlanned,
     resetEnvelopePlanned,
     resetBudget,
   } = useDemoData()
+
+  const numberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(profile.localeId, {
+        style: 'currency',
+        currency: profile.currency,
+        maximumFractionDigits: 0,
+      }),
+    [profile.currency, profile.localeId],
+  )
+
+  const formatCurrency = useCallback((value: number) => numberFormatter.format(value), [numberFormatter])
 
   const totals = useMemo(() => {
     const planned = envelopes.reduce((sum, env) => sum + env.planned, 0)
@@ -76,15 +85,15 @@ export default function Budget() {
 
   const focusMessage = (() => {
     if (totals.toAssign > 0) {
-      return `You still have ${currency.format(totals.toAssign)} ready to direct toward priorities.`
+      return `You still have ${numberFormatter.format(totals.toAssign)} ready to direct toward priorities.`
     }
     if (totals.spent > totals.planned) {
-      return `You are ${currency.format(Math.abs(totals.planned - totals.spent))} past plan — tune a few envelopes below.`
+      return `You are ${numberFormatter.format(Math.abs(totals.planned - totals.spent))} past plan — tune a few envelopes below.`
     }
     if (totals.remaining > 0) {
-      return `Beautiful buffer! ${currency.format(totals.remaining)} is still resting in envelopes.`
+      return `Beautiful buffer! ${numberFormatter.format(totals.remaining)} is still resting in envelopes.`
     }
-    return 'All dollars are spoken for. Review insights to stay a step ahead.'
+    return 'Every pound is already assigned. Review insights to stay a step ahead.'
   })()
 
   const focusPrompts = totals.toAssign > 0
@@ -101,7 +110,7 @@ export default function Budget() {
       ]
     : [
         'Lock in your wins with a Friday review ritual.',
-        'Channel leftover dollars into debt payoff or investing goals.',
+        'Channel leftover cash into debt payoff or investing goals.',
         'Celebrate the streak — add a note to your progress journal.',
       ]
 
@@ -117,7 +126,7 @@ export default function Budget() {
               Budget Mission Control
             </div>
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-              Direct every dollar with calm confidence
+              Direct every pound with calm confidence
             </h1>
             <p className="text-base text-white/80">
               Realign envelopes, spotlight essentials, and feel momentum in a glance. WalletHabit saves these demo moves locally today — Supabase sync arrives next.
@@ -140,18 +149,18 @@ export default function Budget() {
           <div className="grid w-full max-w-xl gap-3 sm:grid-cols-2">
             <HeroMetric
               label="Monthly income"
-              value={currency.format(monthlyIncome)}
+              value={numberFormatter.format(monthlyIncome)}
               detail={`${plannedRatio}% aimed`}
             />
             <HeroMetric
               label="Planned this month"
-              value={currency.format(totals.planned)}
+              value={numberFormatter.format(totals.planned)}
               tone={totals.spent > totals.planned ? 'warning' : 'default'}
               detail={totals.spent > totals.planned ? 'Adjust below' : 'On track'}
             />
             <HeroMetric
               label="Free to assign"
-              value={currency.format(totals.toAssign)}
+              value={numberFormatter.format(totals.toAssign)}
               tone={totals.toAssign > 0 ? 'accent' : 'muted'}
               detail={totals.toAssign > 0 ? 'Ready to deploy' : 'Fully allocated'}
             />
@@ -160,7 +169,7 @@ export default function Budget() {
               value={`${essentialsCompletion}%`}
               detail={
                 totals.essentialsPlanned
-                  ? `${currency.format(totals.essentialsSpent)} spent`
+                  ? `${numberFormatter.format(totals.essentialsSpent)} spent`
                   : 'Tag essentials to track'
               }
             />
@@ -190,6 +199,7 @@ export default function Budget() {
                   envelope={envelope}
                   onAdjust={updateEnvelopePlanned}
                   onRevert={() => resetEnvelopePlanned(envelope.id)}
+                  formatCurrency={formatCurrency}
                 />
               ))}
             </div>
@@ -200,10 +210,29 @@ export default function Budget() {
           <div className="rounded-3xl border border-slate-200/70 bg-white p-6 shadow-sm">
             <h2 className="text-base font-semibold text-navy">Monthly snapshot</h2>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-              <SummaryItem label="Total planned" value={totals.planned} highlight />
-              <SummaryItem label="Spent so far" value={totals.spent} />
-              <SummaryItem label="Left to spend" value={totals.remaining} positive={totals.remaining > 0} />
-              <SummaryItem label="Free to assign" value={totals.toAssign} positive={totals.toAssign > 0} />
+              <SummaryItem
+                label="Total planned"
+                value={totals.planned}
+                highlight
+                formatCurrency={formatCurrency}
+              />
+              <SummaryItem
+                label="Spent so far"
+                value={totals.spent}
+                formatCurrency={formatCurrency}
+              />
+              <SummaryItem
+                label="Left to spend"
+                value={totals.remaining}
+                positive={totals.remaining > 0}
+                formatCurrency={formatCurrency}
+              />
+              <SummaryItem
+                label="Free to assign"
+                value={totals.toAssign}
+                positive={totals.toAssign > 0}
+                formatCurrency={formatCurrency}
+              />
             </dl>
           </div>
 
@@ -241,7 +270,7 @@ export default function Budget() {
   )
 }
 
-function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
+function EnvelopeRow({ envelope, onAdjust, onRevert, formatCurrency }: EnvelopeRowProps) {
   const { id, name, description, planned, spent, essentials } = envelope
   const remaining = Math.max(planned - spent, 0)
   const usedPercentage = planned === 0 ? 0 : Math.round((spent / planned) * 100)
@@ -249,8 +278,8 @@ function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
   const delta = planned - spent
   const statusIsPositive = delta >= 0
   const statusLabel = statusIsPositive
-    ? `${currency.format(remaining)} cushion`
-    : `Over by ${currency.format(Math.abs(delta))}`
+    ? `${formatCurrency(remaining)} cushion`
+    : `Over by ${formatCurrency(Math.abs(delta))}`
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = Number(event.target.value)
@@ -281,7 +310,7 @@ function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
         </div>
         <div className="flex flex-col items-end gap-1 text-right">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Planned</p>
-          <p className="text-2xl font-semibold text-navy">{currency.format(planned)}</p>
+          <p className="text-2xl font-semibold text-navy">{formatCurrency(planned)}</p>
           <button
             type="button"
             onClick={onRevert}
@@ -313,7 +342,7 @@ function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-wide">
             <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-slate-500">
               <span>Spent</span>
-              <span>{currency.format(spent)}</span>
+              <span>{formatCurrency(spent)}</span>
             </span>
             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 ${
               statusIsPositive ? 'bg-brand/10 text-brand' : 'bg-coral/10 text-coral'
@@ -343,7 +372,7 @@ function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
   )
 }
 
-function SummaryItem({ label, value, highlight, positive }: SummaryItemProps) {
+function SummaryItem({ label, value, highlight, positive, formatCurrency }: SummaryItemProps) {
   return (
     <div
       className={`flex flex-col gap-1 rounded-2xl border bg-white p-4 shadow-sm transition ${
@@ -351,7 +380,7 @@ function SummaryItem({ label, value, highlight, positive }: SummaryItemProps) {
       }`}
     >
       <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>
-      <span className="text-2xl font-semibold text-navy">{currency.format(value)}</span>
+      <span className="text-2xl font-semibold text-navy">{formatCurrency(value)}</span>
       {positive ? <span className="text-xs font-semibold text-brand">Ready to allocate</span> : null}
     </div>
   )
