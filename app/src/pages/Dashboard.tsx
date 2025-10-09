@@ -33,6 +33,11 @@ const highlights = [
     value: 'Boost lab',
     description: 'New income lab models focus hours + leverage playbooks for resilient earnings.',
   },
+  {
+    label: 'Investments',
+    value: 'Autopilot lab',
+    description: 'Fresh investing lab sets allocation bands and 10-year projections for compounding.',
+  },
 ]
 
 export default function Dashboard() {
@@ -82,6 +87,12 @@ export default function Dashboard() {
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
                 <strong>Debt lab persistence</strong> — store liability profiles + payoff preferences with Supabase.
+              </p>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+              <p>
+                <strong>Investment autopilot</strong> — sync allocation targets + contribution plans for hands-off compounding.
               </p>
             </li>
             <li className="flex items-start gap-3">

@@ -22,6 +22,11 @@ const features = [
       'Focus-hour sliders and growth playbooks model how new experiments expand your earnings mix.',
   },
   {
+    title: 'Investment autopilot lab',
+    description:
+      'Risk posture slider, allocation targets, and 10-year projections prep long-term wealth moves.',
+  },
+  {
     title: 'Supabase-ready',
     description:
       'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',

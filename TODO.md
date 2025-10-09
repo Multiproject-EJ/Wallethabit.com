@@ -16,6 +16,7 @@
 - [x] Bank sync blueprint (Plaid sandbox)
 - [x] Debt payoff lab (snowball vs avalanche)
 - [x] Income boost lab (earning mix experiments)
+- [x] Investment autopilot lab (portfolio mix + projections)
 
 ## LATER
 - [ ] Bank import integration (production credentials)
