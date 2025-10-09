@@ -3,6 +3,15 @@ import { NavLink, Outlet } from 'react-router-dom'
 const navItems = [
   { to: '/', label: 'Overview', end: true },
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/assistant', label: 'AI copilot' },
+  { to: '/integrations', label: 'Bank sync lab' },
+  { to: '/debt', label: 'Debt payoff lab' },
+  { to: '/income', label: 'Income boost lab' },
+  { to: '/investing', label: 'Investment lab' },
+  { to: '/retirement', label: 'Retirement lab' },
+  { to: '/goals', label: 'Goals tracker' },
+  { to: '/budget', label: 'Budget planner' },
+  { to: '/settings', label: 'Profile & settings' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/auth', label: 'Sign in' },
 ]

@@ -10,5 +10,11 @@ Notes align with best practices from YNAB/Monarch/Copilot:
 - Fast onboarding, helpful defaults
 - Visual dashboards that tell progress stories
 - Automation: categories, reminders, goals
+- Debt payoff coaching: snowball/avalanche playbooks with celebratory nudges
+- Income design: focus-hour budgeting, negotiation prompts, and leverage ladders
+- Investing autopilot: risk posture guidance, rebalancing prompts, and automated contributions
+- Retirement glide paths: lifestyle archetypes, safe-withdrawal insights, and cash runway planning
+- Bank syncing: Plaid-first launch, optional aggregators (Finicity/MX) for coverage depth
 - Embedded education + AI summaries
+- Personalisation controls early to build trust (plans, locale, notifications)
 
