@@ -10,8 +10,8 @@ const highlights = [
   },
   {
     label: 'Savings goals',
-    value: 'Tracker live',
-    description: 'Visual goals page showcases progress donuts and contribution spark-lines.',
+    value: 'Strategy lab live',
+    description: 'Goal HQ now includes a contribution sandbox with progress donuts and spark-lines.',
   },
   {
     label: 'Insights feed',

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -45,6 +45,10 @@ const goals = [
 type Goal = (typeof goals)[number]
 
 export default function Goals() {
+  const [focusGoalId, setFocusGoalId] = useState(goals[0].id)
+  const [monthlyBoost, setMonthlyBoost] = useState(0)
+
+  const focusGoal = useMemo(() => goals.find((goal) => goal.id === focusGoalId) ?? goals[0], [focusGoalId])
   const summary = useMemo(() => {
     const totalTarget = goals.reduce((sum, goal) => sum + goal.target, 0)
     const totalSaved = goals.reduce((sum, goal) => sum + goal.saved, 0)
@@ -53,6 +57,36 @@ export default function Goals() {
 
     return { totalTarget, totalSaved, averageProgress, monthlyCommitment }
   }, [])
+
+  const strategy = useMemo(() => {
+    const remaining = Math.max(focusGoal.target - focusGoal.saved, 0)
+    const baselineMonths = calculateMonths(focusGoal.monthlyCommitment, remaining)
+    const acceleratedMonths = calculateMonths(focusGoal.monthlyCommitment + monthlyBoost, remaining)
+    const timeSaved =
+      Number.isFinite(baselineMonths) && Number.isFinite(acceleratedMonths)
+        ? Math.max(baselineMonths - acceleratedMonths, 0)
+        : 0
+
+    return {
+      remaining,
+      baselineMonths,
+      acceleratedMonths,
+      timeSaved,
+    }
+  }, [focusGoal, monthlyBoost])
+
+  const baselineFinish = projectCompletionDate(strategy.baselineMonths)
+  const acceleratedFinish = projectCompletionDate(strategy.acceleratedMonths)
+  const baselineDuration = formatDuration(strategy.baselineMonths)
+  const acceleratedDuration = formatDuration(strategy.acceleratedMonths)
+  const timeSavedCopy = formatTimeSaved(strategy.timeSaved)
+  const newMonthlyTotal = focusGoal.monthlyCommitment + monthlyBoost
+  const highlightMessage = buildHighlightMessage({
+    goalName: focusGoal.name,
+    monthlyBoost,
+    timeSaved: strategy.timeSaved,
+    acceleratedFinish,
+  })
 
   return (
     <div className="flex flex-col gap-10">
@@ -113,6 +147,111 @@ export default function Goals() {
               forecast completion dates, and suggest optimized contribution plans.
             </p>
           </div>
+        </aside>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
+        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-brand">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand/15">🧪</span>
+              Contribution strategy lab
+            </div>
+            <h2 className="text-2xl font-semibold text-slate-900">Stress test your plan</h2>
+            <p className="text-sm text-slate-600">
+              Preview how small monthly boosts unlock earlier celebrations. Once Supabase persistence lands, this
+              simulation will sync with your live contributions.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-6">
+            <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+              Focus goal
+              <select
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
+                value={focusGoalId}
+                onChange={(event) => setFocusGoalId(event.target.value)}
+              >
+                {goals.map((goal) => (
+                  <option key={goal.id} value={goal.id}>
+                    {goal.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <span>Monthly boost</span>
+                <span className="text-slate-700">
+                  {monthlyBoost === 0 ? 'No boost' : `+${currency.format(monthlyBoost)} /mo`}
+                </span>
+              </div>
+              <input
+                aria-label="Monthly boost"
+                type="range"
+                min={0}
+                max={500}
+                step={25}
+                value={monthlyBoost}
+                onChange={(event) => setMonthlyBoost(Number(event.target.value))}
+                className="w-full accent-brand"
+              />
+              <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                <span>$0</span>
+                <span>+$250</span>
+                <span>+$500</span>
+              </div>
+            </div>
+
+            <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:grid-cols-2">
+              <StrategyStat label="Baseline finish" value={baselineFinish} helper={baselineDuration} />
+              <StrategyStat
+                label="Accelerated finish"
+                value={acceleratedFinish}
+                helper={acceleratedDuration}
+                highlight
+              />
+              <StrategyStat label="Time saved" value={timeSavedCopy} helper="Compared with your current plan" />
+              <StrategyStat
+                label="Monthly total"
+                value={currency.format(newMonthlyTotal)}
+                helper={
+                  monthlyBoost > 0
+                    ? `+${currency.format(monthlyBoost)} boost applied`
+                    : 'Matches current commitment'
+                }
+              />
+            </div>
+          </div>
+        </article>
+
+        <aside className="flex h-full flex-col justify-between gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Playbook summary</h3>
+            <p className="mt-2 text-sm text-slate-600">{highlightMessage}</p>
+          </div>
+          <ul className="space-y-3 text-sm text-slate-600">
+            <StrategyBullet
+              title="Remaining target"
+              description={`${currency.format(strategy.remaining)} left to celebrate this goal.`}
+            />
+            <StrategyBullet
+              title="New monthly cadence"
+              description={`${currency.format(newMonthlyTotal)} per month (${monthlyBoost === 0 ? 'baseline pace' : `+${currency.format(monthlyBoost)} boost`}).`}
+            />
+            <StrategyBullet
+              title="Celebration ETA"
+              description={
+                acceleratedFinish === 'TBD'
+                  ? 'Add a boost to reveal a realistic finish window.'
+                  : `${acceleratedFinish} • ${acceleratedDuration.toLowerCase()}`
+              }
+            />
+          </ul>
+          <p className="rounded-2xl border border-dashed border-brand/40 bg-brand/10 p-4 text-xs text-brand-dark">
+            This sandbox will pull in real deposits, transfers, and partner automations once Supabase wiring is ready.
+          </p>
         </aside>
       </section>
     </div>
@@ -177,6 +316,103 @@ function GoalCard({ goal }: GoalCardProps) {
       </div>
     </article>
   )
+}
+
+type StrategyStatProps = {
+  label: string
+  value: string
+  helper: string
+  highlight?: boolean
+}
+
+function StrategyStat({ label, value, helper, highlight }: StrategyStatProps) {
+  return (
+    <div
+      className={[
+        'rounded-xl border p-4 shadow-sm transition',
+        highlight ? 'border-brand/50 bg-brand/5 text-brand-dark' : 'border-slate-200 bg-white text-slate-700',
+      ].join(' ')}
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="mt-2 text-lg font-semibold">{value}</p>
+      <p className="mt-1 text-xs text-slate-500">{helper}</p>
+    </div>
+  )
+}
+
+type StrategyBulletProps = {
+  title: string
+  description: string
+}
+
+function StrategyBullet({ title, description }: StrategyBulletProps) {
+  return (
+    <li className="flex items-start gap-3">
+      <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs text-brand">
+        ✨
+      </span>
+      <div>
+        <p className="text-sm font-semibold text-slate-900">{title}</p>
+        <p className="text-sm text-slate-600">{description}</p>
+      </div>
+    </li>
+  )
+}
+
+function calculateMonths(contribution: number, remaining: number) {
+  if (remaining <= 0) return 0
+  if (contribution <= 0) return Number.POSITIVE_INFINITY
+  return remaining / contribution
+}
+
+function formatDuration(months: number) {
+  if (!Number.isFinite(months)) return 'No plan yet'
+  if (months <= 0) return 'Fully funded'
+  if (months < 1) return 'Under 1 month'
+  if (months < 1.5) return 'About 1 month'
+  return `About ${Math.ceil(months)} months`
+}
+
+function formatTimeSaved(months: number) {
+  if (!Number.isFinite(months) || months <= 0) return '0 months'
+  if (months < 1) return 'A few weeks'
+  if (months < 1.5) return '≈1 month'
+  return `≈${Math.round(months)} months`
+}
+
+function projectCompletionDate(months: number) {
+  if (!Number.isFinite(months)) return 'TBD'
+  if (months <= 0) return 'Now'
+
+  const projection = new Date()
+  projection.setMonth(projection.getMonth() + Math.ceil(months))
+
+  return projection.toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+type HighlightMessageInput = {
+  goalName: string
+  monthlyBoost: number
+  timeSaved: number
+  acceleratedFinish: string
+}
+
+function buildHighlightMessage({ goalName, monthlyBoost, timeSaved, acceleratedFinish }: HighlightMessageInput) {
+  if (monthlyBoost <= 0) {
+    return `Dial in a boost to see how quickly ${goalName.toLowerCase()} comes to life.`
+  }
+
+  if (timeSaved <= 0 || acceleratedFinish === 'TBD') {
+    return `At +${currency.format(monthlyBoost)} each month you're staying on pace. Try nudging the slider further to beat the schedule for ${goalName.toLowerCase()}.`
+  }
+
+  const savedLabel =
+    timeSaved < 1 ? 'a few weeks' : `${Math.round(timeSaved)} month${Math.round(timeSaved) === 1 ? '' : 's'}`
+
+  return `You're on track to wrap ${goalName.toLowerCase()} roughly ${savedLabel} sooner, celebrating around ${acceleratedFinish}.`
 }
 
 type DetailProps = {

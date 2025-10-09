@@ -10,6 +10,7 @@
 ## NEXT
 - [x] Budget planner MVP (envelopes)
 - [x] Goals tracker + charts
+- [x] Contribution strategy lab simulation
 - [ ] Profile/settings page (plan, locale)
 - [ ] AI helper panel (copy skeleton)
 
