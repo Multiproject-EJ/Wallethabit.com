@@ -1,4 +1,6 @@
-import { type ChangeEvent, useMemo, useState } from 'react'
+import { type ChangeEvent, useMemo } from 'react'
+
+import { useDemoData } from '../lib/demoDataStore'
 
 const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -6,107 +8,71 @@ const currency = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 })
 
-type Envelope = {
-  id: string
-  name: string
-  description: string
-  planned: number
-  spent: number
-  essentials?: boolean
+type EnvelopeRowProps = {
+  envelope: {
+    id: string
+    name: string
+    description: string
+    planned: number
+    spent: number
+    essentials?: boolean
+  }
+  onAdjust: (id: string, planned: number) => void
+  onRevert: () => void
 }
 
-const defaultEnvelopes: Envelope[] = [
-  {
-    id: 'housing',
-    name: 'Housing',
-    description: 'Rent, utilities, insurance, internet',
-    planned: 1400,
-    spent: 1350,
-    essentials: true,
-  },
-  {
-    id: 'food',
-    name: 'Groceries & Dining',
-    description: 'Weekly groceries, occasional dinners out',
-    planned: 520,
-    spent: 410,
-    essentials: true,
-  },
-  {
-    id: 'transport',
-    name: 'Transportation',
-    description: 'Gas, public transit, ride shares, maintenance',
-    planned: 240,
-    spent: 180,
-    essentials: true,
-  },
-  {
-    id: 'wellness',
-    name: 'Wellness',
-    description: 'Gym, therapy, supplements, sports',
-    planned: 160,
-    spent: 95,
-  },
-  {
-    id: 'fun',
-    name: 'Fun & Experiences',
-    description: 'Streaming, hobbies, travel savings, gifting',
-    planned: 220,
-    spent: 60,
-  },
-  {
-    id: 'future',
-    name: 'Future You',
-    description: 'Emergency fund, investments, education',
-    planned: 400,
-    spent: 150,
-  },
-]
-
-type EnvelopeDraft = Envelope & { plannedDraft: number }
-
 export default function Budget() {
-  const [envelopes, setEnvelopes] = useState<EnvelopeDraft[]>(
-    defaultEnvelopes.map((envelope) => ({ ...envelope, plannedDraft: envelope.planned })),
-  )
+  const {
+    state: {
+      budget: { envelopes, monthlyIncome, lastReconciledAt },
+    },
+    updateEnvelopePlanned,
+    resetEnvelopePlanned,
+    resetBudget,
+  } = useDemoData()
 
   const totals = useMemo(() => {
-    const planned = envelopes.reduce((sum, env) => sum + env.plannedDraft, 0)
+    const planned = envelopes.reduce((sum, env) => sum + env.planned, 0)
     const spent = envelopes.reduce((sum, env) => sum + env.spent, 0)
     return {
       planned,
       spent,
       remaining: Math.max(planned - spent, 0),
-      toAssign: Math.max(4200 - planned, 0),
+      toAssign: Math.max(monthlyIncome - planned, 0),
     }
-  }, [envelopes])
+  }, [envelopes, monthlyIncome])
 
-  const handleAdjust = (id: string, plannedDraft: number) => {
-    setEnvelopes((prev) =>
-      prev.map((env) => (env.id === id ? { ...env, plannedDraft: Math.max(plannedDraft, env.spent) } : env)),
-    )
-  }
-
-  const handleRevert = (id: string) => {
-    const original = defaultEnvelopes.find((env) => env.id === id)
-    if (!original) return
-    setEnvelopes((prev) => prev.map((env) => (env.id === id ? { ...env, plannedDraft: original.planned } : env)))
-  }
+  const formattedLastReconciledAt = new Date(lastReconciledAt).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
 
   return (
     <div className="flex flex-col gap-10">
       <header className="flex flex-col gap-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-brand">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand/15">💸</span>
-          Monthly Envelope Plan
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-brand">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand/15">💸</span>
+            Monthly Envelope Plan
+          </div>
+          <button
+            type="button"
+            onClick={resetBudget}
+            className="text-xs font-semibold text-brand transition hover:text-brand-dark"
+          >
+            Reset demo envelopes
+          </button>
         </div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
           Give every dollar a home you feel good about
         </h1>
         <p className="max-w-2xl text-base text-slate-600">
           Adjust your envelope targets, track progress, and keep an eye on the free-to-assign dollars still waiting
-          for marching orders. WalletHabit will autosave and sync these targets once Supabase is connected — for now
-          you can explore the flows and dial in a plan that fits.
+          for marching orders. WalletHabit autosaves these demo updates to your browser so the flow will mirror the
+          Supabase-backed experience once credentials land.
+        </p>
+        <p className="text-xs uppercase tracking-wide text-slate-400">
+          Last reconciled {formattedLastReconciledAt}
         </p>
       </header>
 
@@ -116,8 +82,8 @@ export default function Budget() {
             <EnvelopeRow
               key={envelope.id}
               envelope={envelope}
-              onAdjust={handleAdjust}
-              onRevert={() => handleRevert(envelope.id)}
+              onAdjust={updateEnvelopePlanned}
+              onRevert={() => resetEnvelopePlanned(envelope.id)}
             />
           ))}
         </div>
@@ -149,16 +115,10 @@ export default function Budget() {
   )
 }
 
-type EnvelopeRowProps = {
-  envelope: EnvelopeDraft
-  onAdjust: (id: string, plannedDraft: number) => void
-  onRevert: () => void
-}
-
 function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
-  const { id, name, description, plannedDraft, spent, essentials } = envelope
-  const remaining = Math.max(plannedDraft - spent, 0)
-  const completion = plannedDraft === 0 ? 0 : Math.min(100, Math.round((spent / plannedDraft) * 100))
+  const { id, name, description, planned, spent, essentials } = envelope
+  const remaining = Math.max(planned - spent, 0)
+  const completion = planned === 0 ? 0 : Math.min(100, Math.round((spent / planned) * 100))
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = Number(event.target.value)
@@ -181,7 +141,7 @@ function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
         </div>
         <div className="flex flex-col items-start gap-1 text-right sm:items-end">
           <p className="text-sm font-medium text-slate-500">Planned</p>
-          <p className="text-2xl font-semibold text-slate-900">{currency.format(plannedDraft)}</p>
+          <p className="text-2xl font-semibold text-slate-900">{currency.format(planned)}</p>
           <button
             type="button"
             onClick={onRevert}
@@ -203,7 +163,7 @@ function EnvelopeRow({ envelope, onAdjust, onRevert }: EnvelopeRowProps) {
             min={spent}
             max={2000}
             step={10}
-            value={plannedDraft}
+            value={planned}
             onChange={handleChange}
             className="w-full accent-brand"
           />
@@ -239,19 +199,15 @@ type SummaryItemProps = {
 
 function SummaryItem({ label, value, highlight, positive }: SummaryItemProps) {
   return (
-    <div className="flex items-center justify-between">
-      <dt className="text-slate-500">{label}</dt>
-      <dd
-        className={[
-          'font-semibold',
-          highlight ? 'text-slate-900 text-base' : 'text-slate-800',
-          positive ? 'text-emerald-600' : undefined,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-      >
-        {currency.format(value)}
-      </dd>
+    <div
+      className={[
+        'flex flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition',
+        highlight ? 'border-brand/40 bg-brand/5' : '',
+      ].join(' ')}
+    >
+      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</span>
+      <span className="text-2xl font-semibold text-slate-900">{currency.format(value)}</span>
+      {positive ? <span className="text-xs font-semibold text-brand">Ready to allocate</span> : null}
     </div>
   )
 }

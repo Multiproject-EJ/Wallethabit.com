@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import IntegrationStatus from '../components/IntegrationStatus'
 import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
 import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
 import { getPlaidEnvironmentLabel, hasPlaidConfig, plaidEnvGuidance } from '../lib/plaidClient'
+import { useDemoData } from '../lib/demoDataStore'
 
 const planTiers = [
   {
@@ -101,36 +102,35 @@ const notificationChannels = [
 ]
 
 export default function Settings() {
-  const [selectedPlanId, setSelectedPlanId] = useState(planTiers[0].id)
-  const [localeId, setLocaleId] = useState(localeOptions[0].id)
-  const [firstDayOfWeek, setFirstDayOfWeek] = useState(localeOptions[0].startOfWeek)
-  const [roundingMode, setRoundingMode] = useState(roundingModes[0].id)
-  const [notifications, setNotifications] = useState<Record<string, boolean>>(() => {
-    const defaults: Record<string, boolean> = {}
-    notificationChannels.forEach((channel) => {
-      defaults[channel.id] = channel.defaultEnabled
-    })
-    return defaults
-  })
+  const {
+    state: { profile },
+    updatePlan,
+    updateLocale,
+    updateFirstDayOfWeek,
+    updateRoundingMode,
+    toggleNotification,
+    resetDemoData,
+  } = useDemoData()
 
+  const notifications = profile.notifications
   const plaidEnvironmentLabel = getPlaidEnvironmentLabel()
 
   const activePlan = useMemo(
-    () => planTiers.find((plan) => plan.id === selectedPlanId) ?? planTiers[0],
-    [selectedPlanId],
+    () => planTiers.find((plan) => plan.id === profile.planId) ?? planTiers[0],
+    [profile.planId],
   )
 
   const activeLocale = useMemo(
-    () => localeOptions.find((option) => option.id === localeId) ?? localeOptions[0],
-    [localeId],
+    () => localeOptions.find((option) => option.id === profile.localeId) ?? localeOptions[0],
+    [profile.localeId],
   )
 
-  const toggleNotification = (id: string) => {
-    setNotifications((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }))
-  }
+  const lastActiveLabel = new Date(profile.lastActiveAt).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 
   return (
     <div className="flex flex-1 flex-col gap-10">
@@ -141,6 +141,20 @@ export default function Settings() {
           the nudges that keep momentum steady. Real auth is coming soon — today we model the future
           experience.
         </p>
+        <div className="mt-6 grid gap-4 text-sm text-slate-600 sm:grid-cols-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Name</p>
+            <p className="mt-1 font-semibold text-slate-900">{profile.fullName}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Email</p>
+            <p className="mt-1 font-semibold text-slate-900">{profile.email}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Last active</p>
+            <p className="mt-1 font-semibold text-slate-900">{lastActiveLabel}</p>
+          </div>
+        </div>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -157,7 +171,7 @@ export default function Settings() {
                 <button
                   key={plan.id}
                   type="button"
-                  onClick={() => setSelectedPlanId(plan.id)}
+                  onClick={() => updatePlan(plan.id)}
                   aria-pressed={isActive}
                   className={[
                     'flex h-full flex-col gap-3 rounded-2xl border bg-white p-5 text-left shadow-sm transition',
@@ -211,13 +225,13 @@ export default function Settings() {
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Locale</span>
               <select
                 className="rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40"
-                value={localeId}
+                value={profile.localeId}
                 onChange={(event) => {
                   const nextLocale = event.target.value
-                  setLocaleId(nextLocale)
+                  updateLocale(nextLocale)
                   const fallback = localeOptions.find((option) => option.id === nextLocale)
                   if (fallback) {
-                    setFirstDayOfWeek(fallback.startOfWeek)
+                    updateFirstDayOfWeek(fallback.startOfWeek as 'Sunday' | 'Monday')
                   }
                 }}
               >
@@ -253,10 +267,10 @@ export default function Settings() {
                   <button
                     key={day}
                     type="button"
-                    onClick={() => setFirstDayOfWeek(day)}
+                    onClick={() => updateFirstDayOfWeek(day as 'Sunday' | 'Monday')}
                     className={[
                       'flex-1 rounded-full border px-3 py-2 text-sm transition',
-                      firstDayOfWeek === day
+                      profile.firstDayOfWeek === day
                         ? 'border-brand bg-brand/10 text-brand'
                         : 'border-slate-200 text-slate-600 hover:border-brand/50 hover:text-brand',
                     ].join(' ')}
@@ -275,7 +289,7 @@ export default function Settings() {
                   key={mode.id}
                   className={[
                     'flex cursor-pointer flex-col gap-1 rounded-2xl border p-4 text-left transition',
-                    roundingMode === mode.id
+                    profile.roundingMode === mode.id
                       ? 'border-brand bg-brand/5'
                       : 'border-slate-200 hover:border-brand/50 hover:bg-slate-50',
                   ].join(' ')}
@@ -285,8 +299,8 @@ export default function Settings() {
                       type="radio"
                       name="rounding"
                       value={mode.id}
-                      checked={roundingMode === mode.id}
-                      onChange={() => setRoundingMode(mode.id)}
+                      checked={profile.roundingMode === mode.id}
+                      onChange={() => updateRoundingMode(mode.id as typeof profile.roundingMode)}
                       className="mr-2"
                     />
                     {mode.label}
@@ -305,22 +319,25 @@ export default function Settings() {
             app, too.
           </p>
           <ul className="mt-5 space-y-3">
-            {notificationChannels.map((channel) => (
-              <li key={channel.id} className="rounded-2xl border border-slate-200 p-4">
-                <label className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={notifications[channel.id]}
-                    onChange={() => toggleNotification(channel.id)}
-                    className="mt-1 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
-                  />
-                  <span>
-                    <span className="block text-sm font-semibold text-slate-900">{channel.label}</span>
-                    <span className="mt-1 block text-xs text-slate-500">{channel.description}</span>
-                  </span>
-                </label>
-              </li>
-            ))}
+            {notificationChannels.map((channel) => {
+              const isEnabled = notifications[channel.id] ?? channel.defaultEnabled
+              return (
+                <li key={channel.id} className="rounded-2xl border border-slate-200 p-4">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={isEnabled}
+                      onChange={() => toggleNotification(channel.id)}
+                      className="mt-1 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
+                    />
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-900">{channel.label}</span>
+                      <span className="mt-1 block text-xs text-slate-500">{channel.description}</span>
+                    </span>
+                  </label>
+                </li>
+              )
+            })}
           </ul>
         </div>
       </section>
@@ -406,14 +423,15 @@ export default function Settings() {
       <section className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
         <h2 className="text-base font-semibold">Danger zone</h2>
         <p className="mt-2">
-          Account deletion will be available post-auth launch. We&apos;ll provide exports and a cool-off
-          period to keep you in control of your data.
+          Ready for a clean slate? Resetting clears the demo profile stored in this browser so you can
+          replay onboarding once Supabase auth is wired up.
         </p>
         <button
           type="button"
+          onClick={resetDemoData}
           className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-300 px-4 py-2 text-sm font-semibold transition hover:border-red-400 hover:text-red-800"
         >
-          Request account removal
+          Reset demo data
         </button>
       </section>
     </div>

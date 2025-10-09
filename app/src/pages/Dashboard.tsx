@@ -1,6 +1,7 @@
 import IntegrationStatus from '../components/IntegrationStatus'
 import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
 import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
+import { useDemoData } from '../lib/demoDataStore'
 
 const highlights = [
   {
@@ -61,14 +62,50 @@ const highlights = [
 ]
 
 export default function Dashboard() {
+  const {
+    state: { profile, budget, goals },
+    isAuthenticated,
+  } = useDemoData()
+  const lastBudgetSync = new Date(budget.lastReconciledAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
+  const lastCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
+
   return (
     <div className="flex flex-1 flex-col gap-10">
       <header className="rounded-3xl border border-slate-200 bg-white px-8 py-8 shadow-sm">
-        <h1 className="text-3xl font-bold">Dashboard preview</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          A quick snapshot of the guided experience coming soon. This placeholder illustrates the
-          future layout once Supabase data is wired in.
-        </p>
+        <div className="flex flex-col gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard preview</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              A quick snapshot of the guided experience coming soon. This placeholder illustrates the
+              future layout once Supabase data is wired in.
+            </p>
+          </div>
+          <div className="grid gap-4 text-xs text-slate-500 sm:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="font-semibold uppercase tracking-wide text-slate-400">Demo session</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{profile.fullName}</p>
+              <p className="mt-1">{profile.email}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="font-semibold uppercase tracking-wide text-slate-400">Plan</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{profile.planId}</p>
+              <p className="mt-1">Budget sync as of {lastBudgetSync}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="font-semibold uppercase tracking-wide text-slate-400">Momentum</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {isAuthenticated ? 'Demo active' : 'Signed out'}
+              </p>
+              <p className="mt-1">Last goal celebration {lastCelebration}</p>
+            </div>
+          </div>
+        </div>
       </header>
 
       <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">

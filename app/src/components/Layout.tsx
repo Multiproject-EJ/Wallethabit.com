@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
+import DemoUserBadge from './DemoUserBadge'
+
 const navItems = [
   { to: '/', label: 'Overview', end: true },
   { to: '/dashboard', label: 'Dashboard' },
@@ -24,11 +26,11 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
           <NavLink to="/" end className="text-lg font-semibold">
             Wallet<span className="text-brand">Habit</span>
           </NavLink>
-          <nav className="flex gap-1 text-sm font-medium">
+          <nav className="flex flex-1 flex-wrap items-center gap-1 text-sm font-medium">
             {navItems.map(({ to, label, end }) => (
               <NavLink
                 key={to}
@@ -47,6 +49,7 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
+          <DemoUserBadge />
         </div>
       </header>
 
