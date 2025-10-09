@@ -6,50 +6,58 @@ import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
 import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
 import { useDemoData } from '../lib/demoDataStore'
 
-const numberFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
-
-const percentFormatter = new Intl.NumberFormat('en-US', {
-  style: 'percent',
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-})
-
-const netWorthHistory = [55200, 56150, 56900, 57480, 58210, 59300, 60090]
+const netWorthHistory = [11250, 11890, 12240, 12780, 13450, 13820, 14360, 14840, 15410, 16180, 16720, 17290]
 
 const insights = [
   {
     title: 'Dining dialed-in',
-    body: 'You spent 12% less on dining out than your three-month average. Friday night ramen stayed under $35. 🍜',
+    body: 'You spent 9% less on dining out than your three-month average. Friday ramen and flat whites stayed under £40. 🍜',
   },
   {
     title: 'Momentum win',
-    body: 'Emergency cushion grew by $400 this month — you are 68% funded and six weeks ahead of schedule.',
+    body: 'Emergency fund grew by £250 this month — you’re 64% funded and a month ahead of schedule.',
   },
   {
     title: 'Cash flow nudge',
-    body: 'A recurring subscription increased by $4.20. Consider moving it to your “Plan Ahead” envelope.',
+    body: 'Figma subscription renewed at £2 higher. Consider shifting it into your “Create” envelope next month.',
   },
 ]
 
 const quickActions = [
   { label: 'Add Transaction', icon: '➕' },
-  { label: 'Add Goal', icon: '🎯' },
+  { label: 'Create Goal', icon: '🎯' },
   { label: 'Pay Debt', icon: '💸' },
-  { label: 'Transfer', icon: '🔁' },
+  { label: 'Log Transfer', icon: '🔁' },
   { label: 'Plan Ahead', icon: '🧭' },
 ]
 
-const dailySpend = [38, 42, 26, 18, 47, 22, 34]
+const dailySpend = [42, 28, 36, 21, 48, 19, 33]
 
 export default function Dashboard() {
   const {
     state: { profile, budget, goals },
     isAuthenticated,
   } = useDemoData()
+
+  const numberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(profile.localeId, {
+        style: 'currency',
+        currency: profile.currency,
+        maximumFractionDigits: 0,
+      }),
+    [profile.currency, profile.localeId],
+  )
+
+  const percentFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(profile.localeId, {
+        style: 'percent',
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }),
+    [profile.localeId],
+  )
 
   const netWorth = netWorthHistory[netWorthHistory.length - 1]
   const previousNetWorth = netWorthHistory[netWorthHistory.length - 2]
@@ -66,10 +74,12 @@ export default function Dashboard() {
   const todaySpend = dailySpend[dailySpend.length - 1]
   const highestDailySpend = Math.max(...dailySpend)
 
-  const upcomingCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString('en-US', {
+  const upcomingCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString(profile.localeId, {
     month: 'short',
     day: 'numeric',
   })
+
+  const goalCount = goals.items.length
 
   const chart = useMemo(() => createNetWorthChart(netWorthHistory), [])
 
@@ -160,7 +170,7 @@ export default function Dashboard() {
         <article className="xl:col-span-2 rounded-3xl border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-navy">Cash flow balance</h2>
-            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-primary-dark">Healthy</span>
+            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-primary-dark">On track</span>
           </div>
           <p className="mt-2 text-sm text-navy/70">Income vs. expenses for the current month.</p>
           <div className="mt-6 space-y-4">
@@ -275,7 +285,9 @@ export default function Dashboard() {
         <article className="xl:col-span-2 rounded-3xl border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-navy">Goals momentum</h2>
-            <span className="rounded-full bg-gold/20 px-3 py-1 text-xs font-semibold text-gold">3 active goals</span>
+            <span className="rounded-full bg-gold/20 px-3 py-1 text-xs font-semibold text-gold">
+              {goalCount === 1 ? '1 active goal' : `${goalCount} active goals`}
+            </span>
           </div>
           <p className="mt-2 text-sm text-navy/70">Each milestone keeps your financial story moving forward.</p>
           <div className="mt-6 space-y-4">
@@ -307,26 +319,26 @@ export default function Dashboard() {
         <article className="xl:col-span-2 rounded-3xl border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-navy">Debt freedom meter</h2>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Debt free in 18 months</span>
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Debt free in 21 months</span>
           </div>
-          <p className="mt-2 text-sm text-navy/70">You have already cleared 36% of your debt plan.</p>
+          <p className="mt-2 text-sm text-navy/70">You have already cleared 32% of your debt plan.</p>
           <div className="mt-6 space-y-4">
             <div className="relative h-5 w-full overflow-hidden rounded-full bg-sand-darker/60">
-              <div className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-coral via-gold to-primary-light" style={{ width: '36%' }} />
-              <div className="absolute inset-y-0 right-0 flex items-center justify-center text-[11px] font-semibold text-navy">64% to go</div>
+              <div className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-coral via-gold to-primary-light" style={{ width: '32%' }} />
+              <div className="absolute inset-y-0 right-0 flex items-center justify-center text-[11px] font-semibold text-navy">68% to go</div>
             </div>
             <div className="grid gap-4 text-sm text-navy/80 sm:grid-cols-3">
               <div>
                 <p className="text-xs uppercase tracking-wide text-navy/60">Total balance</p>
-                <p className="mt-1 font-semibold">{numberFormatter.format(18600)}</p>
+                <p className="mt-1 font-semibold">{numberFormatter.format(15200)}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wide text-navy/60">Paid to date</p>
-                <p className="mt-1 font-semibold text-primary">{numberFormatter.format(6700)}</p>
+                <p className="mt-1 font-semibold text-primary">{numberFormatter.format(4820)}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wide text-navy/60">Next milestone</p>
-                <p className="mt-1 font-semibold text-coral">Snowball boost in 5 weeks</p>
+                <p className="mt-1 font-semibold text-coral">Snowball boost in 6 weeks</p>
               </div>
             </div>
           </div>
@@ -353,7 +365,9 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-navy">Today&apos;s snapshot</h2>
             <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Daily streak 7</span>
           </div>
-          <p className="mt-2 text-sm text-navy/70">You&apos;ve spent {numberFormatter.format(todaySpend)} today — below your average of {numberFormatter.format(dailyAverage)}.</p>
+          <p className="mt-2 text-sm text-navy/70">
+            You&apos;ve spent {numberFormatter.format(todaySpend)} today — below your average of {numberFormatter.format(dailyAverage)}.
+          </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl bg-sand px-4 py-4">
               <p className="text-xs uppercase tracking-wide text-navy/60">Spend rhythm</p>
@@ -382,7 +396,7 @@ export default function Dashboard() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span>✅</span>
-                  <p>Transferred $150 to Emergency Cushion.</p>
+                  <p>Transferred £250 to the emergency fund.</p>
                 </li>
                 <li className="flex items-start gap-2">
                   <span>🌀</span>
