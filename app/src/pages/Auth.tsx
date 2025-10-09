@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom'
 
+import IntegrationStatus from '../components/IntegrationStatus'
+import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
+
 export default function Auth() {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-10 shadow-sm">
@@ -39,6 +42,17 @@ export default function Auth() {
         </Link>{' '}
         or check the roadmap while we wire this up.
       </div>
+
+      <IntegrationStatus
+        label="Supabase integration"
+        ready={hasSupabaseConfig}
+        description={
+          hasSupabaseConfig
+            ? 'Env secrets detected. Once RLS policies land we can enable sign-in and profiles.'
+            : 'Waiting on Supabase URL + anon key to land in the environment before wiring auth.'
+        }
+        guidance={supabaseEnvGuidance}
+      />
     </div>
   )
 }
