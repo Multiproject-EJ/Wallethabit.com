@@ -8,7 +8,7 @@
 - [x] Draft landing copy & simple dashboard
 
 ## NEXT
-- [ ] Budget planner MVP (envelopes)
+- [x] Budget planner MVP (envelopes)
 - [ ] Goals tracker + charts
 - [ ] Profile/settings page (plan, locale)
 - [ ] AI helper panel (copy skeleton)

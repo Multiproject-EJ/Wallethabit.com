@@ -5,8 +5,8 @@ import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
 const highlights = [
   {
     label: 'Budget envelopes',
-    value: 'In design',
-    description: 'Categorized envelopes planned with real-time balances and nudges.',
+    value: 'MVP ready',
+    description: 'Interactive envelope planner launched with adjustable targets and progress.',
   },
   {
     label: 'Savings goals',
@@ -54,7 +54,7 @@ export default function Dashboard() {
             <li className="flex items-start gap-3">
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
-                <strong>Budget envelopes</strong> — interactive cards, envelope creation, and guardrails.
+                <strong>Budget envelopes</strong> — persist envelope targets to Supabase and sync across devices.
               </p>
             </li>
             <li className="flex items-start gap-3">
