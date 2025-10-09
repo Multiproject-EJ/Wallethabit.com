@@ -7,14 +7,59 @@ const features = [
       'Routing, layout, and theming ready so future features snap into place.',
   },
   {
-    title: 'Supabase-ready',
+    title: 'Bank sync blueprint',
     description:
-      'Client boot + auth placeholders planned to connect once secrets land.',
+      'Plaid-powered integration lab lays out partners, guardrails, and rollout milestones.',
   },
   {
-    title: 'Stripe-ready',
+    title: 'Debt payoff lab',
     description:
-      'Pricing + checkout entry points prepared for secure upgrades.',
+      'Snowball vs. avalanche simulations show how extra boosts shrink timelines and interest.',
+  },
+  {
+    title: 'Income boost lab',
+    description:
+      'Focus-hour sliders and growth playbooks model how new experiments expand your earnings mix.',
+  },
+  {
+    title: 'Investment autopilot lab',
+    description:
+      'Risk posture slider, allocation targets, and 10-year projections prep long-term wealth moves.',
+  },
+  {
+    title: 'Retirement readiness lab',
+    description:
+      'Lifestyle archetypes, glide path projections, and safe-withdrawal coverage cues show work-optional timelines.',
+  },
+  {
+    title: 'Protection safety net lab',
+    description:
+      'Persona-driven sliders map emergency runways, insurance coverage gaps, and advisor-ready guardrails.',
+  },
+  {
+    title: 'Estate planning lab',
+    description:
+      'Legacy blueprints organise trusts, guardians, liquidity buffers, and giving strategies before meeting counsel.',
+  },
+  {
+    title: 'Tax strategy lab',
+    description:
+      'Model contribution mixes, business deductions, and Roth conversions before filing deadlines.',
+  },
+  {
+    title: 'Supabase-ready',
+    description:
+      'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',
+  },
+  {
+    title: 'Personalised settings',
+    description:
+      'Plan selection, locale preferences, and notifications staged ahead of real profiles.',
+  },
+  {
+    title: 'Copilot assistant',
+    description:
+      'AI helper lab seeded with prompt scripts for budgeting, savings, and weekly check-ins.',
   },
 ]
 
@@ -65,8 +110,9 @@ export default function Home() {
       <section className="rounded-3xl border border-dashed border-brand/50 bg-brand/5 p-10 text-center">
         <h2 className="text-2xl font-semibold text-brand">Next milestones</h2>
         <p className="mt-3 text-sm text-slate-600">
-          Supabase auth bootstrapping, Stripe checkout placeholders, and a guided onboarding flow
-          are queued up next. Track progress in the project TODO.
+          Supabase auth bootstrapping, Plaid Link sandbox wiring, Stripe checkout placeholders, protection lab persistence,
+          tax strategy data sync, retirement glide path storage, and Copilot insights tied to real transactions are queued up
+          next. Track progress in the project TODO.
         </p>
       </section>
     </div>

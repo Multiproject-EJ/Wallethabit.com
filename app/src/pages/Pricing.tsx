@@ -1,3 +1,6 @@
+import IntegrationStatus from '../components/IntegrationStatus'
+import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
+
 const tiers = [
   {
     name: 'Starter',
@@ -68,6 +71,17 @@ export default function Pricing() {
           </article>
         ))}
       </section>
+
+      <IntegrationStatus
+        label="Stripe Checkout"
+        ready={hasStripeConfig}
+        description={
+          hasStripeConfig
+            ? 'Publishable key detected. We can wire Checkout + Customer Portal once products are live.'
+            : 'Waiting on Stripe publishable key. Once in place we can light up Checkout sessions.'
+        }
+        guidance={stripeEnvGuidance}
+      />
     </div>
   )
 }
