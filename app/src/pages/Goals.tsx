@@ -1,18 +1,24 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { DemoGoal } from '../lib/demoData'
 import { useDemoData } from '../lib/demoDataStore'
 
-const currency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
-
 export default function Goals() {
   const {
-    state: { goals },
+    state: { goals, profile },
   } = useDemoData()
+
+  const numberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(profile.localeId, {
+        style: 'currency',
+        currency: profile.currency,
+        maximumFractionDigits: 0,
+      }),
+    [profile.currency, profile.localeId],
+  )
+
+  const formatCurrency = useCallback((value: number) => numberFormatter.format(value), [numberFormatter])
 
   const goalItems = goals.items
   const [focusGoalId, setFocusGoalId] = useState(goalItems[0]?.id ?? '')
@@ -68,13 +74,13 @@ export default function Goals() {
     }
   }, [focusGoal, monthlyBoost])
 
-  const baselineFinish = projectCompletionDate(strategy.baselineMonths)
-  const acceleratedFinish = projectCompletionDate(strategy.acceleratedMonths)
+  const baselineFinish = projectCompletionDate(strategy.baselineMonths, profile.localeId)
+  const acceleratedFinish = projectCompletionDate(strategy.acceleratedMonths, profile.localeId)
   const baselineDuration = formatDuration(strategy.baselineMonths)
   const acceleratedDuration = formatDuration(strategy.acceleratedMonths)
   const timeSavedCopy = formatTimeSaved(strategy.timeSaved)
   const newMonthlyTotal = (focusGoal?.monthlyCommitment ?? 0) + monthlyBoost
-  const lastCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString('en-US', {
+  const lastCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString(profile.localeId, {
     month: 'short',
     day: 'numeric',
   })
@@ -84,6 +90,7 @@ export default function Goals() {
     monthlyBoost,
     timeSaved: strategy.timeSaved,
     acceleratedFinish,
+    formatCurrency,
   })
 
   return (
@@ -97,7 +104,7 @@ export default function Goals() {
             </span>
             <h1 className="text-4xl font-semibold tracking-tight">Every milestone deserves a moment</h1>
             <p className="text-base text-white/80">
-              You have already funded {summary.averageProgress}% of your dream list and commit {currency.format(summary.monthlyCommitment)} each month.
+              You have already funded {summary.averageProgress}% of your dream list and commit {formatCurrency(summary.monthlyCommitment)} each month.
               WalletHabit keeps the path clear, celebrates your streaks, and nudges the next best move.
             </p>
           </div>
@@ -121,10 +128,10 @@ export default function Goals() {
       </header>
 
       <section className="grid gap-5 lg:grid-cols-4">
-        <MetricTile label="Total funded" value={currency.format(summary.totalSaved)} tone="positive" />
+        <MetricTile label="Total funded" value={formatCurrency(summary.totalSaved)} tone="positive" />
         <MetricTile label="Goal coverage" value={`${summary.averageProgress}%`} />
-        <MetricTile label="Monthly commitment" value={currency.format(summary.monthlyCommitment)} />
-        <MetricTile label="Aggregate target" value={currency.format(summary.totalTarget)} tone="muted" />
+        <MetricTile label="Monthly commitment" value={formatCurrency(summary.monthlyCommitment)} />
+        <MetricTile label="Aggregate target" value={formatCurrency(summary.totalTarget)} tone="muted" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
@@ -164,7 +171,7 @@ export default function Goals() {
             <div className="flex flex-col gap-4 rounded-2xl border border-white/80 bg-sand/60 p-4">
               <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-navy/60">
                 <span>Monthly boost</span>
-                <span className="text-navy">{monthlyBoost === 0 ? 'No boost' : `+${currency.format(monthlyBoost)} /mo`}</span>
+                <span className="text-navy">{monthlyBoost === 0 ? 'No boost' : `+${formatCurrency(monthlyBoost)} /mo`}</span>
               </div>
               <input
                 aria-label="Monthly boost"
@@ -177,9 +184,9 @@ export default function Goals() {
                 className="w-full accent-primary"
               />
               <div className="flex justify-between text-[11px] font-semibold uppercase tracking-[0.2em] text-navy/40">
-                <span>$0</span>
-                <span>+$250</span>
-                <span>+$500</span>
+                <span>{formatCurrency(0)}</span>
+                <span>{`+${formatCurrency(250)}`}</span>
+                <span>{`+${formatCurrency(500)}`}</span>
               </div>
             </div>
 
@@ -189,8 +196,8 @@ export default function Goals() {
               <StrategyStat label="Time saved" value={timeSavedCopy} helper="Compared with your current pace" />
               <StrategyStat
                 label="Monthly total"
-                value={currency.format(newMonthlyTotal)}
-                helper={monthlyBoost > 0 ? `+${currency.format(monthlyBoost)} boost applied` : 'Matches current commitment'}
+                value={formatCurrency(newMonthlyTotal)}
+                helper={monthlyBoost > 0 ? `+${formatCurrency(monthlyBoost)} boost applied` : 'Matches current commitment'}
               />
             </div>
           </div>
@@ -202,10 +209,10 @@ export default function Goals() {
             <p className="mt-2 text-sm text-navy/70">{highlightMessage}</p>
           </div>
           <ul className="space-y-4 text-sm text-navy/70">
-            <StrategyBullet title="Remaining target" description={`${currency.format(strategy.remaining)} left to celebrate this goal.`} />
+            <StrategyBullet title="Remaining target" description={`${formatCurrency(strategy.remaining)} left to celebrate this goal.`} />
             <StrategyBullet
               title="New monthly cadence"
-              description={`${currency.format(newMonthlyTotal)} per month (${monthlyBoost === 0 ? 'baseline pace' : `+${currency.format(monthlyBoost)} boost`}).`}
+              description={`${formatCurrency(newMonthlyTotal)} per month (${monthlyBoost === 0 ? 'baseline pace' : `+${formatCurrency(monthlyBoost)} boost`}).`}
             />
             <StrategyBullet
               title="Celebration ETA"
@@ -236,7 +243,9 @@ export default function Goals() {
 
         <div className="grid gap-5">
           {goalItems.length > 0 ? (
-            goalItems.map((goal) => <GoalCard key={goal.id} goal={goal} isFocused={goal.id === focusGoal?.id} />)
+            goalItems.map((goal) => (
+              <GoalCard key={goal.id} goal={goal} isFocused={goal.id === focusGoal?.id} formatCurrency={formatCurrency} />
+            ))
           ) : (
             <div className="rounded-[28px] border border-dashed border-white/70 bg-white/70 p-6 text-sm text-navy/70">
               Goals will populate here once Supabase sync is live. For now, adjust the demo strategy lab to preview the experience.
@@ -273,9 +282,10 @@ function MetricTile({ label, value, tone }: MetricTileProps) {
 type GoalCardProps = {
   goal: DemoGoal
   isFocused: boolean
+  formatCurrency: (value: number) => string
 }
 
-function GoalCard({ goal, isFocused }: GoalCardProps) {
+function GoalCard({ goal, isFocused, formatCurrency }: GoalCardProps) {
   const progress = Math.min(goal.saved / goal.target, 1)
   const remaining = Math.max(goal.target - goal.saved, 0)
   const priorityLabel = `${goal.priority} priority`
@@ -293,7 +303,7 @@ function GoalCard({ goal, isFocused }: GoalCardProps) {
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-xl font-semibold text-navy">{goal.name}</h3>
               <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Target {currency.format(goal.target)}
+                Target {formatCurrency(goal.target)}
               </span>
               <span className="rounded-full bg-coral/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-coral">
                 {priorityLabel}
@@ -301,9 +311,9 @@ function GoalCard({ goal, isFocused }: GoalCardProps) {
             </div>
             <p className="max-w-xl text-sm text-navy/70">{goal.description}</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-navy/70">
-              <Detail label="Saved" value={currency.format(goal.saved)} />
-              <Detail label="Remaining" value={currency.format(remaining)} />
-              <Detail label="Monthly" value={currency.format(goal.monthlyCommitment)} />
+              <Detail label="Saved" value={formatCurrency(goal.saved)} />
+              <Detail label="Remaining" value={formatCurrency(remaining)} />
+              <Detail label="Monthly" value={formatCurrency(goal.monthlyCommitment)} />
               <Detail label="Goal date" value={goal.dueLabel} />
             </div>
           </div>
@@ -459,14 +469,14 @@ function formatTimeSaved(months: number) {
   return `≈${Math.round(months)} months`
 }
 
-function projectCompletionDate(months: number) {
+function projectCompletionDate(months: number, locale: string) {
   if (!Number.isFinite(months)) return 'TBD'
   if (months <= 0) return 'Now'
 
   const projection = new Date()
   projection.setMonth(projection.getMonth() + Math.ceil(months))
 
-  return projection.toLocaleDateString('en-US', {
+  return projection.toLocaleDateString(locale, {
     month: 'short',
     year: 'numeric',
   })
@@ -477,19 +487,21 @@ type HighlightMessageInput = {
   monthlyBoost: number
   timeSaved: number
   acceleratedFinish: string
+  formatCurrency: (value: number) => string
 }
 
-function buildHighlightMessage({ goalName, monthlyBoost, timeSaved, acceleratedFinish }: HighlightMessageInput) {
+function buildHighlightMessage({ goalName, monthlyBoost, timeSaved, acceleratedFinish, formatCurrency }: HighlightMessageInput) {
   if (monthlyBoost <= 0) {
     return `Dial in a boost to see how quickly ${goalName.toLowerCase()} comes to life.`
   }
 
   if (timeSaved <= 0 || acceleratedFinish === 'TBD') {
-    return `At +${currency.format(monthlyBoost)} each month you're staying on pace. Try nudging the slider further to beat the schedule for ${goalName.toLowerCase()}.`
+    return `At +${formatCurrency(monthlyBoost)} each month you're staying on pace. Try nudging the slider further to beat the schedule for ${goalName.toLowerCase()}.`
   }
 
   const savedLabel = timeSaved < 1 ? 'a few weeks' : `${Math.round(timeSaved)} month${Math.round(timeSaved) === 1 ? '' : 's'}`
 
   return `You're on track to wrap ${goalName.toLowerCase()} roughly ${savedLabel} sooner, celebrating around ${acceleratedFinish}.`
 }
+
 

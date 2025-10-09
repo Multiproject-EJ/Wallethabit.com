@@ -1,131 +1,502 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-const personas = [
-  {
-    id: 'foundation',
-    label: 'Foundation builder',
-    description: 'Single income, early career, wants a durable buffer while investments ramp.',
-    emergencyMonths: 4,
-    lifeMultiplier: 6,
-    disabilityIncomeRate: 0.6,
-    familyFactor: 0,
-  },
-  {
-    id: 'family',
-    label: 'Family guardian',
-    description: 'Dual income household with kids and a mortgage — prioritises continuity.',
-    emergencyMonths: 6,
-    lifeMultiplier: 8,
-    disabilityIncomeRate: 0.65,
-    familyFactor: 150000,
-  },
-  {
-    id: 'builder',
-    label: 'Momentum investor',
-    description: 'High savings rate, entrepreneurial income, and variable quarterly draws.',
-    emergencyMonths: 8,
-    lifeMultiplier: 7,
-    disabilityIncomeRate: 0.55,
-    familyFactor: 75000,
-  },
-  {
-    id: 'legacy',
-    label: 'Legacy planner',
-    description: 'Approaching financial independence, coordinates estate and caregiving support.',
-    emergencyMonths: 12,
-    lifeMultiplier: 5,
-    disabilityIncomeRate: 0.5,
-    familyFactor: 200000,
-  },
-] as const
+import type { DemoProfile } from '../lib/demoData'
+import { useDemoData } from '../lib/demoDataStore'
 
-type PersonaId = (typeof personas)[number]['id']
+type RangeControl = { min: number; max: number; step: number }
 
-type Persona = (typeof personas)[number]
+type Persona = {
+  id: string
+  label: string
+  description: string
+  emergencyMonths: number
+  lifeMultiplier: number
+  disabilityIncomeRate: number
+  familyFactor: number
+}
 
-const playbooks = [
-  {
-    title: 'Emergency runway sprints',
-    description:
-      'Automate transfers each payday into a high-yield bucket labelled "Safety Net" until your runway target is reached.',
-  },
-  {
-    title: 'Insurance coverage sync',
-    description:
-      'Document employer disability + life benefits, then layer personal policies where gaps remain.',
-  },
-  {
-    title: 'Crisis rehearsal',
-    description:
-      'Run quarterly check-ins to simulate job loss, illness, and caregiver support so the plan feels battle-tested.',
-  },
-]
+type Playbook = { title: string; description: string }
 
-const readinessChecklist = [
-  'Upload policy PDFs and renewal reminders into the vault for quick reference.',
-  'Track dependants and monthly obligations so Copilot can recommend coverage levels automatically.',
-  'Connect bank accounts to monitor safety-net balances alongside investments.',
-  'Draft a one-page emergency playbook with who to call, what to pause, and income levers to activate.',
-]
+type Milestone = { label: string; timeframe: string; description: string }
 
-const rolloutMilestones = [
-  {
-    label: 'Coverage schema',
-    timeframe: 'Week 1',
-    description: 'Design Supabase tables for emergency funds, insurance policies, and beneficiary metadata.',
-  },
-  {
-    label: 'Bank sync tagging',
-    timeframe: 'Week 2',
-    description: 'Use Plaid imports to detect safety-net balances and alert when thresholds dip.',
-  },
-  {
-    label: 'Copilot briefs',
-    timeframe: 'Week 3',
-    description: 'Feed Copilot with coverage gaps so it can propose playbooks and renewal nudges.',
-  },
-  {
-    label: 'Advisor mode',
-    timeframe: 'Week 4',
-    description: 'Launch shareable summary reports for partners or advisors with version tracking.',
-  },
-]
+type SupportChannel = { label: string; description: string }
 
-const guardrails = [
-  'Keep emergency reserves above 3× recurring monthly expenses before increasing investing risk.',
-  'Cap total insurance premiums at <10% of gross income while gaps are shrinking.',
-  'Review beneficiaries and policy riders every open enrolment or major life change.',
-  'Align estate documents and digital vault permissions with the latest protection plan.',
-]
+type RegionDefaults = {
+  personaId: string
+  annualIncome: number
+  monthlyExpenses?: number
+  coverageMonths: number
+  emergencySavings: number
+  lifeCoverage: number
+  disabilityCoverage: number
+}
 
-const signalBeacons = [
-  'Emergency fund balance trends above the target runway for three consecutive months.',
-  'Insurance coverage gap shrinks below 10% of recommended levels.',
-  'Copilot check-ins log annual policy reviews with action items resolved.',
-  'Dependants have verified access instructions stored in the readiness vault.',
-]
+type RegionConfig = {
+  hero: { badge: string; title: string; description: string }
+  coverageIntro: string
+  defaults: RegionDefaults
+  controls: {
+    annualIncome: RangeControl
+    monthlyExpenses: RangeControl
+    emergencySavings: RangeControl
+    lifeCoverage: RangeControl
+    disabilityCoverage: RangeControl
+  }
+  personas: Persona[]
+  playbooks: Playbook[]
+  readinessChecklist: string[]
+  guardrails: string[]
+  signalBeacons: string[]
+  supportChannels: SupportChannel[]
+  rolloutMilestones: Milestone[]
+  coverageIntelligence: string[]
+}
 
-const supportChannels = [
-  {
-    label: 'Benefits review session',
-    description: 'Capture employer-provided coverage, elimination periods, and optional riders to close gaps.',
+const coverageMonthsControl = { min: 3, max: 18, step: 1 } as const
+
+const clampToRange = (value: number, range: RangeControl) =>
+  Math.min(range.max, Math.max(range.min, value))
+const regionConfigs: Record<DemoProfile['region'], RegionConfig> = {
+  uk: {
+    hero: {
+      badge: 'Safety net studio',
+      title: 'Keep your UK safety net storm-ready',
+      description:
+        'Balance Monzo pots, Chase Savings, and policy renewals so Alex Rivera can ride out surprises without panic.',
+    },
+    coverageIntro:
+      'WalletHabit keeps watch over Monzo pots, Chase Savings, and renewal dates so your UK safety net never drifts offside.',
+    defaults: {
+      personaId: 'solo-creative',
+      annualIncome: 62000,
+      monthlyExpenses: 2650,
+      coverageMonths: 6,
+      emergencySavings: 4200,
+      lifeCoverage: 150000,
+      disabilityCoverage: 2200,
+    },
+    controls: {
+      annualIncome: { min: 30000, max: 160000, step: 5000 },
+      monthlyExpenses: { min: 1500, max: 6500, step: 50 },
+      emergencySavings: { min: 0, max: 50000, step: 500 },
+      lifeCoverage: { min: 0, max: 900000, step: 10000 },
+      disabilityCoverage: { min: 0, max: 6000, step: 100 },
+    },
+    personas: [
+      {
+        id: 'solo-creative',
+        label: 'Solo creative in London',
+        description:
+          'Single renter with freelance spikes. Prioritises rainy-day cash and income protection while debt trims down.',
+        emergencyMonths: 6,
+        lifeMultiplier: 3.5,
+        disabilityIncomeRate: 0.55,
+        familyFactor: 0,
+      },
+      {
+        id: 'partnered-renters',
+        label: 'Partnered renters',
+        description:
+          'Two incomes splitting rent in Zone 2. Focus on a 6–9 month runway and joint cover while saving for a deposit.',
+        emergencyMonths: 7,
+        lifeMultiplier: 5,
+        disabilityIncomeRate: 0.6,
+        familyFactor: 60000,
+      },
+      {
+        id: 'young-family',
+        label: 'Young family',
+        description:
+          'Parents juggling childcare and rent. Needs longer runway, family life insurance, and childcare back-up plans.',
+        emergencyMonths: 9,
+        lifeMultiplier: 8,
+        disabilityIncomeRate: 0.65,
+        familyFactor: 120000,
+      },
+      {
+        id: 'independent-contractor',
+        label: 'Independent contractor',
+        description:
+          'Limited company director with variable dividends. Builds a 9–12 month runway and bespoke income protection.',
+        emergencyMonths: 10,
+        lifeMultiplier: 6,
+        disabilityIncomeRate: 0.5,
+        familyFactor: 40000,
+      },
+    ],
+    playbooks: [
+      {
+        title: 'Income protection check-in',
+        description:
+          'Compare statutory sick pay with employer and personal policies to spot cover gaps before renewals.',
+      },
+      {
+        title: 'Freelance smoothing pot',
+        description:
+          'Sweep side-hustle profit into a labelled Monzo pot so rainy-day reserves refill automatically.',
+      },
+      {
+        title: 'Policy renewal ritual',
+        description:
+          'Schedule a quarterly review to confirm renter\'s, phone, and contents cover still match your gear and rent.',
+      },
+    ],
+    readinessChecklist: [
+      'Tag Monzo and Chase pots that make up your safety net so Copilot can watch balances against runway goals.',
+      'Document employer benefits, statutory sick pay, and personal policies inside the vault with renewal dates.',
+      'Set reminders to review income protection and critical illness quotes before each freelance season.',
+      'List emergency contacts and handoff instructions so someone can trigger rent and debt payments on your behalf.',
+    ],
+    guardrails: [
+      'Keep rainy-day balances above 3× essential spend before adding new subscriptions.',
+      'Cap total insurance premiums at under 8% of take-home pay while debts are clearing.',
+      'Review beneficiaries on workplace pension, ISA, and insurance policies every April.',
+      'Ensure tax set-aside pots stay separate from emergency funds to avoid last-minute scrambles.',
+    ],
+    signalBeacons: [
+      'Rainy-day pots hold 6+ months of essential costs across Monzo and Chase.',
+      'Income protection or sick pay coverage reaches at least 60% of take-home pay.',
+      'Policy renewals logged with zero outstanding tasks in the vault.',
+      'Emergency rehearsal checklist reviewed twice a year.',
+    ],
+    supportChannels: [
+      {
+        label: 'Independent protection broker',
+        description:
+          'Source income protection and critical illness quotes tailored to contractors and creatives.',
+      },
+      {
+        label: 'Insurance renewal concierge',
+        description: 'Keep renter\'s, phone, and contents policies aligned with your inventory automatically.',
+      },
+      {
+        label: 'Emergency planning workshop',
+        description: 'Draft handoff instructions and contact trees with a facilitator in one focused session.',
+      },
+    ],
+    rolloutMilestones: [
+      {
+        label: 'Safety net schema',
+        timeframe: 'Week 1',
+        description: 'Model emergency pots, policies, and beneficiaries with UK-ready fields.',
+      },
+      {
+        label: 'Bank feed tagging',
+        timeframe: 'Week 2',
+        description: 'Ingest Monzo and Chase transactions to trend rainy-day balances and premiums.',
+      },
+      {
+        label: 'Copilot guardrails',
+        timeframe: 'Week 3',
+        description: 'Trigger alerts when pots dip below runway or renewals near their dates.',
+      },
+      {
+        label: 'Advisor workspace',
+        timeframe: 'Week 4',
+        description: 'Share region-specific summaries with brokers or planners for reviews.',
+      },
+    ],
+    coverageIntelligence: [
+      'Track Monzo pots labelled "Safety Net" to warn when the runway slips below target.',
+      'Pre-fill renewal dates so you get nudges 30 days before renter\'s or phone cover lapses.',
+      'Surface side-hustle income streaks and suggest routing a slice to rainy-day reserves.',
+    ],
   },
-  {
-    label: 'Insurance marketplace pilot',
-    description: 'Preview partner brokers with embedded quotes for term life, disability, and umbrella add-ons.',
+  us: {
+    hero: {
+      badge: 'Protection lab',
+      title: 'Build a resilient safety net before storms roll in',
+      description:
+        'Shape emergency reserves, align employer benefits, and document policies so US households stay resilient while WalletHabit connects live data.',
+    },
+    coverageIntro:
+      'WalletHabit keeps watch on runways, policies, and beneficiaries. When thresholds slip, your copilot will tee up quotes, savings boosts, or advisor nudges so the plan stays calm.',
+    defaults: {
+      personaId: 'foundation',
+      annualIncome: 115000,
+      monthlyExpenses: 5200,
+      coverageMonths: 6,
+      emergencySavings: 18000,
+      lifeCoverage: 400000,
+      disabilityCoverage: 3500,
+    },
+    controls: {
+      annualIncome: { min: 40000, max: 220000, step: 5000 },
+      monthlyExpenses: { min: 2500, max: 9000, step: 250 },
+      emergencySavings: { min: 0, max: 90000, step: 1000 },
+      lifeCoverage: { min: 0, max: 1500000, step: 25000 },
+      disabilityCoverage: { min: 0, max: 10000, step: 250 },
+    },
+    personas: [
+      {
+        id: 'foundation',
+        label: 'Foundation builder',
+        description:
+          'Single income, early career, wants a durable buffer while investments ramp.',
+        emergencyMonths: 4,
+        lifeMultiplier: 6,
+        disabilityIncomeRate: 0.6,
+        familyFactor: 0,
+      },
+      {
+        id: 'family',
+        label: 'Family guardian',
+        description:
+          'Dual income household with kids and a mortgage — prioritises continuity.',
+        emergencyMonths: 6,
+        lifeMultiplier: 8,
+        disabilityIncomeRate: 0.65,
+        familyFactor: 150000,
+      },
+      {
+        id: 'builder',
+        label: 'Momentum investor',
+        description:
+          'High savings rate, entrepreneurial income, and variable quarterly draws.',
+        emergencyMonths: 8,
+        lifeMultiplier: 7,
+        disabilityIncomeRate: 0.55,
+        familyFactor: 75000,
+      },
+      {
+        id: 'legacy',
+        label: 'Legacy planner',
+        description:
+          'Approaching financial independence, coordinates estate and caregiving support.',
+        emergencyMonths: 12,
+        lifeMultiplier: 5,
+        disabilityIncomeRate: 0.5,
+        familyFactor: 200000,
+      },
+    ],
+    playbooks: [
+      {
+        title: 'Emergency runway sprints',
+        description:
+          'Automate transfers each payday into a high-yield bucket labelled "Safety Net" until your runway target is reached.',
+      },
+      {
+        title: 'Insurance coverage sync',
+        description:
+          'Document employer disability + life benefits, then layer personal policies where gaps remain.',
+      },
+      {
+        title: 'Crisis rehearsal',
+        description:
+          'Run quarterly check-ins to simulate job loss, illness, and caregiver support so the plan feels battle-tested.',
+      },
+    ],
+    readinessChecklist: [
+      'Upload policy PDFs and renewal reminders into the vault for quick reference.',
+      'Track dependants and monthly obligations so Copilot can recommend coverage levels automatically.',
+      'Connect bank accounts to monitor safety-net balances alongside investments.',
+      'Draft a one-page emergency playbook with who to call, what to pause, and income levers to activate.',
+    ],
+    guardrails: [
+      'Keep emergency reserves above 3× recurring monthly expenses before increasing investing risk.',
+      'Cap total insurance premiums at <10% of gross income while gaps are shrinking.',
+      'Review beneficiaries and policy riders every open enrolment or major life change.',
+      'Align estate documents and digital vault permissions with the latest protection plan.',
+    ],
+    signalBeacons: [
+      'Emergency fund balance trends above the target runway for three consecutive months.',
+      'Insurance coverage gap shrinks below 10% of recommended levels.',
+      'Copilot check-ins log annual policy reviews with action items resolved.',
+      'Dependants have verified access instructions stored in the readiness vault.',
+    ],
+    supportChannels: [
+      {
+        label: 'Benefits review session',
+        description:
+          'Capture employer-provided coverage, elimination periods, and optional riders to close gaps.',
+      },
+      {
+        label: 'Insurance marketplace pilot',
+        description:
+          'Preview partner brokers with embedded quotes for term life, disability, and umbrella add-ons.',
+      },
+      {
+        label: 'Estate toolkit',
+        description:
+          'Assemble will templates, healthcare proxies, and secure document storage into one workflow.',
+      },
+    ],
+    rolloutMilestones: [
+      {
+        label: 'Coverage schema',
+        timeframe: 'Week 1',
+        description: 'Design Supabase tables for emergency funds, insurance policies, and beneficiary metadata.',
+      },
+      {
+        label: 'Bank sync tagging',
+        timeframe: 'Week 2',
+        description: 'Use Plaid imports to detect safety-net balances and alert when thresholds dip.',
+      },
+      {
+        label: 'Copilot briefs',
+        timeframe: 'Week 3',
+        description: 'Feed Copilot with coverage gaps so it can propose playbooks and renewal nudges.',
+      },
+      {
+        label: 'Advisor mode',
+        timeframe: 'Week 4',
+        description: 'Launch shareable summary reports for partners or advisors with version tracking.',
+      },
+    ],
+    coverageIntelligence: [
+      'Sync emergency and premium transactions to trend against your runway targets in real time.',
+      'Surface open-enrolment reminders so employer benefits and personal policies stay dialled in.',
+      'Generate advisor-ready summaries that highlight coverage gaps, beneficiaries, and next steps.',
+    ],
   },
-  {
-    label: 'Estate toolkit',
-    description: 'Assemble will templates, healthcare proxies, and secure document storage into one workflow.',
+  no: {
+    hero: {
+      badge: 'Sikkerhetsnett lab',
+      title: 'Hold trygghetsbufferen din klar i Norge',
+      description:
+        'Map NAV benefits alongside private cover and savings so Norwegian households can react fast to job changes or illness.',
+    },
+    coverageIntro:
+      'WalletHabit tracks NAV coverage, private policies, and savings buckets so the safety net stays predictable even when income fluctuates.',
+    defaults: {
+      personaId: 'oslo-solo',
+      annualIncome: 780000,
+      monthlyExpenses: 38000,
+      coverageMonths: 6,
+      emergencySavings: 120000,
+      lifeCoverage: 2000000,
+      disabilityCoverage: 28000,
+    },
+    controls: {
+      annualIncome: { min: 450000, max: 1500000, step: 25000 },
+      monthlyExpenses: { min: 20000, max: 80000, step: 1000 },
+      emergencySavings: { min: 0, max: 600000, step: 5000 },
+      lifeCoverage: { min: 0, max: 6000000, step: 50000 },
+      disabilityCoverage: { min: 0, max: 80000, step: 1000 },
+    },
+    personas: [
+      {
+        id: 'oslo-solo',
+        label: 'Solo in Oslo',
+        description:
+          'Single knowledge worker renting in Oslo. Prioritises 6–9 month buffer and income protection to cover rent.',
+        emergencyMonths: 6,
+        lifeMultiplier: 3,
+        disabilityIncomeRate: 0.55,
+        familyFactor: 0,
+      },
+      {
+        id: 'samboer',
+        label: 'Samboer household',
+        description:
+          'Two incomes sharing rent and travel goals. Focus on joint buffer and life cover before buying property.',
+        emergencyMonths: 7,
+        lifeMultiplier: 5,
+        disabilityIncomeRate: 0.6,
+        familyFactor: 400000,
+      },
+      {
+        id: 'barn-familie',
+        label: 'Familie med barn',
+        description:
+          'Parents balancing barnehage, mortgage, and travel. Needs 9–12 month reserves and barneforsikring upgrades.',
+        emergencyMonths: 10,
+        lifeMultiplier: 8,
+        disabilityIncomeRate: 0.65,
+        familyFactor: 800000,
+      },
+      {
+        id: 'frilanser',
+        label: 'Frilanser',
+        description:
+          'Independent consultant with variable fakturaer. Builds 12 month runway and supplementary income insurance.',
+        emergencyMonths: 12,
+        lifeMultiplier: 6,
+        disabilityIncomeRate: 0.5,
+        familyFactor: 300000,
+      },
+    ],
+    playbooks: [
+      {
+        title: 'NAV benefit audit',
+        description:
+          'Log NAV sick pay, employer top-ups, and private inntektssikring so you know how long wages would continue.',
+      },
+      {
+        title: 'Buffer autopilot',
+        description:
+          'Automate transfers into høyrentekonto or BSU-style buckets each payday until the runway hits target.',
+      },
+      {
+        title: 'Family paperwork sprint',
+        description:
+          'Review samboeravtale, testament, and insurance beneficiaries every spring so paperwork matches real life.',
+      },
+    ],
+    readinessChecklist: [
+      'Track emergency reserves across høyrentekonto, BSU, and brokerage so you can see true runway at a glance.',
+      'Store NAV letters, insurance policies, and skattekort adjustments with expiry reminders.',
+      'Confirm private disability coverage picks up where employer and NAV benefits taper off.',
+      'Document who can access accounts, mortgages, and childcare payments if you are unavailable.',
+    ],
+    guardrails: [
+      'Ring-fence tax and holiday accounts from the emergency buffer to keep liquidity predictable.',
+      'Aim for 6–12 months of essential spend before locking savings into long-term funds.',
+      'Review pensjonskonto and life insurance beneficiaries every January.',
+      'Update skattekort when freelance revenue shifts so set-aside stays accurate.',
+    ],
+    signalBeacons: [
+      'Runway covers at least 6 months of SIFO essentials across savings accounts.',
+      'Supplemental income protection replaces 60%+ of take-home pay after NAV benefits.',
+      'Insurance renewals logged with no overdue follow-ups.',
+      'Crisis checklist rehearsed twice per year with partner or trusted contact.',
+    ],
+    supportChannels: [
+      {
+        label: 'NAV guidance session',
+        description:
+          'Explain NAV sick pay, arbeidsavklaringspenger, and parental benefits aligned to your work status.',
+      },
+      {
+        label: 'Insurance broker (Norge)',
+        description:
+          'Compare income protection, uføreforsikring, and life cover tailored to consultants.',
+      },
+      {
+        label: 'Juridisk partner',
+        description:
+          'Draft or refresh samboeravtale and testament templates with secure sharing.',
+      },
+    ],
+    rolloutMilestones: [
+      {
+        label: 'Nordic safety net schema',
+        timeframe: 'Week 1',
+        description: 'Model NAV benefit fields, supplemental insurance, and savings buckets.',
+      },
+      {
+        label: 'Bank + PSD2 feeds',
+        timeframe: 'Week 2',
+        description: 'Connect DNB, Sbanken, and Revolut to monitor runway balances automatically.',
+      },
+      {
+        label: 'Guardrail automations',
+        timeframe: 'Week 3',
+        description: 'Send alerts when høyrentekonto dips or renewals near expiration.',
+      },
+      {
+        label: 'Advisor/partner hub',
+        timeframe: 'Week 4',
+        description: 'Share bilingual summaries with brokers or advisors for quick reviews.',
+      },
+    ],
+    coverageIntelligence: [
+      'Flag NAV coverage end dates so you can top up with private insurance in time.',
+      'Watch høyrentekonto balances and prompt top-ups if the runway drops below target.',
+      'Highlight skattekort changes and suggest moving freelance profit into the buffer automatically.',
+    ],
   },
-]
-
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
-
+}
 function calculateRecommendations({
   persona,
   annualIncome,
@@ -140,7 +511,7 @@ function calculateRecommendations({
   const adjustedMonths = Math.max(coverageMonths, persona.emergencyMonths)
   const emergencyTarget = monthlyExpenses * adjustedMonths
   const recommendedLife = persona.lifeMultiplier * annualIncome + persona.familyFactor
-  const monthlyIncomeReplacement = persona.disabilityIncomeRate * annualIncome / 12
+  const monthlyIncomeReplacement = (persona.disabilityIncomeRate * annualIncome) / 12
 
   return {
     emergencyTarget,
@@ -150,18 +521,84 @@ function calculateRecommendations({
 }
 
 export default function Protection() {
-  const [personaId, setPersonaId] = useState<PersonaId>('family')
-  const [annualIncome, setAnnualIncome] = useState(115000)
-  const [monthlyExpenses, setMonthlyExpenses] = useState(5200)
-  const [coverageMonths, setCoverageMonths] = useState(6)
-  const [emergencySavings, setEmergencySavings] = useState(18000)
-  const [lifeCoverage, setLifeCoverage] = useState(400000)
-  const [disabilityCoverage, setDisabilityCoverage] = useState(3500)
+  const {
+    state: { profile, budget },
+  } = useDemoData()
 
-  const persona = useMemo(() => personas.find((item) => item.id === personaId) ?? personas[1], [personaId])
+  const regionPreset = useMemo(() => regionConfigs[profile.region] ?? regionConfigs.uk, [profile.region])
+
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(profile.localeId, {
+        style: 'currency',
+        currency: profile.currency,
+        maximumFractionDigits: 0,
+      }),
+    [profile.currency, profile.localeId],
+  )
+
+  const defaultMonthlyExpenses = useMemo(
+    () => Math.round(budget.envelopes.reduce((sum, envelope) => sum + envelope.spent, 0)),
+    [budget.envelopes],
+  )
+
+  const [personaId, setPersonaId] = useState(regionPreset.defaults.personaId)
+  const [annualIncome, setAnnualIncome] = useState(
+    clampToRange(regionPreset.defaults.annualIncome, regionPreset.controls.annualIncome),
+  )
+  const [monthlyExpenses, setMonthlyExpenses] = useState(
+    clampToRange(
+      regionPreset.defaults.monthlyExpenses ?? defaultMonthlyExpenses,
+      regionPreset.controls.monthlyExpenses,
+    ),
+  )
+  const [coverageMonths, setCoverageMonths] = useState(
+    Math.min(coverageMonthsControl.max, Math.max(coverageMonthsControl.min, regionPreset.defaults.coverageMonths)),
+  )
+  const [emergencySavings, setEmergencySavings] = useState(
+    clampToRange(regionPreset.defaults.emergencySavings, regionPreset.controls.emergencySavings),
+  )
+  const [lifeCoverage, setLifeCoverage] = useState(
+    clampToRange(regionPreset.defaults.lifeCoverage, regionPreset.controls.lifeCoverage),
+  )
+  const [disabilityCoverage, setDisabilityCoverage] = useState(
+    clampToRange(regionPreset.defaults.disabilityCoverage, regionPreset.controls.disabilityCoverage),
+  )
+
+  useEffect(() => {
+    setPersonaId(regionPreset.defaults.personaId)
+    setAnnualIncome(clampToRange(regionPreset.defaults.annualIncome, regionPreset.controls.annualIncome))
+    setMonthlyExpenses(
+      clampToRange(
+        regionPreset.defaults.monthlyExpenses ?? defaultMonthlyExpenses,
+        regionPreset.controls.monthlyExpenses,
+      ),
+    )
+    setCoverageMonths(
+      Math.min(coverageMonthsControl.max, Math.max(coverageMonthsControl.min, regionPreset.defaults.coverageMonths)),
+    )
+    setEmergencySavings(
+      clampToRange(regionPreset.defaults.emergencySavings, regionPreset.controls.emergencySavings),
+    )
+    setLifeCoverage(clampToRange(regionPreset.defaults.lifeCoverage, regionPreset.controls.lifeCoverage))
+    setDisabilityCoverage(
+      clampToRange(regionPreset.defaults.disabilityCoverage, regionPreset.controls.disabilityCoverage),
+    )
+  }, [defaultMonthlyExpenses, regionPreset])
+
+  const persona = useMemo(
+    () => regionPreset.personas.find((item) => item.id === personaId) ?? regionPreset.personas[0],
+    [personaId, regionPreset],
+  )
 
   const recommendations = useMemo(
-    () => calculateRecommendations({ persona, annualIncome, monthlyExpenses, coverageMonths }),
+    () =>
+      calculateRecommendations({
+        persona,
+        annualIncome,
+        monthlyExpenses,
+        coverageMonths,
+      }),
     [persona, annualIncome, monthlyExpenses, coverageMonths],
   )
 
@@ -172,9 +609,7 @@ export default function Protection() {
   const emergencyProgress = recommendations.emergencyTarget === 0
     ? 0
     : Math.round((emergencySavings / recommendations.emergencyTarget) * 100)
-  const lifeProgress = recommendations.recommendedLife === 0
-    ? 0
-    : Math.round((lifeCoverage / recommendations.recommendedLife) * 100)
+  const lifeProgress = recommendations.recommendedLife === 0 ? 0 : Math.round((lifeCoverage / recommendations.recommendedLife) * 100)
   const disabilityProgress = recommendations.monthlyIncomeReplacement === 0
     ? 0
     : Math.round((disabilityCoverage / recommendations.monthlyIncomeReplacement) * 100)
@@ -199,6 +634,10 @@ export default function Protection() {
     readinessMessage = 'Tighten emergency reserves and review employer benefits so life coverage can scale with confidence.'
   }
 
+  const lifeDescription = persona.familyFactor
+    ? `${persona.lifeMultiplier}× income + ${currencyFormatter.format(persona.familyFactor)} family buffer`
+    : `${persona.lifeMultiplier}× income baseline`
+
   const coverageMetrics = [
     {
       id: 'emergency',
@@ -220,7 +659,7 @@ export default function Protection() {
       percent: lifeProgress,
       tone: 'from-coral/80 via-coral/60 to-coral/40',
       indicator: 'bg-coral',
-      description: `${persona.lifeMultiplier}× income + family buffer ${currencyFormatter.format(persona.familyFactor)}`,
+      description: lifeDescription,
     },
     {
       id: 'disability',
@@ -231,7 +670,7 @@ export default function Protection() {
       percent: disabilityProgress,
       tone: 'from-gold/70 via-gold/60 to-gold/40',
       indicator: 'bg-gold',
-      description: `Aim for ${Math.round(persona.disabilityIncomeRate * 100)}% of take-home income`,
+      description: `Aim for ${Math.round(persona.disabilityIncomeRate * 100)}% of take-home pay`,
     },
   ]
 
@@ -245,14 +684,13 @@ export default function Protection() {
         </div>
         <div className="relative flex flex-col gap-10">
           <div className="flex flex-col gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-dark/80">Protection lab</p>
-            <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-              Build a resilient safety net before storms roll in
-            </h1>
-            <p className="max-w-3xl text-sm text-slate-800">
-              Shape your emergency runway, layer the right coverage, and prep advisor-ready rituals. WalletHabit will soon sync
-              real balances and policies so Copilot can pulse you before gaps open.
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-dark/80">
+              {regionPreset.hero.badge}
             </p>
+            <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
+              {regionPreset.hero.title}
+            </h1>
+            <p className="max-w-3xl text-sm text-slate-800">{regionPreset.hero.description}</p>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[1.15fr,0.85fr]">
@@ -306,7 +744,7 @@ export default function Protection() {
               <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white/80 p-5">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Persona focus</p>
                 <div className="flex flex-wrap gap-2">
-                  {personas.map((item) => {
+                  {regionPreset.personas.map((item) => {
                     const isActive = item.id === personaId
                     return (
                       <button
@@ -335,9 +773,9 @@ export default function Protection() {
                   <input
                     className="w-full accent-primary"
                     type="range"
-                    min={40000}
-                    max={220000}
-                    step={5000}
+                    min={regionPreset.controls.annualIncome.min}
+                    max={regionPreset.controls.annualIncome.max}
+                    step={regionPreset.controls.annualIncome.step}
                     value={annualIncome}
                     onChange={(event) => setAnnualIncome(Number(event.currentTarget.value))}
                   />
@@ -351,9 +789,9 @@ export default function Protection() {
                   <input
                     className="w-full accent-primary"
                     type="range"
-                    min={2500}
-                    max={9000}
-                    step={250}
+                    min={regionPreset.controls.monthlyExpenses.min}
+                    max={regionPreset.controls.monthlyExpenses.max}
+                    step={regionPreset.controls.monthlyExpenses.step}
                     value={monthlyExpenses}
                     onChange={(event) => setMonthlyExpenses(Number(event.currentTarget.value))}
                   />
@@ -367,9 +805,9 @@ export default function Protection() {
                   <input
                     className="w-full accent-primary"
                     type="range"
-                    min={3}
-                    max={18}
-                    step={1}
+                    min={coverageMonthsControl.min}
+                    max={coverageMonthsControl.max}
+                    step={coverageMonthsControl.step}
                     value={coverageMonths}
                     onChange={(event) => setCoverageMonths(Number(event.currentTarget.value))}
                   />
@@ -386,9 +824,9 @@ export default function Protection() {
                   <input
                     className="w-full accent-primary"
                     type="range"
-                    min={0}
-                    max={90000}
-                    step={1000}
+                    min={regionPreset.controls.emergencySavings.min}
+                    max={regionPreset.controls.emergencySavings.max}
+                    step={regionPreset.controls.emergencySavings.step}
                     value={emergencySavings}
                     onChange={(event) => setEmergencySavings(Number(event.currentTarget.value))}
                   />
@@ -402,9 +840,9 @@ export default function Protection() {
                   <input
                     className="w-full accent-primary"
                     type="range"
-                    min={0}
-                    max={1500000}
-                    step={25000}
+                    min={regionPreset.controls.lifeCoverage.min}
+                    max={regionPreset.controls.lifeCoverage.max}
+                    step={regionPreset.controls.lifeCoverage.step}
                     value={lifeCoverage}
                     onChange={(event) => setLifeCoverage(Number(event.currentTarget.value))}
                   />
@@ -418,9 +856,9 @@ export default function Protection() {
                   <input
                     className="w-full accent-primary"
                     type="range"
-                    min={0}
-                    max={10000}
-                    step={250}
+                    min={regionPreset.controls.disabilityCoverage.min}
+                    max={regionPreset.controls.disabilityCoverage.max}
+                    step={regionPreset.controls.disabilityCoverage.step}
                     value={disabilityCoverage}
                     onChange={(event) => setDisabilityCoverage(Number(event.currentTarget.value))}
                   />
@@ -478,29 +916,16 @@ export default function Protection() {
               Copilot briefs coming soon
             </span>
           </div>
-          <p>
-            WalletHabit keeps watch on runways, policies, and beneficiaries. When thresholds slip, your copilot will tee up
-            quotes, savings boosts, or advisor nudges so the plan stays calm.
-          </p>
+          <p>{regionPreset.coverageIntro}</p>
           <ul className="space-y-3">
-            <li className="flex items-start gap-3">
-              <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-dark">
-                1
-              </span>
-              <p>Sync emergency and premium transactions to trend against your runway targets in real time.</p>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-dark">
-                2
-              </span>
-              <p>Surface open-enrolment reminders so employer benefits and personal policies stay dialled in.</p>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-dark">
-                3
-              </span>
-              <p>Generate advisor-ready summaries that highlight coverage gaps, beneficiaries, and next steps.</p>
-            </li>
+            {regionPreset.coverageIntelligence.map((item, index) => (
+              <li key={item} className="flex items-start gap-3">
+                <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-dark">
+                  {index + 1}
+                </span>
+                <p>{item}</p>
+              </li>
+            ))}
           </ul>
         </aside>
       </section>
@@ -514,7 +939,7 @@ export default function Protection() {
             </p>
           </div>
           <ul className="space-y-4">
-            {playbooks.map((play) => (
+            {regionPreset.playbooks.map((play) => (
               <li
                 key={play.title}
                 className="rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white via-sand to-white p-5 shadow-sm"
@@ -534,7 +959,7 @@ export default function Protection() {
             </p>
           </div>
           <ul className="space-y-3 text-sm text-slate-600">
-            {readinessChecklist.map((item) => (
+            {regionPreset.readinessChecklist.map((item) => (
               <li key={item} className="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
                 <span className="mt-1 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-primary-dark shadow-sm">
                   ✓
@@ -555,7 +980,7 @@ export default function Protection() {
             </p>
           </div>
           <ul className="space-y-4 text-sm text-slate-600">
-            {rolloutMilestones.map((milestone) => (
+            {regionPreset.rolloutMilestones.map((milestone) => (
               <li
                 key={milestone.label}
                 className="flex flex-col gap-2 rounded-2xl border border-slate-200/70 bg-gradient-to-r from-white via-sand to-white p-5"
@@ -583,7 +1008,7 @@ export default function Protection() {
             <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
               <p className="text-sm font-semibold text-slate-900">Guardrails</p>
               <ul className="space-y-2 text-sm text-slate-600">
-                {guardrails.map((item) => (
+                {regionPreset.guardrails.map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary-light" />
                     <p>{item}</p>
@@ -594,7 +1019,7 @@ export default function Protection() {
             <div className="flex flex-col gap-3 rounded-2xl border border-gold/40 bg-gold/10 p-4">
               <p className="text-sm font-semibold text-slate-900">Momentum signals</p>
               <ul className="space-y-2 text-sm text-slate-600">
-                {signalBeacons.map((item) => (
+                {regionPreset.signalBeacons.map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-gold" />
                     <p>{item}</p>
@@ -614,7 +1039,7 @@ export default function Protection() {
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          {supportChannels.map((channel) => (
+          {regionPreset.supportChannels.map((channel) => (
             <div
               key={channel.label}
               className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white via-sand to-white p-5 shadow-sm"
