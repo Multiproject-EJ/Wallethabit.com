@@ -1,7 +1,7 @@
 # ✅ WalletHabit — Living To-Do
 
 ## NOW
-- [ ] Scaffold base app shell (layout, routing)
+- [x] Scaffold base app shell (layout, routing)
 - [ ] CI builds & deploys green on `main`
 - [ ] Add Supabase client boot + auth placeholders
 - [ ] Add Stripe Checkout placeholder & pricing page
