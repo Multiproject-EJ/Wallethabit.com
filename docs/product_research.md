@@ -14,6 +14,7 @@ Notes align with best practices from YNAB/Monarch/Copilot:
 - Income design: focus-hour budgeting, negotiation prompts, and leverage ladders
 - Investing autopilot: risk posture guidance, rebalancing prompts, and automated contributions
 - Retirement glide paths: lifestyle archetypes, safe-withdrawal insights, and cash runway planning
+- Protection safety nets: emergency runway modeling, insurance gap coaching, and estate coordination prompts
 - Bank syncing: Plaid-first launch, optional aggregators (Finicity/MX) for coverage depth
 - Embedded education + AI summaries
 - Personalisation controls early to build trust (plans, locale, notifications)

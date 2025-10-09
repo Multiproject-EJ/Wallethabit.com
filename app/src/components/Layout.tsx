@@ -8,6 +8,7 @@ const navItems = [
   { to: '/debt', label: 'Debt payoff lab' },
   { to: '/income', label: 'Income boost lab' },
   { to: '/investing', label: 'Investment lab' },
+  { to: '/protection', label: 'Protection lab' },
   { to: '/retirement', label: 'Retirement lab' },
   { to: '/goals', label: 'Goals tracker' },
   { to: '/budget', label: 'Budget planner' },

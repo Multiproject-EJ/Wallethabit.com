@@ -18,6 +18,7 @@
 - [x] Income boost lab (earning mix experiments)
 - [x] Investment autopilot lab (portfolio mix + projections)
 - [x] Retirement readiness lab (glide path projections)
+- [x] Protection safety net lab (coverage gaps + runway modeling)
 
 ## LATER
 - [ ] Bank import integration (production credentials)
