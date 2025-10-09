@@ -1,133 +1,236 @@
-const securityPillars = [
+type Highlight = {
+  label: string
+  value: string
+  description: string
+}
+
+type Pillar = {
+  title: string
+  description: string
+  details: string[]
+}
+
+type Practice = {
+  title: string
+  summary: string
+  checkpoints: string[]
+}
+
+type RoadmapPhase = {
+  phase: string
+  target: string
+  items: string[]
+}
+
+type Faq = {
+  question: string
+  answer: string
+}
+
+type Channel = {
+  name: string
+  description: string
+  action: { label: string; href: string }
+}
+
+const highlights: Highlight[] = [
+  {
+    label: 'Encryption',
+    value: '100% sensitive fields',
+    description: 'Access tokens, credentials, and vault notes encrypted at rest and in transit.',
+  },
+  {
+    label: 'Availability goal',
+    value: '99.5% preview target',
+    description: 'Multi-AZ Supabase deployment plan with automated nightly backups & PITR.',
+  },
+  {
+    label: 'Security response',
+    value: '< 1 business day',
+    description: 'Acknowledgement SLA for vulnerability reports sent to the trust desk.',
+  },
+]
+
+const securityPillars: Pillar[] = [
   {
     title: 'Infrastructure hardening',
     description:
-      'Supabase-managed Postgres with row-level security, just-in-time database roles, and encrypted storage for customer vaults.',
+      'Supabase-managed Postgres with row-level security, scoped database roles, and Terraform-controlled infrastructure.',
     details: [
-      'Regional deployment planned across multi-AZ infrastructure for redundancy.',
-      'Daily backups with point-in-time recovery windows and automated integrity checks.',
-      'Infrastructure-as-code with pull-request reviews before changes reach production.',
+      'Automated backups with seven-day point-in-time recovery coverage.',
+      'Separate projects for production, staging, and internal sandboxes.',
+      'GitHub-required code reviews before infra changes reach main.',
     ],
   },
   {
     title: 'Data protection & privacy',
     description:
-      'Sensitive fields encrypted at rest and in transit, with strict data minimisation across budgeting, goals, and lab modules.',
+      'Encryption policies, retention controls, and access logging keep budgeting and lab data private by default.',
     details: [
-      'Field-level encryption for bank tokens, income experiments, and insurance coverage notes.',
-      'Granular data retention policies so archived labs purge after inactivity windows.',
-      'Customer-owned exports with transparent audit trails for all data access events.',
+      'Field-level encryption for bank connections, insights, and advisor notes.',
+      'Retention schedules enforce purge windows for archived experiments.',
+      'Customers receive export + deletion tooling tied to their Supabase profile.',
     ],
   },
   {
-    title: 'Application security',
+    title: 'Secure development lifecycle',
     description:
-      'Static builds shipped via GitHub Pages, backed by GitHub Actions security scanning and dependency hygiene rituals.',
+      'Continuous dependency scanning, automated previews, and threat modeling rituals guide every release.',
     details: [
-      'Automated dependency review with alerts for critical advisories in npm ecosystem.',
-      'Playwright smoke tests planned before every production deploy to guard critical flows.',
-      'Bug bounty brief drafted for future community security researchers.',
+      'Dependabot alerts triaged weekly alongside vulnerability scoring.',
+      'Security champions checklist baked into pull request templates.',
+      'Playwright smoke suite planned for authentication, billing, and budget flows.',
     ],
   },
   {
     title: 'Payments & compliance',
     description:
-      'Stripe Checkout handles card details; WalletHabit never touches PCI scope data and keeps receipts reconciled nightly.',
+      'Stripe Checkout & Billing store card data; WalletHabit limits scope to subscription metadata and receipts.',
     details: [
-      'SOC 2 Type I readiness workstream kicks off post-auth launch, with security policies written now.',
-      'Identity verification guardrails prepared for future premium banking features.',
-      'GDPR and CCPA data subject request pathways documented with 30-day response commitments.',
+      'SOC 2 Type I readiness runbook with policy owners assigned.',
+      'Incident communications plan covering customers, partners, and regulators.',
+      'GDPR/CCPA intake form templates staged for auth launch.',
     ],
   },
 ]
 
-const roadmap = [
+const operationalPractices: Practice[] = [
   {
-    phase: 'Phase 1 — Foundations',
-    items: [
-      'Finalize Supabase RLS policies for budgets, goals, and lab simulations.',
-      'Roll out environment secrets management playbook with rotation cadence.',
-      'Enable mandatory SSO for internal admin surfaces (GitHub + Supabase).',
+    title: 'Identity & access',
+    summary: 'Least-privilege access enforced through Supabase policies and SSO requirements.',
+    checkpoints: [
+      'SSO enforced for GitHub, Supabase, and deployment tooling.',
+      'Secrets rotated quarterly with audit confirmation in TODO tracker.',
+      'Role-based dashboards define on-call vs. builder permissions.',
     ],
   },
   {
-    phase: 'Phase 2 — Monitoring',
-    items: [
-      'Wire Supabase audit logs into centralized observability dashboards.',
-      'Launch uptime + anomaly alerts piped to the on-call rotation in Slack.',
-      'Integrate Snyk or Dependabot security updates into the weekly sprint cadence.',
+    title: 'Monitoring & detection',
+    summary: 'Logs, metrics, and alerting stitched together for quick anomaly triage.',
+    checkpoints: [
+      'Realtime log streaming into project observability dashboards.',
+      'Synthetic uptime probes on dashboard, auth, and checkout flows.',
+      'Slack channel escalation path with 24/7 notification routing.',
     ],
   },
   {
-    phase: 'Phase 3 — Certifications',
-    items: [
-      'Engage third-party auditors for SOC 2 Type I readiness assessment.',
-      'Complete Stripe Radar tuning and chargeback response runbooks.',
-      'Document incident response tabletop exercises with quarterly refresh cadence.',
+    title: 'Continuity planning',
+    summary: 'Resilience plans protect customer outcomes if incidents occur.',
+    checkpoints: [
+      'Documented incident severities and communication scripts.',
+      'Quarterly tabletop exercises with action item tracking.',
+      'Partner failover checklists for Plaid and Stripe disruption scenarios.',
     ],
   },
 ]
 
-const faqs = [
+const roadmap: RoadmapPhase[] = [
+  {
+    phase: 'Now',
+    target: 'Preview launch',
+    items: [
+      'Finish Supabase RLS coverage for every lab table.',
+      'Roll out environment secret rotation playbook.',
+      'Ship public-facing security disclosure guidelines.',
+    ],
+  },
+  {
+    phase: 'Next',
+    target: 'Beta release',
+    items: [
+      'Add automated accessibility + security linting to CI.',
+      'Integrate uptime and error telemetry into operations dashboard.',
+      'Publish third-party penetration test summary.',
+    ],
+  },
+  {
+    phase: 'Later',
+    target: 'General availability',
+    items: [
+      'Pursue SOC 2 Type I attestation with independent auditor.',
+      'Launch self-serve data export & deletion tooling.',
+      'Establish community bug bounty with published scope.',
+    ],
+  },
+]
+
+const faqs: Faq[] = [
   {
     question: 'Where is customer data stored?',
     answer:
-      'WalletHabit will host data in Supabase-managed Postgres within the United States by default, with regional replicas considered once customer geography expands.',
+      'Supabase manages encrypted Postgres clusters hosted in the United States. Regional replicas will be evaluated as soon as customer demand requires localized residency.',
   },
   {
     question: 'How do you handle third-party bank connections?',
     answer:
-      'Plaid Link tokens remain encrypted and scoped to the minimum endpoints required for transaction syncing. The trust center will share detailed flow diagrams before launch.',
+      'Plaid Link tokens remain encrypted and scoped to the minimal endpoints required for transaction syncing. Bank credentials are never stored on WalletHabit infrastructure.',
   },
   {
     question: 'Can I export or delete my information?',
     answer:
-      'Yes — export tools are on the roadmap for each lab. Deletion requests will be honored within 30 days and verified via Supabase row-level policies.',
+      'Account owners can request exports and deletions via in-app controls or email. Requests are verified through Supabase auth and fulfilled within 30 days.',
   },
   {
     question: 'What happens during a security incident?',
     answer:
-      'The incident response playbook defines severity levels, notification windows, and post-incident reviews. Customers are informed within 72 hours for any material impact.',
+      'Incidents are triaged using a four-level severity scale with clear notification windows. Customers impacted by a major incident hear from the team within 72 hours.',
   },
 ]
 
-const partners = [
+const disclosureChannels: Channel[] = [
   {
-    name: 'Supabase',
-    focus: 'Managed Postgres, auth, storage',
-    status: 'Active integration',
+    name: 'Security desk',
+    description: 'Send responsible disclosure reports or privacy concerns directly to the team.',
+    action: {
+      label: 'Email security@wallethabit.com',
+      href: 'mailto:security@wallethabit.com',
+    },
   },
   {
-    name: 'Stripe',
-    focus: 'Billing, subscription management',
-    status: 'Checkout sandbox ready',
+    name: 'Status dashboard',
+    description: 'Real-time uptime metrics and historical incident retrospectives (coming soon).',
+    action: {
+      label: 'View status page',
+      href: 'https://status.wallethabit.com',
+    },
   },
   {
-    name: 'Plaid',
-    focus: 'Bank connections, transaction sync',
-    status: 'Sandbox blueprint staged',
-  },
-  {
-    name: 'Clerk (evaluating)',
-    focus: 'Advanced authentication & session management',
-    status: 'Under consideration for multi-factor auth',
+    name: 'Roadmap updates',
+    description: 'Follow milestone shipping notes and security updates in the public changelog.',
+    action: {
+      label: 'Read changelog',
+      href: 'https://github.com/wallethabit/Wallethabit.com/blob/main/TODO.md',
+    },
   },
 ]
 
 export default function Security() {
   return (
-    <div className="flex flex-1 flex-col gap-10">
+    <div className="flex flex-1 flex-col gap-12 pb-16">
       <header className="rounded-3xl border border-brand/30 bg-white px-8 py-10 shadow-sm">
         <div className="max-w-3xl space-y-4">
           <span className="inline-flex items-center rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
             Trust center preview
           </span>
-          <h1 className="text-4xl font-bold">Security, privacy, and reliability commitments.</h1>
-          <p className="text-sm text-slate-600">
-            WalletHabit keeps customer finances safe through defense-in-depth, transparent data governance, and always-on observability. This trust hub outlines the safeguards shipping alongside Supabase auth and Plaid bank syncing.
+          <h1 className="text-4xl font-bold text-slate-900">Security, privacy, and reliability commitments</h1>
+          <p className="text-base text-slate-600">
+            WalletHabit protects household finances with defense-in-depth infrastructure, responsible data governance, and transparent communications. This living page highlights what is delivered today and what is landing next.
           </p>
         </div>
       </header>
+
+      <section className="grid gap-4 sm:grid-cols-3">
+        {highlights.map((highlight) => (
+          <article
+            key={highlight.label}
+            className="rounded-3xl border border-brand/20 bg-brand/5 p-6 shadow-sm"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand">{highlight.label}</p>
+            <p className="mt-3 text-xl font-semibold text-brand-dark">{highlight.value}</p>
+            <p className="mt-2 text-sm text-brand-dark/80">{highlight.description}</p>
+          </article>
+        ))}
+      </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
         {securityPillars.map((pillar) => (
@@ -137,10 +240,10 @@ export default function Security() {
               <p className="mt-2 text-sm text-slate-600">{pillar.description}</p>
             </div>
             <ul className="space-y-2 text-sm text-slate-600">
-              {pillar.details.map((item) => (
-                <li key={item} className="flex items-start gap-2">
+              {pillar.details.map((detail) => (
+                <li key={detail} className="flex items-start gap-2">
                   <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-                  <span>{item}</span>
+                  <span>{detail}</span>
                 </li>
               ))}
             </ul>
@@ -149,12 +252,44 @@ export default function Security() {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-xl space-y-2">
+            <h2 className="text-2xl font-semibold text-slate-900">Operational practices</h2>
+            <p className="text-sm text-slate-600">
+              Day-to-day routines keep sensitive information protected while ensuring the product remains reliable for households and partners.
+            </p>
+          </div>
+        </div>
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
+          {operationalPractices.map((practice) => (
+            <article key={practice.title} className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-6">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">{practice.title}</h3>
+                <p className="mt-1 text-sm text-slate-600">{practice.summary}</p>
+              </div>
+              <ul className="space-y-2 text-sm text-slate-600">
+                {practice.checkpoints.map((checkpoint) => (
+                  <li key={checkpoint} className="flex items-start gap-2">
+                    <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+                    <span>{checkpoint}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <h2 className="text-2xl font-semibold text-slate-900">Security roadmap</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           {roadmap.map((phase) => (
-            <div key={phase.phase} className="rounded-2xl border border-brand/20 bg-brand/5 p-5">
-              <h3 className="text-lg font-semibold text-brand-dark">{phase.phase}</h3>
-              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+            <article key={phase.phase} className="flex flex-col gap-4 rounded-2xl border border-brand/20 bg-brand/5 p-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-brand">{phase.phase}</p>
+                <h3 className="text-lg font-semibold text-brand-dark">{phase.target}</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-slate-700">
                 {phase.items.map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
@@ -162,7 +297,7 @@ export default function Security() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </article>
           ))}
         </div>
       </section>
@@ -180,13 +315,18 @@ export default function Security() {
           </dl>
         </div>
         <aside className="rounded-3xl border border-brand/40 bg-brand/10 p-8 text-sm text-brand-dark shadow-sm">
-          <h3 className="text-base font-semibold">Trusted partners</h3>
+          <h3 className="text-base font-semibold text-brand-dark">Disclosure & updates</h3>
           <ul className="mt-4 space-y-3">
-            {partners.map((partner) => (
-              <li key={partner.name} className="rounded-2xl border border-brand/20 bg-white/70 p-4">
-                <p className="text-sm font-semibold text-brand-dark">{partner.name}</p>
-                <p className="text-xs text-brand-dark/80">{partner.focus}</p>
-                <p className="mt-1 text-xs uppercase tracking-wide text-brand">{partner.status}</p>
+            {disclosureChannels.map((channel) => (
+              <li key={channel.name} className="rounded-2xl border border-brand/20 bg-white/80 p-4">
+                <p className="text-sm font-semibold text-brand-dark">{channel.name}</p>
+                <p className="mt-1 text-xs text-brand-dark/80">{channel.description}</p>
+                <a
+                  className="mt-3 inline-flex items-center text-xs font-semibold uppercase tracking-wide text-brand hover:text-brand-dark"
+                  href={channel.action.href}
+                >
+                  {channel.action.label}
+                </a>
               </li>
             ))}
           </ul>
@@ -194,9 +334,13 @@ export default function Security() {
       </section>
 
       <section className="rounded-3xl border border-dashed border-brand/40 bg-brand/5 p-8 text-center">
-        <h2 className="text-xl font-semibold text-brand">Have security feedback?</h2>
+        <h2 className="text-xl font-semibold text-brand">Partner with us on security</h2>
         <p className="mt-3 text-sm text-slate-600">
-          Email <a className="font-semibold text-brand-dark" href="mailto:security@wallethabit.com">security@wallethabit.com</a> with findings or suggestions. We acknowledge reports within one business day and keep you updated on resolutions.
+          Have a question, vulnerability report, or idea for improving resilience? Email{' '}
+          <a className="font-semibold text-brand-dark" href="mailto:security@wallethabit.com">
+            security@wallethabit.com
+          </a>{' '}
+          and we will acknowledge your message within one business day.
         </p>
       </section>
     </div>

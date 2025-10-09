@@ -22,6 +22,7 @@
 - [x] Tax strategy lab (contribution & conversion planning)
 - [x] Estate planning lab (legacy readiness modeling)
 - [x] Security & trust center page
+- [ ] Publish public status page & changelog updates
 
 ## LATER
 - [ ] Bank import integration (production credentials)
@@ -32,6 +33,7 @@
 ## TECH / DEVOPS
 - [ ] Add ESLint + Prettier config
 - [ ] Vitest base tests
+- [ ] Automate dependency and vulnerability alerts summary in trust center
 - [ ] Error monitoring (later)
 
 ## NOTES
