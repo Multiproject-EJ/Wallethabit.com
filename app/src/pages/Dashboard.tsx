@@ -28,6 +28,11 @@ const highlights = [
     value: 'Strategy lab',
     description: 'Fresh payoff lab simulates snowball, avalanche, and hybrid acceleration boosts.',
   },
+  {
+    label: 'Income growth',
+    value: 'Boost lab',
+    description: 'New income lab models focus hours + leverage playbooks for resilient earnings.',
+  },
 ]
 
 export default function Dashboard() {

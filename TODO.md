@@ -15,6 +15,7 @@
 - [x] AI helper panel (copy skeleton)
 - [x] Bank sync blueprint (Plaid sandbox)
 - [x] Debt payoff lab (snowball vs avalanche)
+- [x] Income boost lab (earning mix experiments)
 
 ## LATER
 - [ ] Bank import integration (production credentials)

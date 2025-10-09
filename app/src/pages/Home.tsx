@@ -17,6 +17,11 @@ const features = [
       'Snowball vs. avalanche simulations show how extra boosts shrink timelines and interest.',
   },
   {
+    title: 'Income boost lab',
+    description:
+      'Focus-hour sliders and growth playbooks model how new experiments expand your earnings mix.',
+  },
+  {
     title: 'Supabase-ready',
     description:
       'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',

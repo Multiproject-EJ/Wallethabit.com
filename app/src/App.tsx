@@ -12,6 +12,7 @@ import Pricing from './pages/Pricing'
 import Settings from './pages/Settings'
 import Integrations from './pages/Integrations'
 import Debt from './pages/Debt'
+import Income from './pages/Income'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="integrations" element={<Integrations />} />
           <Route path="goals" element={<Goals />} />
           <Route path="debt" element={<Debt />} />
+          <Route path="income" element={<Income />} />
           <Route path="settings" element={<Settings />} />
           <Route path="pricing" element={<Pricing />} />
           <Route path="auth" element={<Auth />} />

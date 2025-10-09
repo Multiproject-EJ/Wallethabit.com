@@ -6,6 +6,7 @@ const navItems = [
   { to: '/assistant', label: 'AI copilot' },
   { to: '/integrations', label: 'Bank sync lab' },
   { to: '/debt', label: 'Debt payoff lab' },
+  { to: '/income', label: 'Income boost lab' },
   { to: '/goals', label: 'Goals tracker' },
   { to: '/budget', label: 'Budget planner' },
   { to: '/settings', label: 'Profile & settings' },
