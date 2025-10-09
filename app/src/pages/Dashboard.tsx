@@ -44,6 +44,11 @@ const highlights = [
     description: 'Brand-new protection lab stress-tests emergency runways and insurance coverage gaps.',
   },
   {
+    label: 'Credit health',
+    value: 'Credit lab',
+    description: 'Fresh credit lab models utilisation, age, and inquiry trade-offs before new approvals.',
+  },
+  {
     label: 'Estate planning',
     value: 'Legacy lab',
     description: 'Fresh legacy lab aligns trusts, guardianship plans, and liquidity buffers before engaging counsel.',
@@ -119,6 +124,12 @@ export default function Dashboard() {
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
                 <strong>Protection lab persistence</strong> — store coverage assumptions, policy metadata, and Copilot gap alerts.
+              </p>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+              <p>
+                <strong>Credit lab sync</strong> — persist tradeline balances, utilisation targets, and dispute workflows.
               </p>
             </li>
             <li className="flex items-start gap-3">

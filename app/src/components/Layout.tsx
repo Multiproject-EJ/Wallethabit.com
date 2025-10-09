@@ -9,6 +9,7 @@ const navItems = [
   { to: '/income', label: 'Income boost lab' },
   { to: '/investing', label: 'Investment lab' },
   { to: '/protection', label: 'Protection lab' },
+  { to: '/credit', label: 'Credit lab' },
   { to: '/estate', label: 'Estate lab' },
   { to: '/tax', label: 'Tax strategy lab' },
   { to: '/retirement', label: 'Retirement lab' },

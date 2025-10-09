@@ -37,6 +37,11 @@ const features = [
       'Persona-driven sliders map emergency runways, insurance coverage gaps, and advisor-ready guardrails.',
   },
   {
+    title: 'Credit health lab',
+    description:
+      'Tune payment history, utilisation, account age, and inquiry strategies before key approvals.',
+  },
+  {
     title: 'Estate planning lab',
     description:
       'Legacy blueprints organise trusts, guardians, liquidity buffers, and giving strategies before meeting counsel.',
@@ -111,8 +116,8 @@ export default function Home() {
         <h2 className="text-2xl font-semibold text-brand">Next milestones</h2>
         <p className="mt-3 text-sm text-slate-600">
           Supabase auth bootstrapping, Plaid Link sandbox wiring, Stripe checkout placeholders, protection lab persistence,
-          tax strategy data sync, retirement glide path storage, and Copilot insights tied to real transactions are queued up
-          next. Track progress in the project TODO.
+          credit lab sync, tax strategy data sync, retirement glide path storage, and Copilot insights tied to real
+          transactions are queued up next. Track progress in the project TODO.
         </p>
       </section>
     </div>

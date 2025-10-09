@@ -15,6 +15,7 @@ Notes align with best practices from YNAB/Monarch/Copilot:
 - Investing autopilot: risk posture guidance, rebalancing prompts, and automated contributions
 - Retirement glide paths: lifestyle archetypes, safe-withdrawal insights, and cash runway planning
 - Protection safety nets: emergency runway modeling, insurance gap coaching, and estate coordination prompts
+- Credit health: utilisation guardrails, dispute workflows, and rewards strategy choreography
 - Estate planning: guardianship readiness, trust funding playbooks, and philanthropic alignment trackers
 - Tax optimisation: contribution sequencing, QBI/credit eligibility, and Roth conversion guardrails
 - Bank syncing: Plaid-first launch, optional aggregators (Finicity/MX) for coverage depth
