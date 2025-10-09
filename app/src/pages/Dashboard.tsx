@@ -1,0 +1,75 @@
+const highlights = [
+  {
+    label: 'Budget envelopes',
+    value: 'In design',
+    description: 'Categorized envelopes planned with real-time balances and nudges.',
+  },
+  {
+    label: 'Savings goals',
+    value: 'Scoping',
+    description: 'Goal timelines and celebratory progress states in the works.',
+  },
+  {
+    label: 'Insights feed',
+    value: 'Concept',
+    description: 'AI summaries and alerts will surface wins and callouts.',
+  },
+]
+
+export default function Dashboard() {
+  return (
+    <div className="flex flex-1 flex-col gap-10">
+      <header className="rounded-3xl border border-slate-200 bg-white px-8 py-8 shadow-sm">
+        <h1 className="text-3xl font-bold">Dashboard preview</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          A quick snapshot of the guided experience coming soon. This placeholder illustrates the
+          future layout once Supabase data is wired in.
+        </p>
+      </header>
+
+      <section className="grid gap-6 md:grid-cols-3">
+        {highlights.map((item) => (
+          <article key={item.label} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-slate-500">{item.label}</p>
+            <p className="mt-3 text-2xl font-semibold text-slate-900">{item.value}</p>
+            <p className="mt-2 text-sm text-slate-600">{item.description}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-slate-900">Upcoming timeline</h2>
+          <ul className="mt-4 space-y-3 text-sm text-slate-600">
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+              <p>
+                <strong>Supabase auth</strong> — bootstrap client, sessions, and profile table wiring.
+              </p>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+              <p>
+                <strong>Budget envelopes</strong> — interactive cards, envelope creation, and guardrails.
+              </p>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+              <p>
+                <strong>AI insights</strong> — summarizing cashflow, savings, and helpful nudges.
+              </p>
+            </li>
+          </ul>
+        </div>
+        <aside className="rounded-3xl border border-brand/40 bg-brand/10 p-6 text-sm text-brand-dark">
+          <h3 className="text-base font-semibold text-brand-dark">What this preview represents</h3>
+          <p className="mt-2">
+            This dashboard scaffold showcases the structure for authenticated experiences. Once
+            Supabase and Stripe keys are in place, these widgets will hydrate with real data and
+            upgrade prompts.
+          </p>
+        </aside>
+      </section>
+    </div>
+  )
+}
