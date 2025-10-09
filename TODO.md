@@ -9,7 +9,7 @@
 
 ## NEXT
 - [x] Budget planner MVP (envelopes)
-- [ ] Goals tracker + charts
+- [x] Goals tracker + charts
 - [ ] Profile/settings page (plan, locale)
 - [ ] AI helper panel (copy skeleton)
 

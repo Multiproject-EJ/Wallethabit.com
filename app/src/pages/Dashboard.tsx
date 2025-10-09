@@ -10,8 +10,8 @@ const highlights = [
   },
   {
     label: 'Savings goals',
-    value: 'Scoping',
-    description: 'Goal timelines and celebratory progress states in the works.',
+    value: 'Tracker live',
+    description: 'Visual goals page showcases progress donuts and contribution spark-lines.',
   },
   {
     label: 'Insights feed',
