@@ -13,6 +13,7 @@ export default function Goals() {
   const {
     state: { goals },
   } = useDemoData()
+
   const goalItems = goals.items
   const [focusGoalId, setFocusGoalId] = useState(goalItems[0]?.id ?? '')
   const [monthlyBoost, setMonthlyBoost] = useState(0)
@@ -32,6 +33,7 @@ export default function Goals() {
     () => goalItems.find((goal) => goal.id === focusGoalId) ?? goalItems[0],
     [goalItems, focusGoalId],
   )
+
   const summary = useMemo(() => {
     if (goalItems.length === 0) {
       return { totalTarget: 0, totalSaved: 0, averageProgress: 0, monthlyCommitment: 0 }
@@ -72,106 +74,77 @@ export default function Goals() {
   const acceleratedDuration = formatDuration(strategy.acceleratedMonths)
   const timeSavedCopy = formatTimeSaved(strategy.timeSaved)
   const newMonthlyTotal = (focusGoal?.monthlyCommitment ?? 0) + monthlyBoost
+  const lastCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
+
   const highlightMessage = buildHighlightMessage({
     goalName: focusGoal?.name ?? 'this goal',
     monthlyBoost,
     timeSaved: strategy.timeSaved,
     acceleratedFinish,
   })
-  const lastCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
 
   return (
-    <div className="flex flex-col gap-10">
-      <header className="flex flex-col gap-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-brand">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand/15">🎯</span>
-          Savings Goals HQ
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-          Celebrate the milestones that matter
-        </h1>
-        <p className="max-w-3xl text-base text-slate-600">
-          Track progress across every dream you are funding. Fine-tune timelines, monitor monthly momentum,
-          and preview the cheer moments WalletHabit will surface once Supabase persistence is live.
-        </p>
-        <p className="text-xs uppercase tracking-wide text-slate-400">
-          Last celebration logged {lastCelebration}
-        </p>
-      </header>
-
-      <section className="grid gap-6 md:grid-cols-4">
-        <SummaryCard label="Total funded" value={currency.format(summary.totalSaved)} accent />
-        <SummaryCard label="Goal coverage" value={`${summary.averageProgress}%`} />
-        <SummaryCard label="Monthly commitment" value={currency.format(summary.monthlyCommitment)} />
-        <SummaryCard label="Aggregate target" value={currency.format(summary.totalTarget)} subtle />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <div className="flex flex-col gap-6">
-          {goalItems.length > 0 ? (
-            goalItems.map((goal) => <GoalCard key={goal.id} goal={goal} />)
-          ) : (
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
-              Goals will populate here once Supabase sync is live. For now, adjust the demo strategy lab to preview the
-              experience.
-            </div>
-          )}
-        </div>
-
-        <aside className="flex flex-col gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Celebration roadmap</h2>
-          <ul className="space-y-4 text-sm text-slate-600">
-            <li className="flex items-start gap-3">
-              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-              <p>
-                <strong>Supabase sync</strong> will preserve every contribution and unlock collaborative goal setting.
-              </p>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-              <p>
-                <strong>AI coach</strong> drafts micro-celebrations and nudges when you fall behind schedule.
-              </p>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-              <p>
-                <strong>Stripe upgrades</strong> expand to shared goals, automation rules, and deeper analytics.
-              </p>
-            </li>
-          </ul>
-          <div className="rounded-2xl border border-dashed border-brand/40 bg-brand/10 p-4 text-sm text-brand-dark">
-            <p className="font-semibold">Coming soon</p>
-            <p className="mt-2 leading-relaxed">
-              Connect your bank or import CSVs to fast-track balances. WalletHabit will reconcile deposits,
-              forecast completion dates, and suggest optimized contribution plans.
+    <div className="relative flex flex-1 flex-col gap-10 pb-24">
+      <header className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-primary-dark via-primary to-coral p-8 text-white shadow-uplift">
+        <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl space-y-5">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+              <span>🎯</span>
+              Goal momentum
+            </span>
+            <h1 className="text-4xl font-semibold tracking-tight">Every milestone deserves a moment</h1>
+            <p className="text-base text-white/80">
+              You have already funded {summary.averageProgress}% of your dream list and commit {currency.format(summary.monthlyCommitment)} each month.
+              WalletHabit keeps the path clear, celebrates your streaks, and nudges the next best move.
             </p>
           </div>
-        </aside>
+          <div className="grid gap-4 rounded-3xl bg-white/10 p-6 text-sm backdrop-blur">
+            <div className="rounded-2xl bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/60">Focus goal</p>
+              <p className="mt-2 text-lg font-semibold">{focusGoal?.name ?? 'Add your first goal'}</p>
+              <p className="mt-1 text-xs text-emerald-200">{highlightMessage}</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/60">Last celebration</p>
+              <p className="mt-2 text-2xl font-semibold">{lastCelebration}</p>
+              <p className="mt-1 text-xs text-white/70">Keep the streak alive with consistent deposits.</p>
+            </div>
+          </div>
+        </div>
+        <div className="pointer-events-none absolute inset-0 opacity-30">
+          <div className="absolute -left-10 top-8 h-64 w-64 rounded-full bg-white/20 blur-3xl" />
+          <div className="absolute bottom-[-40px] right-12 h-52 w-52 rounded-full bg-gold/40 blur-3xl" />
+        </div>
+      </header>
+
+      <section className="grid gap-5 lg:grid-cols-4">
+        <MetricTile label="Total funded" value={currency.format(summary.totalSaved)} tone="positive" />
+        <MetricTile label="Goal coverage" value={`${summary.averageProgress}%`} />
+        <MetricTile label="Monthly commitment" value={currency.format(summary.monthlyCommitment)} />
+        <MetricTile label="Aggregate target" value={currency.format(summary.totalTarget)} tone="muted" />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+        <article className="rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold text-brand">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand/15">🧪</span>
-              Contribution strategy lab
+            <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-base">🧪</span>
+              Strategy lab
             </div>
-            <h2 className="text-2xl font-semibold text-slate-900">Stress test your plan</h2>
-            <p className="text-sm text-slate-600">
-              Preview how small monthly boosts unlock earlier celebrations. Once Supabase persistence lands, this
-              simulation will sync with your live contributions.
+            <h2 className="text-2xl font-semibold text-navy">Stress test your celebration timeline</h2>
+            <p className="text-sm text-navy/70">
+              Explore how small boosts unlock earlier milestones. Once Supabase sync is live, these projections will mirror your real deposits.
             </p>
           </div>
 
           <div className="mt-6 grid gap-6">
-            <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+            <label className="flex flex-col gap-2 text-sm font-medium text-navy/80">
               Focus goal
               <select
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
+                className="rounded-2xl border border-white/80 bg-white px-3 py-2 text-sm text-navy shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed"
                 value={focusGoalId}
                 onChange={(event) => setFocusGoalId(event.target.value)}
                 disabled={goalItems.length === 0}
@@ -188,12 +161,10 @@ export default function Goals() {
               </select>
             </label>
 
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="flex flex-col gap-4 rounded-2xl border border-white/80 bg-sand/60 p-4">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-navy/60">
                 <span>Monthly boost</span>
-                <span className="text-slate-700">
-                  {monthlyBoost === 0 ? 'No boost' : `+${currency.format(monthlyBoost)} /mo`}
-                </span>
+                <span className="text-navy">{monthlyBoost === 0 ? 'No boost' : `+${currency.format(monthlyBoost)} /mo`}</span>
               </div>
               <input
                 aria-label="Monthly boost"
@@ -203,47 +174,35 @@ export default function Goals() {
                 step={25}
                 value={monthlyBoost}
                 onChange={(event) => setMonthlyBoost(Number(event.target.value))}
-                className="w-full accent-brand"
+                className="w-full accent-primary"
               />
-              <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              <div className="flex justify-between text-[11px] font-semibold uppercase tracking-[0.2em] text-navy/40">
                 <span>$0</span>
                 <span>+$250</span>
                 <span>+$500</span>
               </div>
             </div>
 
-            <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:grid-cols-2">
+            <div className="grid gap-4 rounded-2xl border border-white/80 bg-white/70 p-4 sm:grid-cols-2">
               <StrategyStat label="Baseline finish" value={baselineFinish} helper={baselineDuration} />
-              <StrategyStat
-                label="Accelerated finish"
-                value={acceleratedFinish}
-                helper={acceleratedDuration}
-                highlight
-              />
-              <StrategyStat label="Time saved" value={timeSavedCopy} helper="Compared with your current plan" />
+              <StrategyStat label="Accelerated finish" value={acceleratedFinish} helper={acceleratedDuration} highlight />
+              <StrategyStat label="Time saved" value={timeSavedCopy} helper="Compared with your current pace" />
               <StrategyStat
                 label="Monthly total"
                 value={currency.format(newMonthlyTotal)}
-                helper={
-                  monthlyBoost > 0
-                    ? `+${currency.format(monthlyBoost)} boost applied`
-                    : 'Matches current commitment'
-                }
+                helper={monthlyBoost > 0 ? `+${currency.format(monthlyBoost)} boost applied` : 'Matches current commitment'}
               />
             </div>
           </div>
         </article>
 
-        <aside className="flex h-full flex-col justify-between gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <aside className="flex h-full flex-col justify-between gap-6 rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-sm backdrop-blur">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">Playbook summary</h3>
-            <p className="mt-2 text-sm text-slate-600">{highlightMessage}</p>
+            <h3 className="text-lg font-semibold text-navy">Playbook summary</h3>
+            <p className="mt-2 text-sm text-navy/70">{highlightMessage}</p>
           </div>
-          <ul className="space-y-3 text-sm text-slate-600">
-            <StrategyBullet
-              title="Remaining target"
-              description={`${currency.format(strategy.remaining)} left to celebrate this goal.`}
-            />
+          <ul className="space-y-4 text-sm text-navy/70">
+            <StrategyBullet title="Remaining target" description={`${currency.format(strategy.remaining)} left to celebrate this goal.`} />
             <StrategyBullet
               title="New monthly cadence"
               description={`${currency.format(newMonthlyTotal)} per month (${monthlyBoost === 0 ? 'baseline pace' : `+${currency.format(monthlyBoost)} boost`}).`}
@@ -257,32 +216,55 @@ export default function Goals() {
               }
             />
           </ul>
-          <p className="rounded-2xl border border-dashed border-brand/40 bg-brand/10 p-4 text-xs text-brand-dark">
+          <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4 text-xs text-primary-dark">
             This sandbox will pull in real deposits, transfers, and partner automations once Supabase wiring is ready.
-          </p>
+          </div>
         </aside>
+      </section>
+
+      <section className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-navy">Goal library</h2>
+            <p className="text-sm text-navy/60">Reorder, favorite, or open any goal to fine-tune contributions. Completed goals will glow gold in celebration.</p>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            <span>⚡</span>
+            Drag-and-drop coming soon
+          </div>
+        </div>
+
+        <div className="grid gap-5">
+          {goalItems.length > 0 ? (
+            goalItems.map((goal) => <GoalCard key={goal.id} goal={goal} isFocused={goal.id === focusGoal?.id} />)
+          ) : (
+            <div className="rounded-[28px] border border-dashed border-white/70 bg-white/70 p-6 text-sm text-navy/70">
+              Goals will populate here once Supabase sync is live. For now, adjust the demo strategy lab to preview the experience.
+            </div>
+          )}
+        </div>
       </section>
     </div>
   )
 }
 
-type SummaryCardProps = {
+type MetricTileProps = {
   label: string
   value: string
-  accent?: boolean
-  subtle?: boolean
+  tone?: 'positive' | 'muted'
 }
 
-function SummaryCard({ label, value, accent, subtle }: SummaryCardProps) {
+function MetricTile({ label, value, tone }: MetricTileProps) {
+  const toneStyles =
+    tone === 'positive'
+      ? 'border-primary/30 bg-primary/10 text-primary-dark'
+      : tone === 'muted'
+        ? 'border-white/70 text-navy/60'
+        : 'border-white/60 text-navy'
+
   return (
-    <article
-      className={[
-        'rounded-3xl border bg-white p-6 shadow-sm transition',
-        accent ? 'border-brand/40 bg-brand/10 text-brand-dark' : 'border-slate-200',
-        subtle ? 'text-slate-500' : 'text-slate-900',
-      ].join(' ')}
-    >
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+    <article className={`rounded-[24px] border bg-white/80 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md ${toneStyles}`}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-navy/50">{label}</p>
       <p className="mt-3 text-2xl font-semibold">{value}</p>
     </article>
   )
@@ -290,29 +272,35 @@ function SummaryCard({ label, value, accent, subtle }: SummaryCardProps) {
 
 type GoalCardProps = {
   goal: DemoGoal
+  isFocused: boolean
 }
 
-function GoalCard({ goal }: GoalCardProps) {
+function GoalCard({ goal, isFocused }: GoalCardProps) {
   const progress = Math.min(goal.saved / goal.target, 1)
   const remaining = Math.max(goal.target - goal.saved, 0)
+  const priorityLabel = `${goal.priority} priority`
 
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <article
+      className={`rounded-[28px] border bg-white/90 p-6 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-lg ${
+        isFocused ? 'border-primary/40' : 'border-white/60'
+      }`}
+    >
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-5">
+        <div className="flex flex-1 items-center gap-6">
           <ProgressDonut progress={progress} />
-          <div>
+          <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-xl font-semibold text-slate-900">{goal.name}</h3>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                {goal.priority} priority
-              </span>
-              <span className="rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand">
+              <h3 className="text-xl font-semibold text-navy">{goal.name}</h3>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
                 Target {currency.format(goal.target)}
               </span>
+              <span className="rounded-full bg-coral/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-coral">
+                {priorityLabel}
+              </span>
             </div>
-            <p className="mt-2 max-w-xl text-sm text-slate-600">{goal.description}</p>
-            <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-600">
+            <p className="max-w-xl text-sm text-navy/70">{goal.description}</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-navy/70">
               <Detail label="Saved" value={currency.format(goal.saved)} />
               <Detail label="Remaining" value={currency.format(remaining)} />
               <Detail label="Monthly" value={currency.format(goal.monthlyCommitment)} />
@@ -336,14 +324,13 @@ type StrategyStatProps = {
 function StrategyStat({ label, value, helper, highlight }: StrategyStatProps) {
   return (
     <div
-      className={[
-        'rounded-xl border p-4 shadow-sm transition',
-        highlight ? 'border-brand/50 bg-brand/5 text-brand-dark' : 'border-slate-200 bg-white text-slate-700',
-      ].join(' ')}
+      className={`rounded-2xl border p-4 shadow-sm transition ${
+        highlight ? 'border-primary/40 bg-primary/10 text-primary-dark' : 'border-white/80 bg-white/80 text-navy'
+      }`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-navy/50">{label}</p>
       <p className="mt-2 text-lg font-semibold">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{helper}</p>
+      <p className="mt-1 text-xs text-navy/60">{helper}</p>
     </div>
   )
 }
@@ -356,14 +343,98 @@ type StrategyBulletProps = {
 function StrategyBullet({ title, description }: StrategyBulletProps) {
   return (
     <li className="flex items-start gap-3">
-      <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs text-brand">
+      <span className="mt-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm text-primary">
         ✨
       </span>
-      <div>
-        <p className="text-sm font-semibold text-slate-900">{title}</p>
-        <p className="text-sm text-slate-600">{description}</p>
+      <div className="space-y-1">
+        <p className="text-sm font-semibold text-navy">{title}</p>
+        <p className="text-sm text-navy/70">{description}</p>
       </div>
     </li>
+  )
+}
+
+type DetailProps = {
+  label: string
+  value: string
+}
+
+function Detail({ label, value }: DetailProps) {
+  return (
+    <div className="rounded-full bg-sand px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-navy/70">
+      <span className="text-navy/80">{label}:</span> {value}
+    </div>
+  )
+}
+
+type ProgressDonutProps = {
+  progress: number
+}
+
+function ProgressDonut({ progress }: ProgressDonutProps) {
+  const clamped = Math.max(0, Math.min(progress, 1))
+  const percentage = Math.round(clamped * 100)
+
+  return (
+    <div className="relative h-20 w-20">
+      <div
+        className="absolute inset-0 rounded-full shadow-[0_15px_30px_-12px_rgba(15,118,110,0.35)]"
+        style={{
+          background: `conic-gradient(#14b8a6 ${percentage * 3.6}deg, rgba(15, 118, 110, 0.1) 0deg)`,
+        }}
+        aria-hidden
+      />
+      <div className="absolute inset-1 rounded-full bg-white" aria-hidden />
+      <div className="relative flex h-full w-full items-center justify-center text-sm font-semibold text-primary-dark">
+        {percentage}%
+      </div>
+    </div>
+  )
+}
+
+type TrendChartProps = {
+  id: string
+  values: number[]
+}
+
+function TrendChart({ id, values }: TrendChartProps) {
+  if (values.length === 0) return null
+
+  const maxValue = Math.max(...values)
+  const minValue = Math.min(...values)
+  const range = Math.max(maxValue - minValue, maxValue || 1, 1)
+  const normalised = values.map((value, index) => {
+    const x = (index / (values.length - 1)) * 100
+    const y = values.length === 1 ? 50 : 90 - ((value - minValue) / range) * 70
+    return [x, y]
+  })
+
+  const path = normalised
+    .map((point, index) => `${index === 0 ? 'M' : 'L'}${point[0]},${point[1]}`)
+    .join(' ')
+
+  const gradientId = `goalTrend-${id}`
+
+  return (
+    <figure className="flex w-full flex-col items-end gap-3 text-xs text-navy/50 lg:w-56">
+      <svg viewBox="0 0 100 100" className="h-24 w-full overflow-visible">
+        <defs>
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#0f766e" stopOpacity="0.55" />
+          </linearGradient>
+        </defs>
+        <polyline
+          fill="none"
+          stroke={`url(#${gradientId})`}
+          strokeWidth={4}
+          strokeLinecap="round"
+          points={normalised.map((point) => point.join(',')).join(' ')}
+        />
+        <path d={`${path} L100,100 L0,100 Z`} fill="rgba(20, 184, 166, 0.08)" />
+      </svg>
+      <figcaption className="text-right">Recent contributions</figcaption>
+    </figure>
   )
 }
 
@@ -417,92 +488,8 @@ function buildHighlightMessage({ goalName, monthlyBoost, timeSaved, acceleratedF
     return `At +${currency.format(monthlyBoost)} each month you're staying on pace. Try nudging the slider further to beat the schedule for ${goalName.toLowerCase()}.`
   }
 
-  const savedLabel =
-    timeSaved < 1 ? 'a few weeks' : `${Math.round(timeSaved)} month${Math.round(timeSaved) === 1 ? '' : 's'}`
+  const savedLabel = timeSaved < 1 ? 'a few weeks' : `${Math.round(timeSaved)} month${Math.round(timeSaved) === 1 ? '' : 's'}`
 
   return `You're on track to wrap ${goalName.toLowerCase()} roughly ${savedLabel} sooner, celebrating around ${acceleratedFinish}.`
 }
 
-type DetailProps = {
-  label: string
-  value: string
-}
-
-function Detail({ label, value }: DetailProps) {
-  return (
-    <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-      <span className="text-slate-700">{label}:</span> {value}
-    </div>
-  )
-}
-
-type ProgressDonutProps = {
-  progress: number
-}
-
-function ProgressDonut({ progress }: ProgressDonutProps) {
-  const clamped = Math.max(0, Math.min(progress, 1))
-  const percentage = Math.round(clamped * 100)
-
-  return (
-    <div className="relative h-20 w-20">
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: `conic-gradient(#6366f1 ${percentage * 3.6}deg, #e2e8f0 0deg)`,
-        }}
-        aria-hidden
-      />
-      <div className="absolute inset-1 rounded-full bg-white" aria-hidden />
-      <div className="relative flex h-full w-full items-center justify-center text-sm font-semibold text-slate-700">
-        {percentage}%
-      </div>
-    </div>
-  )
-}
-
-type TrendChartProps = {
-  id: string
-  values: number[]
-}
-
-function TrendChart({ id, values }: TrendChartProps) {
-  if (values.length === 0) return null
-
-  const maxValue = Math.max(...values)
-  const minValue = Math.min(...values)
-  const range = Math.max(maxValue - minValue, maxValue || 1, 1)
-  const normalised = values.map((value, index) => {
-    const x = (index / (values.length - 1)) * 100
-    const y = values.length === 1 ? 50 : 90 - ((value - minValue) / range) * 70
-    return [x, y]
-  })
-
-  const path = normalised
-    .map((point, index) => `${index === 0 ? 'M' : 'L'}${point[0]},${point[1]}`)
-    .join(' ')
-
-  const gradientId = `goalTrend-${id}`
-
-  return (
-    <figure className="flex w-full flex-col items-end gap-3 text-xs text-slate-500 lg:w-56">
-      <svg viewBox="0 0 100 100" className="h-24 w-full overflow-visible">
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.55" />
-          </linearGradient>
-        </defs>
-        <polyline
-          fill="none"
-          stroke={`url(#${gradientId})`}
-          strokeWidth={4}
-          strokeLinecap="round"
-          points={normalised.map((point) => point.join(',')).join(' ')}
-        />
-        <path d={`${path} L100,100 L0,100 Z`} fill="rgba(99, 102, 241, 0.08)" />
-      </svg>
-      <figcaption className="text-right">Recent contributions</figcaption>
-    </figure>
-  )
-}
