@@ -3,13 +3,14 @@
 ## NOW
 - [x] Scaffold base app shell (layout, routing)
 - [ ] CI builds & deploys green on `main`
-- [ ] Add Supabase client boot + auth placeholders
-- [ ] Add Stripe Checkout placeholder & pricing page
-- [ ] Draft landing copy & simple dashboard
+- [x] Add Supabase client boot + auth placeholders
+- [x] Add Stripe Checkout placeholder & pricing page
+- [x] Draft landing copy & simple dashboard
 
 ## NEXT
-- [ ] Budget planner MVP (envelopes)
-- [ ] Goals tracker + charts
+- [x] Budget planner MVP (envelopes)
+- [x] Goals tracker + charts
+- [x] Contribution strategy lab simulation
 - [ ] Profile/settings page (plan, locale)
 - [ ] AI helper panel (copy skeleton)
 

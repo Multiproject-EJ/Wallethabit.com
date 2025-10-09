@@ -9,12 +9,12 @@ const features = [
   {
     title: 'Supabase-ready',
     description:
-      'Client boot + auth placeholders planned to connect once secrets land.',
+      'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',
   },
   {
     title: 'Stripe-ready',
     description:
-      'Pricing + checkout entry points prepared for secure upgrades.',
+      'Checkout placeholders waiting on publishable key before exposing upgrade flows.',
   },
 ]
 
