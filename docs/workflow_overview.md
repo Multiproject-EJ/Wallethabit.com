@@ -1,7 +1,7 @@
 # ⚙️ Workflow Overview (Codex-only)
 
 - **Codex edits** the repo; **no local installs**.
-- **Actions** run install/lint/test/build; **Pages** deploys.
+- **Actions** run install/lint/test/build; **Pages** deploys (trigger via push or manual dispatch).
 - Branches: `main`, `feat/<name>`, `fix/<name>`, `docs/<name>`.
 - Commits: `feat: ...`, `fix: ...`, `docs: ...`, `refactor: ...`.
 
@@ -14,4 +14,5 @@
 - `npm run lint` (later)
 - `npm run test` (later)
 - `npm run build`
+- (Optional) Manual run: *Build & Deploy to Pages* workflow via **Actions → Run workflow**
 

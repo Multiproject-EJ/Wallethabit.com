@@ -25,6 +25,12 @@ Design principles: clarity, momentum, and honest monetization (free + fair upgra
 
 See: [`docs/workflow_overview.md`](docs/workflow_overview.md)
 
+## 🌐 Deploy & Hosting Notes
+- The Vite source lives in [`app/`](app) to keep the root clean for docs and workflows.
+- GitHub Actions builds the app into `/app/dist` and publishes it to GitHub Pages.
+- After the first push, set **Settings → Pages → Build and deployment → Source = GitHub Actions**.
+- If the domain still shows the repository README, manually trigger the *Build & Deploy to Pages* workflow once to seed the static site.
+
 ## 🧩 Tech
 - **Frontend:** Vite + Tailwind + React/TS
 - **Hosting:** GitHub Pages (via Actions)
