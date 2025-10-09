@@ -1,60 +1,62 @@
 import { useMemo, useState } from 'react'
 
+import { useDemoData } from '../lib/demoDataStore'
+
 const assetClasses = [
   {
-    id: 'usEquities',
-    label: 'US total market',
-    description: 'Broad exposure across large and mid-cap companies to capture primary growth.',
+    id: 'globalEquities',
+    label: 'Global equities',
+    description: 'Alex’s VOO sleeve paired with other large-cap trackers to capture broad growth.',
   },
   {
-    id: 'international',
-    label: 'International equity',
-    description: 'Developed + emerging markets to diversify currency and economic cycles.',
+    id: 'ukEquities',
+    label: 'UK equity tracker',
+    description: 'FTSE All-Share exposure to keep home-market dividends flowing.',
   },
   {
-    id: 'bonds',
-    label: 'Bond ladder',
-    description: 'Blend of intermediate treasuries and investment-grade corporates for ballast.',
+    id: 'gilts',
+    label: 'Gilts & bond funds',
+    description: 'UK gilts and investment-grade bonds to smooth volatility when markets wobble.',
   },
   {
     id: 'cash',
-    label: 'High-yield cash',
-    description: 'Short-term reserves to fund opportunities and protect against drawdowns.',
+    label: 'Cash reserve',
+    description: 'Monzo + Chase savings buffer so autopilot boosts never drain essentials.',
   },
   {
-    id: 'alternatives',
-    label: 'Alternatives',
-    description: 'Low-correlation assets (REITs, managed futures) for volatility dampening.',
+    id: 'crypto',
+    label: 'Crypto experiments',
+    description: 'A small BTC position to keep upside optional without unbalancing the plan.',
   },
 ]
 
 const riskProfiles = [
   {
     value: 1,
-    label: 'Capital defender',
-    tagline: 'Protect principal first, earn modest growth.',
-    expectedReturn: 0.035,
+    label: 'Calm foundations',
+    tagline: 'Protect principal while nibbling at market upside.',
+    expectedReturn: 0.042,
     volatility: 'Low',
     allocations: {
-      usEquities: 25,
-      international: 10,
-      bonds: 50,
-      cash: 12,
-      alternatives: 3,
+      globalEquities: 28,
+      ukEquities: 14,
+      gilts: 38,
+      cash: 18,
+      crypto: 2,
     },
   },
   {
     value: 2,
     label: 'Steady builder',
     tagline: 'Balance resilience with measured upside.',
-    expectedReturn: 0.047,
+    expectedReturn: 0.052,
     volatility: 'Low-medium',
     allocations: {
-      usEquities: 35,
-      international: 15,
-      bonds: 38,
-      cash: 8,
-      alternatives: 4,
+      globalEquities: 36,
+      ukEquities: 17,
+      gilts: 30,
+      cash: 14,
+      crypto: 3,
     },
   },
   {
@@ -64,39 +66,39 @@ const riskProfiles = [
     expectedReturn: 0.061,
     volatility: 'Medium',
     allocations: {
-      usEquities: 42,
-      international: 18,
-      bonds: 30,
-      cash: 6,
-      alternatives: 4,
+      globalEquities: 44,
+      ukEquities: 20,
+      gilts: 22,
+      cash: 10,
+      crypto: 4,
     },
   },
   {
     value: 4,
-    label: 'Accelerated momentum',
+    label: 'Momentum builder',
     tagline: 'Prioritise appreciation with guardrails for turbulence.',
-    expectedReturn: 0.075,
+    expectedReturn: 0.072,
     volatility: 'Medium-high',
     allocations: {
-      usEquities: 48,
-      international: 22,
-      bonds: 20,
-      cash: 5,
-      alternatives: 5,
+      globalEquities: 50,
+      ukEquities: 22,
+      gilts: 16,
+      cash: 7,
+      crypto: 5,
     },
   },
   {
     value: 5,
     label: 'Trailblazer',
     tagline: 'Maximise growth with intentional rebalancing cadence.',
-    expectedReturn: 0.086,
+    expectedReturn: 0.082,
     volatility: 'High',
     allocations: {
-      usEquities: 52,
-      international: 25,
-      bonds: 15,
-      cash: 4,
-      alternatives: 4,
+      globalEquities: 56,
+      ukEquities: 24,
+      gilts: 10,
+      cash: 5,
+      crypto: 5,
     },
   },
 ]
@@ -106,19 +108,19 @@ const autopilotModes = [
     id: 'steady',
     label: 'Steady autopilot',
     boost: 0,
-    description: 'Keep monthly contributions level while monitoring drawdown guardrails.',
+    description: 'Keep the standing order humming from Monzo to your Freetrade ISA.',
   },
   {
-    id: 'accelerate',
-    label: 'Accelerate boosts',
-    boost: 150,
-    description: 'Route recent income wins or freelance retainers into automated transfers.',
+    id: 'sideHustle',
+    label: 'Side hustle top-up',
+    boost: 120,
+    description: 'Auto-sweep freelance invoices into the ISA once clients pay.',
   },
   {
     id: 'windfall',
     label: 'Windfall surge',
-    boost: 350,
-    description: 'Temporarily direct tax refunds or bonuses to speed compounding.',
+    boost: 260,
+    description: 'Direct HMRC refunds or bonuses into the investment sleeve.',
   },
 ] as const
 
@@ -132,78 +134,84 @@ type ProjectionRow = {
 
 const playbookSpotlights = [
   {
-    title: 'Quarterly rebalancing sprints',
-    description:
-      'Block 45-minute sessions at quarter end to realign allocations and capture drift back into target bands.',
+    title: 'ISA allowance sprint',
+    description: 'Track how much of the £20k allowance Alex has used and queue boosts before 5 April.',
   },
   {
-    title: 'Increase automation signals',
-    description:
-      'Pair bank sync rules with Supabase alerts so raises or new invoices auto-propose contribution bumps.',
+    title: 'Quarterly rebalance notes',
+    description: 'Log drift, top up gilts when equities rally, and store the review in Supabase.',
   },
   {
-    title: 'Tax-advantaged sequencing',
-    description:
-      'Prioritise 401(k) matches, Roth IRA windows, then taxable brokerage for max flexibility and efficiency.',
+    title: 'Dividend reinvest rules',
+    description: 'Let Copilot auto-route VOO and FTSE payouts back into the target mix.',
   },
 ]
 
 const readinessChecklist = [
-  'Link primary checking + brokerage accounts to prep automated transfers.',
-  'Document risk tolerance guardrails (max drawdown %, rebalance thresholds).',
-  'Tag savings goals that the investment engine should eventually fund.',
-  'Draft investment policy statement in Notion to align future decisions with strategy.',
+  'Link Monzo and Freetrade so WalletHabit sees deposits and top-ups together.',
+  'Document guardrails: max 12% drawdown before easing boosts; rebalance bands at ±5%.',
+  'Tag ISA vs taxable contributions for future tax insights.',
+  'Capture your investment policy in Notion so future Alex remembers the “why.”',
 ]
 
 const rolloutMilestones = [
   {
     label: 'Portfolio schema',
     timeframe: 'Week 1',
-    description: 'Model holdings + contribution plans in Supabase with user ownership + audit trails.',
+    description: 'Model holdings, valuations, and contribution intents with Supabase ownership + history.',
   },
   {
-    label: 'Bank sync triggers',
+    label: 'Open banking sync',
     timeframe: 'Week 2',
-    description: 'Map Plaid transactions to recurring contributions and detect opportunity surpluses.',
+    description: 'Ingest Monzo + Chase balances to trigger nudges when buffers refill.',
   },
   {
-    label: 'AI rebalance coach',
+    label: 'Copilot rebalancer',
     timeframe: 'Week 3',
-    description: 'Have Copilot suggest allocation tweaks when drift exceeds guardrails or goals update.',
+    description: 'Let the AI suggest top-ups when equities outrun gilts or BTC spikes.',
   },
   {
     label: 'Insights dashboard',
     timeframe: 'Week 4',
-    description: 'Launch charts for net worth velocity, contribution cadence, and risk health.',
+    description: 'Ship charts for allocation health, ISA pace, and side-hustle boost usage.',
   },
 ]
 
 const momentumSignals = [
-  'Contribution streaks and autopilot boosts applied without manual intervention.',
-  'Risk drift staying inside ±5% bands with quarterly rebalance rituals logged.',
-  'Goal funding timeline shrinking as investment engine compounds contributions.',
-  'Cash buffer maintained above 3 months of expenses while investing aggressively.',
+  'Monthly ISA contributions fired without manual intervention.',
+  'Portfolio drift staying inside ±5% after each quarterly check-in.',
+  'Side-hustle boosts shortening Alex’s goal timelines in the Goals lab.',
+  'Cash reserve holding above three months of expenses while investing steadily.',
 ]
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
-
 export default function Investing() {
+  const {
+    state: { profile: demoProfile },
+  } = useDemoData()
+
   const [riskLevel, setRiskLevel] = useState(4)
-  const [monthlyContribution, setMonthlyContribution] = useState(900)
-  const [autopilotMode, setAutopilotMode] = useState<AutopilotModeId>('accelerate')
+  const [monthlyContribution, setMonthlyContribution] = useState(350)
+  const [autopilotMode, setAutopilotMode] = useState<AutopilotModeId>('sideHustle')
 
   const profile = useMemo(() => riskProfiles.find((item) => item.value === riskLevel) ?? riskProfiles[3], [riskLevel])
+
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(demoProfile.localeId, {
+        style: 'currency',
+        currency: demoProfile.currency,
+        maximumFractionDigits: 0,
+      }),
+    [demoProfile.currency, demoProfile.localeId],
+  )
+
   const autopilot = useMemo(
     () => autopilotModes.find((mode) => mode.id === autopilotMode) ?? autopilotModes[1],
     [autopilotMode],
   )
 
   const targetContribution = useMemo(() => monthlyContribution + autopilot.boost, [monthlyContribution, autopilot])
-  const startingBalance = 24000
+  const startingBalance = 7800
   const horizonYears = 10
 
   const projection = useMemo<ProjectionRow[]>(() => {
@@ -245,7 +253,7 @@ export default function Investing() {
             </h1>
             <p className="max-w-3xl text-sm text-slate-800">
               Shape a diversified allocation, programme contribution boosts, and preview how discipline compounds over the next
-              decade. WalletHabit will store your investment policy, watch drift, and celebrate every milestone.
+              decade. WalletHabit keeps Alex’s ISA policy on file, watches drift, and celebrates every milestone.
             </p>
           </div>
           <div className="grid gap-4 lg:grid-cols-[1.1fr,0.9fr]">
@@ -323,9 +331,9 @@ export default function Investing() {
                     <input
                       className="flex-1 accent-emerald-500"
                       type="range"
-                      min={250}
-                      max={1500}
-                      step={50}
+                      min={200}
+                      max={600}
+                      step={25}
                       value={monthlyContribution}
                       onChange={(event) => setMonthlyContribution(Number(event.target.value))}
                     />
@@ -401,8 +409,8 @@ export default function Investing() {
               <div className="rounded-2xl border border-emerald-200 bg-white/80 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Why it works</p>
                 <p className="mt-2 text-sm text-slate-600">
-                  Consistent deposits + automatic boosts capture market upswings while limiting decision fatigue. We’ll note when
-                  rebalancing or de-risking keeps you ahead of schedule.
+                  Consistent deposits plus automatic boosts capture market upswings while limiting decision fatigue. We’ll flag
+                  when rebalancing or easing boosts keeps you ahead of schedule.
                 </p>
               </div>
             </div>
@@ -413,7 +421,7 @@ export default function Investing() {
           <div className="flex flex-col gap-4">
             <h2 className="text-lg font-semibold text-slate-900">Allocation blueprint</h2>
             <p className="text-sm text-slate-600">
-              Each sleeve pulls its weight — growth engines, ballast, and liquidity — so you feel calm staying invested.
+              Each sleeve pulls its weight — growth engines, ballast, and liquidity — so Alex feels calm staying invested.
             </p>
             <div className="grid gap-3">
               {allocationEntries.map((item) => (
@@ -431,8 +439,8 @@ export default function Investing() {
             <p className="font-semibold text-slate-900">Insight spotlight</p>
             <p className="mt-1">
               {profile.value >= 4
-                ? 'You’re leaning into momentum. Set a quarterly calendar reminder to review guardrails and add fresh bonuses into the boost sleeve.'
-                : 'Your balanced stance keeps volatility manageable. Consider toggling an accelerate boost when new income streams spin up.'}
+                ? 'You’re leaning into momentum. Set a quarterly reminder to review guardrails and funnel fresh bonuses into the boost sleeve.'
+                : 'Your balanced stance keeps volatility manageable. Toggle a side hustle boost when new invoices get paid.'}
             </p>
           </div>
         </aside>
@@ -460,7 +468,8 @@ export default function Investing() {
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-sm text-emerald-800">
             <p className="font-semibold">Confidence boost</p>
             <p className="mt-1">
-              Your autopilot horizon spans {horizonYears} years. Keep the rhythm — WalletHabit will celebrate every milestone you cross.
+              Your autopilot horizon spans {horizonYears} years. Keep the rhythm — WalletHabit will celebrate every milestone you
+              cross.
             </p>
           </div>
         </article>
