@@ -1,18 +1,22 @@
+import IntegrationStatus from '../components/IntegrationStatus'
+import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
+import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
+
 const highlights = [
   {
     label: 'Budget envelopes',
-    value: 'In design',
-    description: 'Categorized envelopes planned with real-time balances and nudges.',
+    value: 'MVP ready',
+    description: 'Interactive envelope planner launched with adjustable targets and progress.',
   },
   {
     label: 'Savings goals',
-    value: 'Scoping',
-    description: 'Goal timelines and celebratory progress states in the works.',
+    value: 'Strategy lab live',
+    description: 'Goal HQ now includes a contribution sandbox with progress donuts and spark-lines.',
   },
   {
-    label: 'Insights feed',
-    value: 'Concept',
-    description: 'AI summaries and alerts will surface wins and callouts.',
+    label: 'AI guidance',
+    value: 'Copilot lab',
+    description: 'Interactive helper panel seeded with prompt scripts and conversational flows.',
   },
 ]
 
@@ -50,13 +54,13 @@ export default function Dashboard() {
             <li className="flex items-start gap-3">
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
-                <strong>Budget envelopes</strong> — interactive cards, envelope creation, and guardrails.
+                <strong>Budget envelopes</strong> — persist envelope targets to Supabase and sync across devices.
               </p>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
-                <strong>AI insights</strong> — summarizing cashflow, savings, and helpful nudges.
+                <strong>AI insights</strong> — wire Copilot to Supabase data for personalised nudges.
               </p>
             </li>
           </ul>
@@ -69,6 +73,29 @@ export default function Dashboard() {
             upgrade prompts.
           </p>
         </aside>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        <IntegrationStatus
+          label="Supabase auth"
+          ready={hasSupabaseConfig}
+          description={
+            hasSupabaseConfig
+              ? 'Client booted. We can start wiring RLS policies and profile hydration next.'
+              : 'Add Supabase env secrets so the dashboard cards can hydrate with live data.'
+          }
+          guidance={supabaseEnvGuidance}
+        />
+        <IntegrationStatus
+          label="Stripe billing"
+          ready={hasStripeConfig}
+          description={
+            hasStripeConfig
+              ? 'Publishable key found. Checkout links can be embedded in upgrade prompts next.'
+              : 'Set the Stripe publishable key to unlock upgrade CTAs and payment flows.'
+          }
+          guidance={stripeEnvGuidance}
+        />
       </section>
     </div>
   )

@@ -11,4 +11,5 @@ Notes align with best practices from YNAB/Monarch/Copilot:
 - Visual dashboards that tell progress stories
 - Automation: categories, reminders, goals
 - Embedded education + AI summaries
+- Personalisation controls early to build trust (plans, locale, notifications)
 
