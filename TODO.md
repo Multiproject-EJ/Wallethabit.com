@@ -12,7 +12,7 @@
 - [x] Goals tracker + charts
 - [x] Contribution strategy lab simulation
 - [x] Profile/settings page (plan, locale)
-- [ ] AI helper panel (copy skeleton)
+- [x] AI helper panel (copy skeleton)
 
 ## LATER
 - [ ] Bank import integration

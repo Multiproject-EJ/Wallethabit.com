@@ -8,11 +8,11 @@
 
 | Area | Progress | Notes |
 |------|----------|------|
-| Overall Build | ![p](https://progress-bar.dev/40/) | Landing, dashboard, budget & goals planners, integration scaffolds |
+| Overall Build | ![p](https://progress-bar.dev/45/) | Landing, dashboard, budget & goals planners, integration scaffolds |
 | Deployment | ![p](https://progress-bar.dev/100/) | Actions + Pages wired |
 | Supabase | ![p](https://progress-bar.dev/30/) | Browser client booted; waiting on secrets |
 | Stripe | ![p](https://progress-bar.dev/25/) | Checkout placeholders blocked on publishable key |
-| UI/UX | ![p](https://progress-bar.dev/60/) | Home, dashboard, pricing, budget, goals, strategy lab, and settings |
+| UI/UX | ![p](https://progress-bar.dev/70/) | Home, dashboard, pricing, budget, goals, strategy lab, settings, and AI copilot preview |
 
 ## 🌟 Vision
 WalletHabit makes budgeting, saving, and planning **clear, calm, and motivating**.  

@@ -14,9 +14,9 @@ const highlights = [
     description: 'Goal HQ now includes a contribution sandbox with progress donuts and spark-lines.',
   },
   {
-    label: 'Profile preferences',
-    value: 'Settings preview',
-    description: 'Plan selection, locale controls, and notification toggles are ready for auth wiring.',
+    label: 'AI guidance',
+    value: 'Copilot lab',
+    description: 'Interactive helper panel seeded with prompt scripts and conversational flows.',
   },
 ]
 
@@ -60,7 +60,7 @@ export default function Dashboard() {
             <li className="flex items-start gap-3">
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
-                <strong>AI insights</strong> — summarizing cashflow, savings, and helpful nudges.
+                <strong>AI insights</strong> — wire Copilot to Supabase data for personalised nudges.
               </p>
             </li>
           </ul>

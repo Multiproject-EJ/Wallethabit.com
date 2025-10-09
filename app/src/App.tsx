@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import Auth from './pages/Auth'
 import Budget from './pages/Budget'
+import Assistant from './pages/Assistant'
 import Goals from './pages/Goals'
 import Dashboard from './pages/Dashboard'
 import Home from './pages/Home'
@@ -18,6 +19,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="budget" element={<Budget />} />
+          <Route path="assistant" element={<Assistant />} />
           <Route path="goals" element={<Goals />} />
           <Route path="settings" element={<Settings />} />
           <Route path="pricing" element={<Pricing />} />

@@ -17,9 +17,9 @@ const features = [
       'Plan selection, locale preferences, and notifications staged ahead of real profiles.',
   },
   {
-    title: 'Stripe-ready',
+    title: 'Copilot assistant',
     description:
-      'Checkout placeholders waiting on publishable key before exposing upgrade flows.',
+      'AI helper lab seeded with prompt scripts for budgeting, savings, and weekly check-ins.',
   },
 ]
 
@@ -70,8 +70,8 @@ export default function Home() {
       <section className="rounded-3xl border border-dashed border-brand/50 bg-brand/5 p-10 text-center">
         <h2 className="text-2xl font-semibold text-brand">Next milestones</h2>
         <p className="mt-3 text-sm text-slate-600">
-          Supabase auth bootstrapping, Stripe checkout placeholders, and a guided onboarding flow
-          are queued up next. Track progress in the project TODO.
+          Supabase auth bootstrapping, Stripe checkout placeholders, and wiring Copilot into live
+          budgets are queued up next. Track progress in the project TODO.
         </p>
       </section>
     </div>
