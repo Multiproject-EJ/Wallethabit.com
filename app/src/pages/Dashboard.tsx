@@ -1,3 +1,7 @@
+import IntegrationStatus from '../components/IntegrationStatus'
+import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
+import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
+
 const highlights = [
   {
     label: 'Budget envelopes',
@@ -69,6 +73,29 @@ export default function Dashboard() {
             upgrade prompts.
           </p>
         </aside>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        <IntegrationStatus
+          label="Supabase auth"
+          ready={hasSupabaseConfig}
+          description={
+            hasSupabaseConfig
+              ? 'Client booted. We can start wiring RLS policies and profile hydration next.'
+              : 'Add Supabase env secrets so the dashboard cards can hydrate with live data.'
+          }
+          guidance={supabaseEnvGuidance}
+        />
+        <IntegrationStatus
+          label="Stripe billing"
+          ready={hasStripeConfig}
+          description={
+            hasStripeConfig
+              ? 'Publishable key found. Checkout links can be embedded in upgrade prompts next.'
+              : 'Set the Stripe publishable key to unlock upgrade CTAs and payment flows.'
+          }
+          guidance={stripeEnvGuidance}
+        />
       </section>
     </div>
   )
