@@ -39,7 +39,7 @@ jobs:
         run: npm run build
 
       - name: SPA fallback (copy index.html to 404.html)
-        run: cp app/dist/index.html app/dist/404.html
+        run: cp dist/index.html dist/404.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
