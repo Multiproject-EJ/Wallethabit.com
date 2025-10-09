@@ -14,17 +14,21 @@ jobs:
         working-directory: app
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: app/package-lock.json
+          # remove cache settings for now (no lockfile present)
+
       - name: Use public npm registry
         run: npm config set registry https://registry.npmjs.org/
-      - name: Install (CI)
-        run: npm ci
-      - name: Lint
-        run: npm run lint || echo "lint script not ready yet"
-      - name: Test
-        run: npm run test || echo "tests not ready yet"
 
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint || echo "lint not set up yet"
+
+      - name: Test
+        run: npm run test || echo "tests not set up yet"
