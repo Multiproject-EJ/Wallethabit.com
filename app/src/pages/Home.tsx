@@ -27,6 +27,11 @@ const features = [
       'Risk posture slider, allocation targets, and 10-year projections prep long-term wealth moves.',
   },
   {
+    title: 'Retirement readiness lab',
+    description:
+      'Lifestyle archetypes, glide path projections, and safe-withdrawal coverage cues show work-optional timelines.',
+  },
+  {
     title: 'Supabase-ready',
     description:
       'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',
@@ -90,8 +95,8 @@ export default function Home() {
       <section className="rounded-3xl border border-dashed border-brand/50 bg-brand/5 p-10 text-center">
         <h2 className="text-2xl font-semibold text-brand">Next milestones</h2>
         <p className="mt-3 text-sm text-slate-600">
-          Supabase auth bootstrapping, Plaid Link sandbox wiring, Stripe checkout placeholders, and
-          Copilot insights tied to real transactions are queued up next. Track progress in the project TODO.
+          Supabase auth bootstrapping, Plaid Link sandbox wiring, Stripe checkout placeholders, retirement glide path
+          persistence, and Copilot insights tied to real transactions are queued up next. Track progress in the project TODO.
         </p>
       </section>
     </div>

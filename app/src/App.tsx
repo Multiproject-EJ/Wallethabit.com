@@ -14,6 +14,7 @@ import Integrations from './pages/Integrations'
 import Debt from './pages/Debt'
 import Income from './pages/Income'
 import Investing from './pages/Investing'
+import Retirement from './pages/Retirement'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="debt" element={<Debt />} />
           <Route path="income" element={<Income />} />
           <Route path="investing" element={<Investing />} />
+          <Route path="retirement" element={<Retirement />} />
           <Route path="settings" element={<Settings />} />
           <Route path="pricing" element={<Pricing />} />
           <Route path="auth" element={<Auth />} />

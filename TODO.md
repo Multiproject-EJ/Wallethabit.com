@@ -17,6 +17,7 @@
 - [x] Debt payoff lab (snowball vs avalanche)
 - [x] Income boost lab (earning mix experiments)
 - [x] Investment autopilot lab (portfolio mix + projections)
+- [x] Retirement readiness lab (glide path projections)
 
 ## LATER
 - [ ] Bank import integration (production credentials)
