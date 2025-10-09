@@ -12,6 +12,7 @@ const navItems = [
   { to: '/estate', label: 'Estate lab' },
   { to: '/tax', label: 'Tax strategy lab' },
   { to: '/retirement', label: 'Retirement lab' },
+  { to: '/security', label: 'Security & trust' },
   { to: '/goals', label: 'Goals tracker' },
   { to: '/budget', label: 'Budget planner' },
   { to: '/settings', label: 'Profile & settings' },
