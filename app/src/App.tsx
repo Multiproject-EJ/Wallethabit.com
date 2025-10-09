@@ -18,6 +18,7 @@ import Retirement from './pages/Retirement'
 import Protection from './pages/Protection'
 import Taxes from './pages/Taxes'
 import Estate from './pages/Estate'
+import Security from './pages/Security'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="estate" element={<Estate />} />
           <Route path="tax" element={<Taxes />} />
           <Route path="retirement" element={<Retirement />} />
+          <Route path="security" element={<Security />} />
           <Route path="settings" element={<Settings />} />
           <Route path="pricing" element={<Pricing />} />
           <Route path="auth" element={<Auth />} />
