@@ -1,4 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+
+import type { DemoGoal } from '../lib/demoData'
+import { useDemoData } from '../lib/demoDataStore'
 
 const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -6,59 +9,47 @@ const currency = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 })
 
-const goals = [
-  {
-    id: 'emergency',
-    name: 'Emergency cushion',
-    description: 'Cover three months of core expenses in a high-yield savings account.',
-    target: 10000,
-    saved: 6800,
-    monthlyCommitment: 400,
-    dueLabel: 'Dec 2024',
-    priority: 'High',
-    trend: [3200, 3600, 4200, 5100, 5800, 6200, 6800],
-  },
-  {
-    id: 'travel',
-    name: 'Iceland adventure',
-    description: 'Flights, lodging, and experiences for a two-week summer escape.',
-    target: 4500,
-    saved: 2100,
-    monthlyCommitment: 250,
-    dueLabel: 'Aug 2025',
-    priority: 'Medium',
-    trend: [400, 650, 800, 1200, 1500, 1900, 2100],
-  },
-  {
-    id: 'studio',
-    name: 'Creative studio upgrade',
-    description: 'New desk setup, lighting, and acoustic panels for content creation.',
-    target: 3200,
-    saved: 1250,
-    monthlyCommitment: 180,
-    dueLabel: 'Mar 2025',
-    priority: 'Low',
-    trend: [0, 0, 120, 320, 620, 980, 1250],
-  },
-]
-
-type Goal = (typeof goals)[number]
-
 export default function Goals() {
-  const [focusGoalId, setFocusGoalId] = useState(goals[0].id)
+  const {
+    state: { goals },
+  } = useDemoData()
+  const goalItems = goals.items
+  const [focusGoalId, setFocusGoalId] = useState(goalItems[0]?.id ?? '')
   const [monthlyBoost, setMonthlyBoost] = useState(0)
 
-  const focusGoal = useMemo(() => goals.find((goal) => goal.id === focusGoalId) ?? goals[0], [focusGoalId])
+  useEffect(() => {
+    if (goalItems.length === 0) {
+      setFocusGoalId('')
+      return
+    }
+
+    if (!goalItems.some((goal) => goal.id === focusGoalId)) {
+      setFocusGoalId(goalItems[0].id)
+    }
+  }, [goalItems, focusGoalId])
+
+  const focusGoal = useMemo(
+    () => goalItems.find((goal) => goal.id === focusGoalId) ?? goalItems[0],
+    [goalItems, focusGoalId],
+  )
   const summary = useMemo(() => {
-    const totalTarget = goals.reduce((sum, goal) => sum + goal.target, 0)
-    const totalSaved = goals.reduce((sum, goal) => sum + goal.saved, 0)
-    const averageProgress = Math.round((totalSaved / totalTarget) * 100)
-    const monthlyCommitment = goals.reduce((sum, goal) => sum + goal.monthlyCommitment, 0)
+    if (goalItems.length === 0) {
+      return { totalTarget: 0, totalSaved: 0, averageProgress: 0, monthlyCommitment: 0 }
+    }
+
+    const totalTarget = goalItems.reduce((sum, goal) => sum + goal.target, 0)
+    const totalSaved = goalItems.reduce((sum, goal) => sum + goal.saved, 0)
+    const averageProgress = Math.round((totalSaved / Math.max(totalTarget, 1)) * 100)
+    const monthlyCommitment = goalItems.reduce((sum, goal) => sum + goal.monthlyCommitment, 0)
 
     return { totalTarget, totalSaved, averageProgress, monthlyCommitment }
-  }, [])
+  }, [goalItems])
 
   const strategy = useMemo(() => {
+    if (!focusGoal) {
+      return { remaining: 0, baselineMonths: Number.POSITIVE_INFINITY, acceleratedMonths: Number.POSITIVE_INFINITY, timeSaved: 0 }
+    }
+
     const remaining = Math.max(focusGoal.target - focusGoal.saved, 0)
     const baselineMonths = calculateMonths(focusGoal.monthlyCommitment, remaining)
     const acceleratedMonths = calculateMonths(focusGoal.monthlyCommitment + monthlyBoost, remaining)
@@ -80,12 +71,16 @@ export default function Goals() {
   const baselineDuration = formatDuration(strategy.baselineMonths)
   const acceleratedDuration = formatDuration(strategy.acceleratedMonths)
   const timeSavedCopy = formatTimeSaved(strategy.timeSaved)
-  const newMonthlyTotal = focusGoal.monthlyCommitment + monthlyBoost
+  const newMonthlyTotal = (focusGoal?.monthlyCommitment ?? 0) + monthlyBoost
   const highlightMessage = buildHighlightMessage({
-    goalName: focusGoal.name,
+    goalName: focusGoal?.name ?? 'this goal',
     monthlyBoost,
     timeSaved: strategy.timeSaved,
     acceleratedFinish,
+  })
+  const lastCelebration = new Date(goals.lastCelebrationAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
   })
 
   return (
@@ -102,6 +97,9 @@ export default function Goals() {
           Track progress across every dream you are funding. Fine-tune timelines, monitor monthly momentum,
           and preview the cheer moments WalletHabit will surface once Supabase persistence is live.
         </p>
+        <p className="text-xs uppercase tracking-wide text-slate-400">
+          Last celebration logged {lastCelebration}
+        </p>
       </header>
 
       <section className="grid gap-6 md:grid-cols-4">
@@ -113,9 +111,14 @@ export default function Goals() {
 
       <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-6">
-          {goals.map((goal) => (
-            <GoalCard key={goal.id} goal={goal} />
-          ))}
+          {goalItems.length > 0 ? (
+            goalItems.map((goal) => <GoalCard key={goal.id} goal={goal} />)
+          ) : (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
+              Goals will populate here once Supabase sync is live. For now, adjust the demo strategy lab to preview the
+              experience.
+            </div>
+          )}
         </div>
 
         <aside className="flex flex-col gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -171,12 +174,17 @@ export default function Goals() {
                 className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
                 value={focusGoalId}
                 onChange={(event) => setFocusGoalId(event.target.value)}
+                disabled={goalItems.length === 0}
               >
-                {goals.map((goal) => (
-                  <option key={goal.id} value={goal.id}>
-                    {goal.name}
-                  </option>
-                ))}
+                {goalItems.length === 0 ? (
+                  <option value="">Add a goal soon</option>
+                ) : (
+                  goalItems.map((goal) => (
+                    <option key={goal.id} value={goal.id}>
+                      {goal.name}
+                    </option>
+                  ))
+                )}
               </select>
             </label>
 
@@ -281,7 +289,7 @@ function SummaryCard({ label, value, accent, subtle }: SummaryCardProps) {
 }
 
 type GoalCardProps = {
-  goal: Goal
+  goal: DemoGoal
 }
 
 function GoalCard({ goal }: GoalCardProps) {
