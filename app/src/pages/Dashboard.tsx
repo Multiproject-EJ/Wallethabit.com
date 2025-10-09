@@ -14,9 +14,9 @@ const highlights = [
     description: 'Goal HQ now includes a contribution sandbox with progress donuts and spark-lines.',
   },
   {
-    label: 'Insights feed',
-    value: 'Concept',
-    description: 'AI summaries and alerts will surface wins and callouts.',
+    label: 'Profile preferences',
+    value: 'Settings preview',
+    description: 'Plan selection, locale controls, and notification toggles are ready for auth wiring.',
   },
 ]
 

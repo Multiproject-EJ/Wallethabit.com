@@ -12,6 +12,11 @@ const features = [
       'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',
   },
   {
+    title: 'Personalised settings',
+    description:
+      'Plan selection, locale preferences, and notifications staged ahead of real profiles.',
+  },
+  {
     title: 'Stripe-ready',
     description:
       'Checkout placeholders waiting on publishable key before exposing upgrade flows.',

@@ -5,6 +5,7 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/goals', label: 'Goals tracker' },
   { to: '/budget', label: 'Budget planner' },
+  { to: '/settings', label: 'Profile & settings' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/auth', label: 'Sign in' },
 ]

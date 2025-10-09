@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound'
 import Pricing from './pages/Pricing'
+import Settings from './pages/Settings'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="budget" element={<Budget />} />
           <Route path="goals" element={<Goals />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="pricing" element={<Pricing />} />
           <Route path="auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />

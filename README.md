@@ -12,7 +12,7 @@
 | Deployment | ![p](https://progress-bar.dev/100/) | Actions + Pages wired |
 | Supabase | ![p](https://progress-bar.dev/30/) | Browser client booted; waiting on secrets |
 | Stripe | ![p](https://progress-bar.dev/25/) | Checkout placeholders blocked on publishable key |
-| UI/UX | ![p](https://progress-bar.dev/50/) | Home, dashboard, pricing, budget, goals, and strategy lab flows |
+| UI/UX | ![p](https://progress-bar.dev/60/) | Home, dashboard, pricing, budget, goals, strategy lab, and settings |
 
 ## 🌟 Vision
 WalletHabit makes budgeting, saving, and planning **clear, calm, and motivating**.  
