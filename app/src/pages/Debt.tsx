@@ -1,22 +1,24 @@
 import { useMemo, useState } from 'react'
 
-const currency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
+import { useDemoData } from '../lib/demoDataStore'
 
-const sampleDebts = [
-  { creditor: 'Chase Freedom', balance: 4200, rate: 21.4, min: 125 },
-  { creditor: 'Student loan', balance: 12350, rate: 5.9, min: 160 },
-  { creditor: 'Car loan', balance: 8600, rate: 3.1, min: 240 },
+type SampleDebt = {
+  creditor: string
+  balance: number
+  rate: number
+  min: number
+}
+
+const sampleDebts: SampleDebt[] = [
+  { creditor: 'Amex Credit Card', balance: 2400, rate: 19.9, min: 60 },
+  { creditor: 'Student Loan Plan 2', balance: 12800, rate: 4.2, min: 110 },
 ]
 
 const accelerationOptions = [
   { value: 0, label: 'Minimums only' },
-  { value: 100, label: '+$100 momentum' },
-  { value: 200, label: '+$200 stretch' },
-  { value: 350, label: '+$350 aggressive' },
+  { value: 60, label: 'Focus boost' },
+  { value: 120, label: 'Momentum push' },
+  { value: 200, label: 'Sprint finish' },
 ]
 
 const playbooks = [
@@ -25,32 +27,32 @@ const playbooks = [
     name: 'Snowball',
     headline: 'Motivation first',
     description:
-      'Close the smallest balances first so you see quick wins and reassign freed minimums toward the next target.',
+      'Clear the Amex balance for an early win, then redirect that freed cash toward the student loan momentum.',
     bestFor: 'When the psychological lift of early victories matters most.',
-    base: { months: 26, interest: 1850 },
+    base: { months: 26, interest: 1980 },
   },
   {
     id: 'avalanche',
     name: 'Avalanche',
     headline: 'Math optimised',
-    description: 'Crush the highest APR balances first to minimise total interest paid on the journey.',
+    description: 'Lead with the highest APR card, then cruise through lower-interest balances to minimise total interest.',
     bestFor: 'When you are laser-focused on interest savings and have strong intrinsic motivation.',
-    base: { months: 24, interest: 1600 },
+    base: { months: 24, interest: 1720 },
   },
   {
     id: 'hybrid',
     name: 'Hybrid',
     headline: 'Balanced momentum',
-    description: 'Score an early win, then redirect power toward high-interest balances for the best of both worlds.',
+    description: 'Snag the quick Amex win, then pivot to the student loan for the best of both motivation and maths.',
     bestFor: 'When you want tangible momentum plus meaningful interest savings.',
-    base: { months: 25, interest: 1700 },
+    base: { months: 25, interest: 1840 },
   },
 ]
 
 const readinessChecklist = [
   'Document balances, APRs, and minimums for every liability.',
   'Align on target payoff date and guardrails for emergency savings.',
-  'Automate minimums through your bank to avoid missed payments.',
+  'Set up Direct Debits so minimums run automatically.',
   'Schedule a monthly “debt retro” to review progress and adjust boosts.',
 ]
 
@@ -135,14 +137,31 @@ function computeProjection(baseMonths: number, baseInterest: number, boost: numb
 }
 
 export default function Debt() {
+  const {
+    state: { profile },
+  } = useDemoData()
+
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(profile.localeId, {
+        style: 'currency',
+        currency: profile.currency,
+        maximumFractionDigits: 0,
+      }),
+    [profile.currency, profile.localeId],
+  )
+
   const [selectedBoost, setSelectedBoost] = useState(accelerationOptions[1].value)
   const [activePlaybook, setActivePlaybook] = useState<PlaybookId>('hybrid')
 
-  const selectedBoostLabel = useMemo(() => {
-    return (
-      accelerationOptions.find((option) => option.value === selectedBoost)?.label || accelerationOptions[0].label
-    )
+  const selectedBoostOption = useMemo(() => {
+    return accelerationOptions.find((option) => option.value === selectedBoost) ?? accelerationOptions[0]
   }, [selectedBoost])
+
+  const selectedBoostLabel = selectedBoostOption.label
+  const selectedBoostSummary = selectedBoostOption.value
+    ? `${selectedBoostLabel} · ${currencyFormatter.format(selectedBoostOption.value)}/mo`
+    : selectedBoostLabel
 
   const totals = useMemo(() => {
     const totalBalance = sampleDebts.reduce((sum, debt) => sum + debt.balance, 0)
@@ -181,28 +200,31 @@ export default function Debt() {
 
     if (selectedBoost === 0) {
       return [
-        'Schedule a 20-minute review to hunt for an extra $50 boost next month.',
-        `Transfer any surprise wins into ${activePlan.name.toLowerCase()} momentum immediately.`,
-        'Use Copilot nudges to stay accountable to your minimums automation.',
+        `Review last month's Monzo feed to uncover ${currencyFormatter.format(50)} you can redirect next month.`,
+        `Sweep any freelance wins straight into ${activePlan.name.toLowerCase()} momentum the day they land.`,
+        'Let Copilot reminders keep every direct debit covered so minimums never slip.',
       ]
     }
 
-    if (selectedBoost >= 300) {
+    if (selectedBoost >= 200) {
       return [
-        'Lock in the automation so the aggressive boost happens without friction.',
-        'Celebrate each closed account with a ritual that reinforces the streak.',
+        'Lock in an automatic transfer so the sprint boost happens without friction.',
+        'Celebrate each cleared milestone with a ritual that keeps morale high.',
         `Guard your emergency fund — ${activePlan.outcome.months} months is within reach.`,
       ]
     }
 
+    const formattedBoost = currencyFormatter.format(selectedBoost)
+    const interestSavings = activePlan.interestDelta > 0 ? currencyFormatter.format(activePlan.interestDelta) : null
+
     return [
-      `Reallocate the ${selectedBoostLabel.toLowerCase()} from low-joy spending into the ${
-        activePlan.name
-      } plan.`,
-      `Track how much interest you keep — you are pacing to save about $${activePlan.interestDelta.toLocaleString()}.`,
-      `Stay mindful of ${totals.highestRateDebt.creditor}'s ${totals.highestRateDebt.rate}% APR when deciding the next target.`,
+      `Redirect the ${formattedBoost} boost from low-joy spending into the ${activePlan.name.toLowerCase()} plan.`,
+      interestSavings
+        ? `That pace keeps roughly ${interestSavings} in interest out of the bank's hands.`
+        : 'Keep the boost steady so momentum compounds month over month.',
+      `Stay mindful of ${totals.highestRateDebt.creditor}'s ${totals.highestRateDebt.rate}% APR when deciding the next focus.`,
     ]
-  }, [activePlan, selectedBoost, selectedBoostLabel, totals.highestRateDebt])
+  }, [activePlan, currencyFormatter, selectedBoost, totals.highestRateDebt])
 
   return (
     <div className="flex flex-col gap-12 pb-16">
@@ -223,11 +245,13 @@ export default function Debt() {
             <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-white/70">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1">
                 <span className="text-lg">🛣️</span>
-                {activePlan?.outcome.months ?? 0} month horizon · {selectedBoostLabel}
+                {activePlan?.outcome.months ?? 0} month horizon · {selectedBoostSummary}
               </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1">
                 <span className="text-lg">🎯</span>
-                {activePlan?.interestDelta ? `≈$${activePlan.interestDelta.toLocaleString()} interest saved` : 'Baseline interest'}
+                {activePlan?.interestDelta
+                  ? `≈${currencyFormatter.format(activePlan.interestDelta)} interest saved`
+                  : 'Baseline interest'}
               </span>
             </div>
           </div>
@@ -235,7 +259,7 @@ export default function Debt() {
           <div className="grid w-full max-w-xl gap-3 sm:grid-cols-2">
             <HeroStat
               label="Debt load"
-              value={currency.format(totals.totalBalance)}
+              value={currencyFormatter.format(totals.totalBalance)}
               detail={`${sampleDebts.length} accounts · ${totals.weightedApr.toFixed(1)}% APR blend`}
             />
             <HeroStat
@@ -246,13 +270,13 @@ export default function Debt() {
             />
             <HeroStat
               label="Boost applied"
-              value={selectedBoost ? `+${currency.format(selectedBoost)}/mo` : 'Minimums only'}
-              detail={selectedBoost ? 'Auto-transfer recommended' : 'Explore new boost ideas'}
+              value={selectedBoost ? `+${currencyFormatter.format(selectedBoost)}/mo` : 'Minimums only'}
+              detail={selectedBoost ? 'Automate this through Monzo' : 'Explore new boost ideas'}
               tone={selectedBoost ? 'default' : 'warning'}
             />
             <HeroStat
               label="Minimums"
-              value={currency.format(totals.totalMinimums)}
+              value={currencyFormatter.format(totals.totalMinimums)}
               detail="Currently automated"
             />
           </div>
@@ -271,30 +295,37 @@ export default function Debt() {
 
           <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-sand p-4">
             <div className="flex flex-wrap gap-2" role="group" aria-label="Select payoff boost">
-              {accelerationOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setSelectedBoost(option.value)}
-                  type="button"
-                  className={[
-                    'inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-                    selectedBoost === option.value
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'bg-white text-slate-600 hover:bg-primary/10 hover:text-primary',
-                  ].join(' ')}
-                  aria-pressed={selectedBoost === option.value}
-                >
-                  {option.label}
-                </button>
-              ))}
+              {accelerationOptions.map((option) => {
+                const optionLabel =
+                  option.value > 0
+                    ? `${option.label} · ${currencyFormatter.format(option.value)}/mo`
+                    : option.label
+
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => setSelectedBoost(option.value)}
+                    type="button"
+                    className={[
+                      'inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                      selectedBoost === option.value
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'bg-white text-slate-600 hover:bg-primary/10 hover:text-primary',
+                    ].join(' ')}
+                    aria-pressed={selectedBoost === option.value}
+                  >
+                    {optionLabel}
+                  </button>
+                )
+              })}
             </div>
             <div className="flex flex-col gap-2 rounded-xl border border-primary/20 bg-white/80 p-4 text-xs text-slate-600">
               <p className="font-semibold text-slate-900">
-                {selectedBoost ? `${selectedBoostLabel} in play` : 'Minimums only selected'}
+                {selectedBoost ? `${selectedBoostSummary} in play` : 'Minimums only selected'}
               </p>
               <p>
                 {selectedBoost
-                  ? 'Every extra dollar you apply is immediately re-routed into the active plan below.'
+                  ? 'Every extra pound you route is immediately re-applied to the active plan below.'
                   : 'Add a boost to see the timeline shrink and interest savings appear in real time.'}
               </p>
             </div>
@@ -303,7 +334,8 @@ export default function Debt() {
           <div className="grid gap-4 lg:grid-cols-3">
             {projection.map((plan) => {
               const isActive = activePlaybook === plan.id
-              const interestCallout = plan.interestDelta > 0 ? `−$${plan.interestDelta.toLocaleString()}` : 'Baseline interest'
+              const interestCallout =
+                plan.interestDelta > 0 ? `−${currencyFormatter.format(plan.interestDelta)}` : 'Baseline interest'
               const timelineCallout = plan.monthDelta > 0 ? `${plan.monthDelta} months faster` : 'Same timeline'
 
               return (
@@ -352,7 +384,7 @@ export default function Debt() {
                   {selectedBoost ? 'This is your current payoff runway' : 'Add a boost to ignite this playbook'}
                 </h3>
                 <p className="text-slate-600">
-                  With <span className="font-semibold text-primary-dark">{selectedBoostLabel.toLowerCase()}</span>, you are pacing to
+                  With <span className="font-semibold text-primary-dark">{selectedBoostSummary}</span>, you are pacing to
                   become debt-free in <span className="font-semibold text-primary-dark">{activePlan.outcome.months} months</span>.
                   {activePlan.monthDelta > 0 ? (
                     <>
@@ -364,7 +396,7 @@ export default function Debt() {
                   )}{' '}
                   Interest savings land near{' '}
                   {activePlan.interestDelta > 0 ? (
-                    <span className="font-semibold text-primary-dark">${activePlan.interestDelta.toLocaleString()}</span>
+                    <span className="font-semibold text-primary-dark">{currencyFormatter.format(activePlan.interestDelta)}</span>
                   ) : (
                     <span className="font-semibold text-primary-dark">baseline levels</span>
                   )}{' '}
@@ -392,7 +424,7 @@ export default function Debt() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">{debt.creditor}</p>
-                      <p className="mt-1 text-xs text-slate-500">APR {debt.rate}% · Minimum {currency.format(debt.min)}</p>
+                      <p className="mt-1 text-xs text-slate-500">APR {debt.rate}% · Minimum {currencyFormatter.format(debt.min)}</p>
                     </div>
                     {debt.rate >= totals.highestRateDebt.rate ? (
                       <span className="rounded-full bg-coral/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-coral">
@@ -402,7 +434,7 @@ export default function Debt() {
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
                     <span>Balance</span>
-                    <span className="font-semibold text-slate-900">{currency.format(debt.balance)}</span>
+                    <span className="font-semibold text-slate-900">{currencyFormatter.format(debt.balance)}</span>
                   </div>
                   <div className="mt-2 h-2 w-full rounded-full bg-sand-darker/60">
                     <div
