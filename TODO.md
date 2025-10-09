@@ -21,6 +21,7 @@
 - [x] Protection safety net lab (coverage gaps + runway modeling)
 - [x] Tax strategy lab (contribution & conversion planning)
 - [x] Estate planning lab (legacy readiness modeling)
+- [x] Security & trust center page
 
 ## LATER
 - [ ] Bank import integration (production credentials)
