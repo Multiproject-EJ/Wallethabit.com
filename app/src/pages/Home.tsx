@@ -37,6 +37,11 @@ const features = [
       'Persona-driven sliders map emergency runways, insurance coverage gaps, and advisor-ready guardrails.',
   },
   {
+    title: 'Tax strategy lab',
+    description:
+      'Model contribution mixes, business deductions, and Roth conversions before filing deadlines.',
+  },
+  {
     title: 'Supabase-ready',
     description:
       'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',
@@ -101,8 +106,8 @@ export default function Home() {
         <h2 className="text-2xl font-semibold text-brand">Next milestones</h2>
         <p className="mt-3 text-sm text-slate-600">
           Supabase auth bootstrapping, Plaid Link sandbox wiring, Stripe checkout placeholders, protection lab persistence,
-          retirement glide path storage, and Copilot insights tied to real transactions are queued up next. Track progress in
-          the project TODO.
+          tax strategy data sync, retirement glide path storage, and Copilot insights tied to real transactions are queued up
+          next. Track progress in the project TODO.
         </p>
       </section>
     </div>
