@@ -18,6 +18,11 @@ const highlights = [
     value: 'Copilot lab',
     description: 'Interactive helper panel seeded with prompt scripts and conversational flows.',
   },
+  {
+    label: 'Bank syncing',
+    value: 'Blueprint live',
+    description: 'New integrations lab outlines Plaid-powered imports, guardrails, and rollout milestones.',
+  },
 ]
 
 export default function Dashboard() {
@@ -31,7 +36,7 @@ export default function Dashboard() {
         </p>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {highlights.map((item) => (
           <article key={item.label} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-slate-500">{item.label}</p>
@@ -60,7 +65,13 @@ export default function Dashboard() {
             <li className="flex items-start gap-3">
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
-                <strong>AI insights</strong> — wire Copilot to Supabase data for personalised nudges.
+                <strong>Bank sync pilot</strong> — integrate Plaid Link sandbox and prep transaction schemas.
+              </p>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+              <p>
+                <strong>AI insights</strong> — connect Copilot nudges to synced transaction activity.
               </p>
             </li>
           </ul>

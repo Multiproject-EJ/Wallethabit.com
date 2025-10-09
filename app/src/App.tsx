@@ -10,6 +10,7 @@ import Home from './pages/Home'
 import NotFound from './pages/NotFound'
 import Pricing from './pages/Pricing'
 import Settings from './pages/Settings'
+import Integrations from './pages/Integrations'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="budget" element={<Budget />} />
           <Route path="assistant" element={<Assistant />} />
+          <Route path="integrations" element={<Integrations />} />
           <Route path="goals" element={<Goals />} />
           <Route path="settings" element={<Settings />} />
           <Route path="pricing" element={<Pricing />} />

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import IntegrationStatus from '../components/IntegrationStatus'
 import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
 import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
+import { getPlaidEnvironmentLabel, hasPlaidConfig, plaidEnvGuidance } from '../lib/plaidClient'
 
 const planTiers = [
   {
@@ -111,6 +112,8 @@ export default function Settings() {
     })
     return defaults
   })
+
+  const plaidEnvironmentLabel = getPlaidEnvironmentLabel()
 
   const activePlan = useMemo(
     () => planTiers.find((plan) => plan.id === selectedPlanId) ?? planTiers[0],
@@ -367,7 +370,7 @@ export default function Settings() {
         </aside>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <IntegrationStatus
           label="Supabase auth"
           ready={hasSupabaseConfig}
@@ -387,6 +390,16 @@ export default function Settings() {
               : 'Set VITE_STRIPE_PUBLISHABLE_KEY so upgrade confirmations can go live.'
           }
           guidance={stripeEnvGuidance}
+        />
+        <IntegrationStatus
+          label="Plaid bank sync"
+          ready={hasPlaidConfig}
+          description={
+            hasPlaidConfig
+              ? `${plaidEnvironmentLabel}. Hook up the Integrations lab to edge functions next.`
+              : 'Add Plaid sandbox credentials so the bank sync lab can demo Link hand-offs.'
+          }
+          guidance={plaidEnvGuidance}
         />
       </section>
 

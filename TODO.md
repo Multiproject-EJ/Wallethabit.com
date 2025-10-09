@@ -13,9 +13,10 @@
 - [x] Contribution strategy lab simulation
 - [x] Profile/settings page (plan, locale)
 - [x] AI helper panel (copy skeleton)
+- [x] Bank sync blueprint (Plaid sandbox)
 
 ## LATER
-- [ ] Bank import integration
+- [ ] Bank import integration (production credentials)
 - [ ] Family/shared budgets
 - [ ] Multi-language
 - [ ] PWA
