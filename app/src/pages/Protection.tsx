@@ -169,212 +169,374 @@ export default function Protection() {
   const lifeGap = Math.max(0, recommendations.recommendedLife - lifeCoverage)
   const disabilityGap = Math.max(0, recommendations.monthlyIncomeReplacement - disabilityCoverage)
 
+  const emergencyProgress = recommendations.emergencyTarget === 0
+    ? 0
+    : Math.round((emergencySavings / recommendations.emergencyTarget) * 100)
+  const lifeProgress = recommendations.recommendedLife === 0
+    ? 0
+    : Math.round((lifeCoverage / recommendations.recommendedLife) * 100)
+  const disabilityProgress = recommendations.monthlyIncomeReplacement === 0
+    ? 0
+    : Math.round((disabilityCoverage / recommendations.monthlyIncomeReplacement) * 100)
+
+  const clampPercent = (value: number) => Math.max(0, Math.min(100, value))
+  const readinessScore = Math.round(
+    (clampPercent(emergencyProgress) + clampPercent(lifeProgress) + clampPercent(disabilityProgress)) / 3,
+  )
+
+  let readinessStatus = 'Lay the groundwork'
+  let readinessMessage =
+    'Build the baseline systems: label your safety net accounts, document policies, and line up renewal reminders.'
+
+  if (readinessScore >= 90) {
+    readinessStatus = 'Storm ready'
+    readinessMessage = 'You can absorb most surprises. Now reinforce automations so Copilot keeps your protection plan warm.'
+  } else if (readinessScore >= 70) {
+    readinessStatus = 'Momentum building'
+    readinessMessage = 'Coverage is closing in. Schedule policy refreshes and direct bonuses into the safety net to lock it in.'
+  } else if (readinessScore >= 50) {
+    readinessStatus = 'In build mode'
+    readinessMessage = 'Tighten emergency reserves and review employer benefits so life coverage can scale with confidence.'
+  }
+
+  const coverageMetrics = [
+    {
+      id: 'emergency',
+      label: 'Emergency runway',
+      current: emergencySavings,
+      target: recommendations.emergencyTarget,
+      gap: emergencyGap,
+      percent: emergencyProgress,
+      tone: 'from-primary/60 via-primary/40 to-primary/30',
+      indicator: 'bg-primary-light',
+      description: `Target ${coverageMonths} month runway · Persona baseline ${persona.emergencyMonths} months`,
+    },
+    {
+      id: 'life',
+      label: 'Life coverage need',
+      current: lifeCoverage,
+      target: recommendations.recommendedLife,
+      gap: lifeGap,
+      percent: lifeProgress,
+      tone: 'from-coral/80 via-coral/60 to-coral/40',
+      indicator: 'bg-coral',
+      description: `${persona.lifeMultiplier}× income + family buffer ${currencyFormatter.format(persona.familyFactor)}`,
+    },
+    {
+      id: 'disability',
+      label: 'Monthly income replacement',
+      current: disabilityCoverage,
+      target: recommendations.monthlyIncomeReplacement,
+      gap: disabilityGap,
+      percent: disabilityProgress,
+      tone: 'from-gold/70 via-gold/60 to-gold/40',
+      indicator: 'bg-gold',
+      description: `Aim for ${Math.round(persona.disabilityIncomeRate * 100)}% of take-home income`,
+    },
+  ]
+
   return (
-    <div className="flex flex-1 flex-col gap-10">
-      <header className="rounded-3xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl space-y-4">
-            <span className="inline-flex items-center rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
-              New • Protection lab preview
-            </span>
-            <h1 className="text-4xl font-bold text-slate-900">Build a resilient safety net before storms roll in.</h1>
-            <p className="text-sm text-slate-600">
-              Stress-test your coverage with custom personas, runway sliders, and advisor-ready checklists. Supabase will soon
-              persist these assumptions so Copilot can watch for gaps in real time.
+    <div className="flex flex-1 flex-col gap-12 pb-20">
+      <header className="relative overflow-hidden rounded-3xl border border-primary/40 bg-gradient-to-br from-emerald-200/50 via-primary/20 to-navy/40 p-10 text-slate-900 shadow-lg">
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute -left-32 -top-24 h-72 w-72 rounded-full bg-primary-light/60 blur-3xl" />
+          <div className="absolute bottom-[-80px] right-[-60px] h-80 w-80 rounded-full bg-coral/50 blur-3xl" />
+          <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/40 blur-3xl" />
+        </div>
+        <div className="relative flex flex-col gap-10">
+          <div className="flex flex-col gap-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-dark/80">Protection lab</p>
+            <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
+              Build a resilient safety net before storms roll in
+            </h1>
+            <p className="max-w-3xl text-sm text-slate-800">
+              Shape your emergency runway, layer the right coverage, and prep advisor-ready rituals. WalletHabit will soon sync
+              real balances and policies so Copilot can pulse you before gaps open.
             </p>
           </div>
-          <div className="rounded-2xl border border-brand/40 bg-brand/10 px-5 py-4 text-sm text-brand-dark">
-            <p className="font-semibold">Why this matters</p>
-            <p className="mt-2">
-              Protection planning keeps momentum intact when life gets unpredictable. This lab stages emergency fund tracking,
-              insurance gap analysis, and estate coordination workflows ahead of full data sync.
-            </p>
+
+          <div className="grid gap-4 lg:grid-cols-[1.15fr,0.85fr]">
+            <div className="flex flex-col gap-4 rounded-2xl border border-primary/40 bg-white/70 p-5 backdrop-blur">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-primary-dark">
+                  <span className="h-2 w-2 rounded-full bg-primary-light" /> {persona.label}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-slate-700">
+                  Runway target {coverageMonths} mo
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-slate-700">
+                  Coverage sync in preview
+                </span>
+              </div>
+              <p className="text-sm text-slate-700">{persona.description}</p>
+            </div>
+            <div className="flex flex-col gap-3 rounded-2xl border border-primary/40 bg-white/70 p-5 text-sm text-slate-700 backdrop-blur">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Resilience status</p>
+                  <div className="mt-2 flex items-end gap-3">
+                    <p className="text-3xl font-semibold text-primary-dark">{readinessScore}%</p>
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-dark">
+                      {readinessStatus}
+                    </span>
+                  </div>
+                </div>
+                <div className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-dark">
+                  Automations ship next
+                </div>
+              </div>
+              <p className="text-xs text-slate-600">{readinessMessage}</p>
+            </div>
           </div>
         </div>
       </header>
 
-      <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Persona focus</p>
-              <div className="flex flex-wrap gap-2">
-                {personas.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setPersonaId(item.id)}
-                    className={[
-                      'rounded-full border px-4 py-2 text-sm font-medium transition',
-                      personaId === item.id
-                        ? 'border-brand bg-brand/10 text-brand'
-                        : 'border-slate-200 text-slate-600 hover:border-brand/40 hover:text-brand',
-                    ].join(' ')}
+      <section className="grid gap-8 xl:grid-cols-[1.45fr,1fr]">
+        <article className="flex flex-col gap-6 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-xl font-semibold text-slate-900">Calibrate your safety net</h2>
+            <p className="text-sm text-slate-600">
+              Tune the persona, runway, and coverage sliders. WalletHabit will persist these soon so Copilot can monitor guardrails
+              and cheer on every protection win.
+            </p>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-[1.1fr,0.9fr]">
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white/80 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Persona focus</p>
+                <div className="flex flex-wrap gap-2">
+                  {personas.map((item) => {
+                    const isActive = item.id === personaId
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setPersonaId(item.id)}
+                        className={[
+                          'rounded-full border px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+                          isActive
+                            ? 'border-primary/60 bg-gradient-to-r from-primary/20 via-white to-primary/10 text-primary-dark shadow-sm'
+                            : 'border-slate-200/70 bg-white/70 text-slate-600 hover:border-primary/40 hover:text-primary-dark',
+                        ].join(' ')}
+                      >
+                        {item.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-sand p-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Annual household income
+                  </span>
+                  <input
+                    className="w-full accent-primary"
+                    type="range"
+                    min={40000}
+                    max={220000}
+                    step={5000}
+                    value={annualIncome}
+                    onChange={(event) => setAnnualIncome(Number(event.currentTarget.value))}
+                  />
+                  <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(annualIncome)}</span>
+                </label>
+
+                <label className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-sand p-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Monthly core expenses
+                  </span>
+                  <input
+                    className="w-full accent-primary"
+                    type="range"
+                    min={2500}
+                    max={9000}
+                    step={250}
+                    value={monthlyExpenses}
+                    onChange={(event) => setMonthlyExpenses(Number(event.currentTarget.value))}
+                  />
+                  <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(monthlyExpenses)}</span>
+                </label>
+
+                <label className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-sand p-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Target runway (months)
+                  </span>
+                  <input
+                    className="w-full accent-primary"
+                    type="range"
+                    min={3}
+                    max={18}
+                    step={1}
+                    value={coverageMonths}
+                    onChange={(event) => setCoverageMonths(Number(event.currentTarget.value))}
+                  />
+                  <span className="text-lg font-semibold text-slate-900">{coverageMonths} months</span>
+                  <p className="text-xs text-slate-500">
+                    Persona baseline: {persona.emergencyMonths} months · adjust to match your comfort zone.
+                  </p>
+                </label>
+
+                <label className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-sand p-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Emergency savings on hand
+                  </span>
+                  <input
+                    className="w-full accent-primary"
+                    type="range"
+                    min={0}
+                    max={90000}
+                    step={1000}
+                    value={emergencySavings}
+                    onChange={(event) => setEmergencySavings(Number(event.currentTarget.value))}
+                  />
+                  <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(emergencySavings)}</span>
+                </label>
+
+                <label className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-sand p-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Existing life coverage
+                  </span>
+                  <input
+                    className="w-full accent-primary"
+                    type="range"
+                    min={0}
+                    max={1500000}
+                    step={25000}
+                    value={lifeCoverage}
+                    onChange={(event) => setLifeCoverage(Number(event.currentTarget.value))}
+                  />
+                  <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(lifeCoverage)}</span>
+                </label>
+
+                <label className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-sand p-4">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Monthly disability benefit
+                  </span>
+                  <input
+                    className="w-full accent-primary"
+                    type="range"
+                    min={0}
+                    max={10000}
+                    step={250}
+                    value={disabilityCoverage}
+                    onChange={(event) => setDisabilityCoverage(Number(event.currentTarget.value))}
+                  />
+                  <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(disabilityCoverage)}</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Coverage scoreboard</p>
+              <div className="grid gap-4">
+                {coverageMetrics.map((metric) => (
+                  <div
+                    key={metric.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm shadow-emerald-100/40"
                   >
-                    {item.label}
-                  </button>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{metric.label}</p>
+                        <p className="text-xs text-slate-500">{metric.description}</p>
+                      </div>
+                      <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-600">
+                        {Math.max(metric.percent, 0)}%
+                      </span>
+                    </div>
+                    <div className="relative h-3 overflow-hidden rounded-full bg-slate-200/70">
+                      <div
+                        className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${metric.tone}`}
+                        style={{ width: `${Math.max(0, Math.min(100, metric.percent))}%` }}
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                      <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-slate-700">
+                        <span className={`h-2 w-2 rounded-full ${metric.indicator}`} />
+                        {currencyFormatter.format(metric.current)} now
+                      </span>
+                      <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-slate-700">
+                        Target {currencyFormatter.format(metric.target)}
+                      </span>
+                      <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-slate-600">
+                        Gap {currencyFormatter.format(metric.gap)}
+                      </span>
+                    </div>
+                  </div>
                 ))}
-              </div>
-              <p className="text-sm text-slate-600">{persona.description}</p>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <label className="flex flex-col gap-2">
-                <span className="text-xs uppercase tracking-wide text-slate-500">Annual household income</span>
-                <input
-                  type="range"
-                  min={40000}
-                  max={220000}
-                  step={5000}
-                  value={annualIncome}
-                  onChange={(event) => setAnnualIncome(Number(event.currentTarget.value))}
-                />
-                <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(annualIncome)}</span>
-              </label>
-
-              <label className="flex flex-col gap-2">
-                <span className="text-xs uppercase tracking-wide text-slate-500">Monthly core expenses</span>
-                <input
-                  type="range"
-                  min={2500}
-                  max={9000}
-                  step={250}
-                  value={monthlyExpenses}
-                  onChange={(event) => setMonthlyExpenses(Number(event.currentTarget.value))}
-                />
-                <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(monthlyExpenses)}</span>
-              </label>
-
-              <label className="flex flex-col gap-2">
-                <span className="text-xs uppercase tracking-wide text-slate-500">Target runway (months)</span>
-                <input
-                  type="range"
-                  min={3}
-                  max={18}
-                  step={1}
-                  value={coverageMonths}
-                  onChange={(event) => setCoverageMonths(Number(event.currentTarget.value))}
-                />
-                <span className="text-lg font-semibold text-slate-900">{coverageMonths} months</span>
-                <p className="text-xs text-slate-500">
-                  Persona baseline: {persona.emergencyMonths} months · Adjust to match your comfort zone.
-                </p>
-              </label>
-
-              <label className="flex flex-col gap-2">
-                <span className="text-xs uppercase tracking-wide text-slate-500">Emergency savings on hand</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={90000}
-                  step={1000}
-                  value={emergencySavings}
-                  onChange={(event) => setEmergencySavings(Number(event.currentTarget.value))}
-                />
-                <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(emergencySavings)}</span>
-              </label>
-
-              <label className="flex flex-col gap-2">
-                <span className="text-xs uppercase tracking-wide text-slate-500">Existing life coverage</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={1500000}
-                  step={25000}
-                  value={lifeCoverage}
-                  onChange={(event) => setLifeCoverage(Number(event.currentTarget.value))}
-                />
-                <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(lifeCoverage)}</span>
-              </label>
-
-              <label className="flex flex-col gap-2">
-                <span className="text-xs uppercase tracking-wide text-slate-500">Monthly disability benefit</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={10000}
-                  step={250}
-                  value={disabilityCoverage}
-                  onChange={(event) => setDisabilityCoverage(Number(event.currentTarget.value))}
-                />
-                <span className="text-lg font-semibold text-slate-900">{currencyFormatter.format(disabilityCoverage)}</span>
-              </label>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Emergency runway target</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-900">
-                  {currencyFormatter.format(recommendations.emergencyTarget)}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">Gap: {currencyFormatter.format(emergencyGap)}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Life coverage need</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-900">
-                  {currencyFormatter.format(recommendations.recommendedLife)}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">Gap: {currencyFormatter.format(lifeGap)}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Monthly income replacement</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-900">
-                  {currencyFormatter.format(recommendations.monthlyIncomeReplacement)}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">Gap: {currencyFormatter.format(disabilityGap)}</p>
               </div>
             </div>
           </div>
         </article>
 
-        <aside className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm text-sm text-slate-600">
-          <h2 className="text-lg font-semibold text-slate-900">Coverage gap insights</h2>
+        <aside className="flex flex-col gap-5 rounded-3xl border border-primary/30 bg-gradient-to-br from-white/80 via-primary/5 to-white/60 p-6 text-sm text-slate-700 shadow-lg shadow-emerald-100/40">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">Coverage intelligence</h2>
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-dark">
+              Copilot briefs coming soon
+            </span>
+          </div>
           <p>
-            WalletHabit will watch your runways, policies, and beneficiaries. When gaps appear, Copilot will tee up quotes,
-            savings boosts, or policy riders to keep your plan resilient.
+            WalletHabit keeps watch on runways, policies, and beneficiaries. When thresholds slip, your copilot will tee up
+            quotes, savings boosts, or advisor nudges so the plan stays calm.
           </p>
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-              <p>Sync emergency fund + premium transactions to trend against your runway targets.</p>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-dark">
+                1
+              </span>
+              <p>Sync emergency and premium transactions to trend against your runway targets in real time.</p>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-              <p>Surface open enrolment reminders so you never miss better employer coverage.</p>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-dark">
+                2
+              </span>
+              <p>Surface open-enrolment reminders so employer benefits and personal policies stay dialled in.</p>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-              <p>Share advisor-ready snapshots that summarise net worth protection in minutes.</p>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-dark">
+                3
+              </span>
+              <p>Generate advisor-ready summaries that highlight coverage gaps, beneficiaries, and next steps.</p>
             </li>
           </ul>
         </aside>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">Coverage playbooks</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Quick-start rituals keep momentum high. Pair these with automations once Supabase data writes go live.
-          </p>
-          <ul className="mt-4 space-y-3">
+      <section className="grid gap-8 lg:grid-cols-2">
+        <article className="flex flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100/40">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Coverage rituals</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Pair these rituals with automation once Supabase write-backs land. Momentum comes from small, consistent upgrades.
+            </p>
+          </div>
+          <ul className="space-y-4">
             {playbooks.map((play) => (
-              <li key={play.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold text-slate-900">{play.title}</p>
-                <p className="mt-1 text-sm text-slate-600">{play.description}</p>
+              <li
+                key={play.title}
+                className="rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white via-sand to-white p-5 shadow-sm"
+              >
+                <p className="text-sm font-semibold text-slate-900">{play.title}</p>
+                <p className="mt-2 text-sm text-slate-600">{play.description}</p>
               </li>
             ))}
           </ul>
         </article>
 
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">Readiness checklist</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Use this list during onboarding so foundational protection steps are tracked from day one.
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-slate-600">
+        <article className="flex flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100/40">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Readiness runway</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Use this checklist during onboarding so foundational protection steps are captured from day one.
+            </p>
+          </div>
+          <ul className="space-y-3 text-sm text-slate-600">
             {readinessChecklist.map((item) => (
-              <li key={item} className="flex items-start gap-3">
-                <span className="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-brand/30 bg-brand/10 text-xs font-semibold text-brand">
+              <li key={item} className="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                <span className="mt-1 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-primary-dark shadow-sm">
                   ✓
                 </span>
                 <p>{item}</p>
@@ -384,46 +546,57 @@ export default function Protection() {
         </article>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">Rollout milestones</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Shipping order once engineering cycles spin up. Each milestone unlocks richer automations.
-          </p>
-          <ul className="mt-4 space-y-3 text-sm text-slate-600">
+      <section className="grid gap-8 xl:grid-cols-[1.3fr,1fr]">
+        <article className="flex flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100/40">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Rollout milestones</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Here&apos;s how the lab ships from schema to advisor mode once engineering cycles spin up.
+            </p>
+          </div>
+          <ul className="space-y-4 text-sm text-slate-600">
             {rolloutMilestones.map((milestone) => (
-              <li key={milestone.label} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
-                <div>
-                  <p className="font-semibold text-slate-900">{milestone.label}</p>
-                  <p className="text-xs uppercase tracking-wide text-slate-500">{milestone.timeframe}</p>
-                  <p className="mt-1 text-sm">{milestone.description}</p>
+              <li
+                key={milestone.label}
+                className="flex flex-col gap-2 rounded-2xl border border-slate-200/70 bg-gradient-to-r from-white via-sand to-white p-5"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-slate-900">{milestone.label}</p>
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary-dark">
+                    {milestone.timeframe}
+                  </span>
                 </div>
+                <p>{milestone.description}</p>
               </li>
             ))}
           </ul>
         </article>
 
-        <article className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">Guardrails & signals</h2>
-          <div className="space-y-4 text-sm text-slate-600">
-            <div>
-              <p className="font-semibold text-slate-900">Guardrails</p>
-              <ul className="mt-2 space-y-2">
+        <article className="flex flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100/40">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Guardrails & momentum signals</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Keep these cues visible so you know when to celebrate and when to reinforce the plan.
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <p className="text-sm font-semibold text-slate-900">Guardrails</p>
+              <ul className="space-y-2 text-sm text-slate-600">
                 {guardrails.map((item) => (
                   <li key={item} className="flex items-start gap-2">
-                    <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+                    <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary-light" />
                     <p>{item}</p>
                   </li>
                 ))}
               </ul>
             </div>
-            <div>
-              <p className="font-semibold text-slate-900">Momentum signals</p>
-              <ul className="mt-2 space-y-2">
+            <div className="flex flex-col gap-3 rounded-2xl border border-gold/40 bg-gold/10 p-4">
+              <p className="text-sm font-semibold text-slate-900">Momentum signals</p>
+              <ul className="space-y-2 text-sm text-slate-600">
                 {signalBeacons.map((item) => (
                   <li key={item} className="flex items-start gap-2">
-                    <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500"></span>
+                    <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-gold" />
                     <p>{item}</p>
                   </li>
                 ))}
@@ -433,16 +606,21 @@ export default function Protection() {
         </article>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Support channels</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          When customers need expert help, WalletHabit will surface curated partners and workflows.
-        </p>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
+      <section className="flex flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100/40">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-xl font-semibold text-slate-900">Support partners</h2>
+          <p className="text-sm text-slate-600">
+            When customers need expert help, WalletHabit will surface curated partners and workflows right inside the lab.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
           {supportChannels.map((channel) => (
-            <div key={channel.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="font-semibold text-slate-900">{channel.label}</p>
-              <p className="mt-1 text-sm text-slate-600">{channel.description}</p>
+            <div
+              key={channel.label}
+              className="flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white via-sand to-white p-5 shadow-sm"
+            >
+              <p className="text-sm font-semibold text-slate-900">{channel.label}</p>
+              <p className="text-sm text-slate-600">{channel.description}</p>
             </div>
           ))}
         </div>

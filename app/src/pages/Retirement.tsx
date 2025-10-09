@@ -214,184 +214,331 @@ export default function Retirement() {
 
   const retirementStartIncome = currencyFormatter.format(projectedIncome)
   const adjustedNeed = currencyFormatter.format(inflationAdjustedNeed)
-  const gap = Math.max(inflationAdjustedNeed - projectedIncome, 0)
-  const gapCopy = gap <= 0 ? 'Ready to coast — surplus covers dream scenarios.' : `${currencyFormatter.format(gap)} monthly gap to close.`
+  const gapAmount = inflationAdjustedNeed - projectedIncome
+  const gap = Math.max(gapAmount, 0)
+  const gapLabel = gap <= 0 ? 'Surplus ready' : `Gap ${currencyFormatter.format(gap)}/mo`
+
+  const readinessInsight = useMemo(() => {
+    if (readinessRatio >= 1.05) {
+      return {
+        status: 'Coast-ready momentum',
+        message: `Projected withdrawals exceed your ${lifestyleProfile.label.toLowerCase()} lifestyle by ${currencyFormatter.format(
+          Math.abs(gapAmount),
+        )} each month. Keep autopilot contributions steady to protect the lead.`,
+      }
+    }
+
+    if (readinessRatio >= 0.9) {
+      return {
+        status: 'Within reach',
+        message: `A consistent contribution streak and small boosts will close the remaining ${currencyFormatter.format(
+          Math.max(gapAmount, 0),
+        )} gap before launch.`,
+      }
+    }
+
+    return {
+      status: 'Build the runway',
+      message:
+        'Increase contributions, extend your retirement age, or adjust lifestyle assumptions to lift projected coverage before automations go live.',
+    }
+  }, [gapAmount, lifestyleProfile.label, readinessRatio])
 
   return (
-    <div className="flex flex-1 flex-col gap-10">
-      <header className="rounded-3xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
-        <p className="text-xs uppercase tracking-[0.2em] text-brand">Retirement readiness lab</p>
-        <h1 className="mt-3 text-3xl font-bold text-slate-900">Design your glide path to work-optional life</h1>
-        <p className="mt-3 max-w-3xl text-sm text-slate-600">
-          Dial in lifestyle archetypes, contribution cadence, and return expectations to see how WalletHabit will coach your
-          retirement runway. Once Supabase persistence lands, these assumptions sync with the investment autopilot and budget
-          rituals to keep the plan alive.
-        </p>
-        <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-brand/40 bg-brand/10 px-4 py-2 text-xs font-semibold text-brand">
-          <span className="inline-flex h-2 w-2 rounded-full bg-brand"></span>
-          Projection sandbox — Supabase sync pending secrets
+    <div className="flex flex-1 flex-col gap-12 pb-20">
+      <header className="relative overflow-hidden rounded-3xl border border-emerald-200/60 bg-gradient-to-br from-emerald-200/60 via-teal-500/25 to-navy/50 p-10 text-slate-900 shadow-lg">
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute -left-36 -top-32 h-80 w-80 rounded-full bg-emerald-300/50 blur-3xl" />
+          <div className="absolute bottom-[-90px] right-[-80px] h-96 w-96 rounded-full bg-teal-300/40 blur-3xl" />
         </div>
-      </header>
+        <div className="relative flex flex-col gap-10">
+          <div className="flex flex-col gap-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-900/80">Retirement readiness lab</p>
+            <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">Design your glide path to work-optional life</h1>
+            <p className="max-w-3xl text-sm text-slate-800">
+              Tune lifestyle narratives, contribution cadence, and return expectations inside this sandbox. WalletHabit will soon sync your Supabase profile, celebrate milestones, and keep the retirement autopilot honest as real balances stream in from Plaid.
+            </p>
+          </div>
 
-      <section className="grid gap-6 xl:grid-cols-[1.6fr,1.4fr]">
-        <article className="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex flex-col gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Age trajectory</h2>
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current age</label>
-              <div className="flex items-center gap-4">
-                <input
-                  className="flex-1"
-                  type="range"
-                  min={25}
-                  max={55}
-                  value={currentAge}
-                  onChange={(event) => setCurrentAge(Number(event.target.value))}
-                />
-                <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-900">
-                  {currentAge}
+          <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
+            <div className="flex flex-col gap-5 rounded-2xl border border-emerald-200/70 bg-white/80 p-6 backdrop-blur">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> {coveragePercent} coverage
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-slate-700">
+                  {yearsToInvest} yrs to invest
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+                  {returnMode.label}
                 </span>
               </div>
 
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Target retirement age</label>
-              <div className="flex items-center gap-4">
-                <input
-                  className="flex-1"
-                  type="range"
-                  min={45}
-                  max={68}
-                  value={retirementAge}
-                  onChange={(event) => setRetirementAge(Number(event.target.value))}
-                />
-                <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-900">
-                  {retirementAge}
-                </span>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="flex flex-col gap-1 rounded-2xl border border-emerald-200 bg-white/80 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Projected income</p>
+                  <p className="text-lg font-semibold text-slate-900">{retirementStartIncome}</p>
+                  <p className="text-xs text-slate-600">At age {retirementAge} using the {returnMode.label.toLowerCase()} path</p>
+                </div>
+                <div className="flex flex-col gap-1 rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Lifestyle need</p>
+                  <p className="text-lg font-semibold text-emerald-800">{adjustedNeed}</p>
+                  <p className="text-xs text-emerald-700">{lifestyleProfile.label}</p>
+                </div>
+                <div className="flex flex-col gap-1 rounded-2xl border border-emerald-200 bg-white/80 p-4">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Momentum score</p>
+                  <p className="text-lg font-semibold text-slate-900">{readinessScore}</p>
+                  <p className="text-xs text-slate-600">{gapLabel}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-emerald-200 bg-white/80 p-4 text-sm text-slate-700">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Return assumption</p>
+                  <p className="mt-2 text-base font-semibold text-slate-900">{percentageFormatter.format(returnMode.rate)}</p>
+                  <p className="text-xs text-slate-600">{returnMode.description}</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-800">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">{readinessInsight.status}</p>
+                  <p className="mt-2 text-xs leading-relaxed">{readinessInsight.message}</p>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <h2 className="text-lg font-semibold text-slate-900">Investable runway</h2>
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current invested balance</label>
-              <div className="flex items-center gap-4">
-                <input
-                  className="flex-1"
-                  type="range"
-                  min={50_000}
-                  max={900_000}
-                  step={5_000}
-                  value={currentBalance}
-                  onChange={(event) => setCurrentBalance(Number(event.target.value))}
-                />
-                <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-900">
-                  {currencyFormatter.format(currentBalance)}
+            <div className="flex flex-col gap-4 rounded-2xl border border-emerald-200/70 bg-white/70 p-6 text-sm text-slate-700 backdrop-blur">
+              <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <span>Projection status</span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> Sandbox ready
                 </span>
               </div>
+              <h3 className="text-xl font-semibold text-slate-900">Work-optional horizon in {yearsToInvest} years</h3>
+              <p className="text-xs leading-relaxed text-slate-600">
+                WalletHabit will turn this sandbox into your live readiness engine once Supabase connections ship. Until then, experiment freely knowing Plaid inflows, Copilot nudges, and celebration loops will meet you here soon.
+              </p>
+              <div className="rounded-2xl border border-emerald-200 bg-white/80 p-4 text-xs text-slate-600">
+                <p className="font-semibold uppercase tracking-wide text-slate-500">Next up</p>
+                <p className="mt-2 text-sm text-slate-700">
+                  Prep account linking and document your retirement statement so Copilot can personalise prompts and trigger boost rituals automatically.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-              <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Monthly contributions</label>
-              <div className="flex items-center gap-4">
-                <input
-                  className="flex-1"
-                  type="range"
-                  min={600}
-                  max={4000}
-                  step={50}
-                  value={monthlyContribution}
-                  onChange={(event) => setMonthlyContribution(Number(event.target.value))}
-                />
-                <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-900">
-                  {currencyFormatter.format(monthlyContribution)} / mo
-                </span>
+      <section className="grid gap-6 xl:grid-cols-[1.35fr,0.95fr]">
+        <article className="flex flex-col gap-6 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-xl font-semibold text-slate-900">Tune your retirement runway</h2>
+            <p className="text-sm text-slate-600">
+              Adjust the levers that shape your readiness. These inputs will soon persist to Supabase so your dashboard, goals, and Copilot stay aligned with the plan.
+            </p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <div className="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+              <div className="flex flex-col gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Current age</span>
+                <p className="text-xs text-slate-600">Where you are today anchors the projection timeline.</p>
+                <div className="flex items-center gap-4">
+                  <input
+                    className="flex-1 accent-primary"
+                    type="range"
+                    min={25}
+                    max={55}
+                    value={currentAge}
+                    onChange={(event) => setCurrentAge(Number(event.target.value))}
+                  />
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900">
+                    {currentAge}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Target retirement age</span>
+                <p className="text-xs text-slate-600">Shift your work-optional horizon and see how coverage responds.</p>
+                <div className="flex items-center gap-4">
+                  <input
+                    className="flex-1 accent-primary"
+                    type="range"
+                    min={45}
+                    max={68}
+                    value={retirementAge}
+                    onChange={(event) => setRetirementAge(Number(event.target.value))}
+                  />
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900">
+                    {retirementAge}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+              <div className="flex flex-col gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Current invested balance</span>
+                <p className="text-xs text-slate-600">Update this as your accounts sync so projections stay grounded.</p>
+                <div className="flex items-center gap-4">
+                  <input
+                    className="flex-1 accent-primary"
+                    type="range"
+                    min={50_000}
+                    max={900_000}
+                    step={5_000}
+                    value={currentBalance}
+                    onChange={(event) => setCurrentBalance(Number(event.target.value))}
+                  />
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900">
+                    {currencyFormatter.format(currentBalance)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Monthly contributions</span>
+                <p className="text-xs text-slate-600">Capture automated transfers, employer plans, and side hustle boosts.</p>
+                <div className="flex items-center gap-4">
+                  <input
+                    className="flex-1 accent-primary"
+                    type="range"
+                    min={600}
+                    max={4000}
+                    step={50}
+                    value={monthlyContribution}
+                    onChange={(event) => setMonthlyContribution(Number(event.target.value))}
+                  />
+                  <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900">
+                    {currencyFormatter.format(monthlyContribution)} / mo
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {returnModes.map((mode) => {
-              const isActive = mode.id === returnMode.id
+          <div className="rounded-2xl border border-slate-200 bg-white/80 p-5">
+            <div className="flex flex-col gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Return paths</p>
+              <p className="text-xs text-slate-600">
+                Pick the glide path that mirrors your risk posture. WalletHabit will eventually lock your selection into the investing lab so your plan stays coherent.
+              </p>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {returnModes.map((mode) => {
+                const isActive = mode.id === returnMode.id
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => setSelectedReturnMode(mode.id)}
+                    className={[
+                      'flex h-full flex-col gap-3 rounded-2xl border p-4 text-left text-sm transition',
+                      isActive
+                        ? 'border-emerald-400 bg-gradient-to-br from-emerald-100 via-white to-emerald-50 text-emerald-800 shadow-sm'
+                        : 'border-slate-200 bg-white/70 text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/70 hover:text-slate-900',
+                    ].join(' ')}
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{mode.label}</p>
+                    <h4 className="text-base font-semibold text-slate-900">{percentageFormatter.format(mode.rate)}</h4>
+                    <p className="text-xs text-slate-600">{mode.description}</p>
+                    <div className="mt-auto flex items-center justify-between rounded-xl border border-emerald-200 bg-white/80 px-3 py-2 text-xs font-semibold">
+                      <span className="text-slate-900">{mode.volatility} volatility</span>
+                      <span className="text-emerald-600">Select</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </article>
+
+        <aside className="flex flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-sm text-emerald-800">
+            <h3 className="text-base font-semibold text-emerald-900">How the projection works</h3>
+            <p className="mt-2 text-xs leading-relaxed text-emerald-800/90">
+              We compound today&apos;s invested balance, layer in your monthly contributions, and apply the selected return path. Safe-withdrawal assumptions translate balances into monthly income so you know exactly how lifestyle coverage is tracking.
+            </p>
+            <p className="mt-3 text-xs leading-relaxed text-emerald-800/90">
+              As Supabase syncs arrive, WalletHabit will store every tweak and compare projections against live brokerage feeds to keep the momentum honest.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white/90 p-5">
+            <h3 className="text-base font-semibold text-slate-900">Catch-up priorities</h3>
+            <ul className="mt-3 flex flex-col gap-3 text-sm text-slate-600">
+              {catchUpMoves.map((item) => (
+                <li key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="text-xs text-slate-600">{item.narrative}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[1.25fr,0.75fr]">
+        <article className="flex flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-xl font-semibold text-slate-900">Lifestyle and legacy focus</h2>
+            <p className="text-sm text-slate-600">
+              Choose the retirement narrative that best matches your energy, values, and giving goals. We&apos;ll tailor readiness copy and Copilot nudges to keep that story alive.
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {lifestyleArchetypes.map((profile) => {
+              const active = profile.id === lifestyleProfile.id
               return (
                 <button
-                  key={mode.id}
-                  onClick={() => setSelectedReturnMode(mode.id)}
+                  key={profile.id}
+                  type="button"
+                  onClick={() => setLifestyle(profile.id)}
                   className={[
-                    'flex h-full flex-col gap-2 rounded-2xl border p-4 text-left text-sm transition',
-                    isActive
-                      ? 'border-brand bg-brand/10 text-brand-dark shadow-sm'
-                      : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-brand/40 hover:bg-white hover:text-slate-900',
+                    'flex h-full flex-col gap-2 rounded-2xl border p-4 text-left transition',
+                    active
+                      ? 'border-emerald-400 bg-gradient-to-br from-emerald-100 via-white to-emerald-50 text-emerald-800 shadow-sm'
+                      : 'border-slate-200 bg-white/70 text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/70 hover:text-slate-900',
                   ].join(' ')}
                 >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{mode.label}</p>
-                  <h3 className="text-base font-semibold text-slate-900">{percentageFormatter.format(mode.rate)}</h3>
-                  <p className="text-xs text-slate-600">{mode.description}</p>
-                  <div className="mt-auto flex items-center justify-between rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-xs">
-                    <span className="font-semibold text-slate-900">{mode.volatility}</span>
-                    <span className="font-semibold text-brand">Select</span>
+                  <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    <span>{profile.label}</span>
+                    <span>{currencyFormatter.format(profile.monthlyNeed)}/mo</span>
                   </div>
+                  <p className="text-xs text-slate-600">{profile.description}</p>
+                  <p className="text-xs font-medium text-slate-500">{profile.legacy}</p>
                 </button>
               )
             })}
           </div>
         </article>
 
-        <aside className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Readiness coverage</p>
-              <h2 className="mt-1 text-4xl font-bold text-slate-900">{coveragePercent}</h2>
-              <p className="mt-2 text-sm text-slate-600">Projected safe-withdrawal income at {retirementAge} covers lifestyle costs.</p>
-            </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-brand/40 bg-brand/10 text-lg font-bold text-brand">
-              {readinessScore}
-            </div>
+        <aside className="flex flex-col gap-4 rounded-3xl border border-emerald-200/70 bg-emerald-50/80 p-6 shadow-lg shadow-emerald-100">
+          <div className="rounded-2xl border border-emerald-200 bg-white/80 p-5 text-sm text-slate-700">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Legacy focus</p>
+            <p className="mt-2 text-base font-semibold text-slate-900">{lifestyleProfile.legacy}</p>
+            <p className="mt-4 text-xs text-slate-600">
+              We&apos;ll map Supabase rituals to document guardians, giving vehicles, and lifestyle rituals tied to this scenario so everyone in your circle stays aligned.
+            </p>
           </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Projected monthly income</p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">{retirementStartIncome}</p>
-            <p className="mt-3 text-xs font-medium uppercase tracking-wide text-slate-500">Inflation-adjusted lifestyle need</p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">{adjustedNeed}</p>
-            <p className="mt-3 text-sm text-brand-dark">{gapCopy}</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Lifestyle archetype</p>
-            <div className="mt-2 flex flex-col gap-3">
-              {lifestyleArchetypes.map((profile) => {
-                const active = profile.id === lifestyleProfile.id
-                return (
-                  <button
-                    key={profile.id}
-                    onClick={() => setLifestyle(profile.id)}
-                    className={[
-                      'flex flex-col gap-1 rounded-xl border p-3 text-left transition',
-                      active
-                        ? 'border-brand bg-brand/10 text-brand-dark shadow-sm'
-                        : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-brand/40 hover:bg-white hover:text-slate-900',
-                    ].join(' ')}
-                  >
-                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide">
-                      <span>{profile.label}</span>
-                      <span>{currencyFormatter.format(profile.monthlyNeed)}/mo</span>
-                    </div>
-                    <p className="text-xs text-slate-600">{profile.description}</p>
-                    <p className="text-xs font-medium text-slate-500">{profile.legacy}</p>
-                  </button>
-                )
-              })}
-            </div>
+          <div className="rounded-2xl border border-emerald-200 bg-white/80 p-5 text-sm text-slate-700">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Inflation-adjusted lifestyle need</p>
+            <p className="mt-2 text-lg font-semibold text-slate-900">{adjustedNeed}</p>
+            <p className="text-xs text-slate-600">
+              Equivalent to {currencyFormatter.format(lifestyleProfile.monthlyNeed)} in today&apos;s dollars for the {lifestyleProfile.label.toLowerCase()} plan.
+            </p>
           </div>
         </aside>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.6fr,1.4fr]">
-        <article className="flex flex-col gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Momentum timeline</h2>
-          <p className="text-sm text-slate-600">
-            WalletHabit will chart progress every few years once bank and brokerage feeds sync. Use this projection to anchor
-            check-ins until live balances flow through Plaid.
-          </p>
+      <section className="grid gap-6 2xl:grid-cols-[1.4fr,0.6fr]">
+        <article className="flex flex-col gap-5 rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-lg shadow-emerald-100">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-xl font-semibold text-slate-900">Momentum timeline</h2>
+            <p className="text-sm text-slate-600">
+              Track projected balances every few years. Once live feeds land, this table becomes a living scoreboard for your work-optional countdown.
+            </p>
+          </div>
           <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <table className="min-w-full divide-y divide-slate-200 bg-white text-sm">
+              <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Age</th>
                   <th className="px-4 py-3">Projected balance</th>
@@ -411,54 +558,42 @@ export default function Retirement() {
           </div>
         </article>
 
-        <aside className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Catch-up priorities</h2>
-          <ul className="mt-2 flex flex-col gap-3 text-sm text-slate-600">
-            {catchUpMoves.map((item) => (
-              <li key={item.title} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-                <p className="text-xs text-slate-600">{item.narrative}</p>
-              </li>
-            ))}
-          </ul>
-        </aside>
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-3">
-        <article className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 text-sm shadow-sm">
-          <h3 className="text-base font-semibold text-slate-900">Readiness checklist</h3>
-          <ul className="flex flex-col gap-3 text-slate-600">
-            {readinessChecklist.map((item) => (
-              <li key={item} className="flex gap-3">
-                <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-brand"></span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
-        <article className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 text-sm shadow-sm">
-          <h3 className="text-base font-semibold text-slate-900">Rollout milestones</h3>
-          <ul className="flex flex-col gap-3 text-slate-600">
-            {rolloutMilestones.map((milestone) => (
-              <li key={milestone.label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{milestone.timeframe}</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{milestone.label}</p>
-                <p className="text-xs text-slate-600">{milestone.description}</p>
-              </li>
-            ))}
-          </ul>
-        </article>
-        <article className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 text-sm shadow-sm">
-          <h3 className="text-base font-semibold text-slate-900">Momentum signals</h3>
-          <ul className="flex flex-col gap-3 text-slate-600">
-            {momentumSignals.map((signal) => (
-              <li key={signal} className="flex gap-3">
-                <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-brand"></span>
-                <span>{signal}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
+        <div className="grid gap-4">
+          <article className="flex flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white/80 p-6 text-sm text-slate-600 shadow-lg shadow-emerald-100">
+            <h3 className="text-base font-semibold text-slate-900">Readiness checklist</h3>
+            <ul className="flex flex-col gap-3">
+              {readinessChecklist.map((item) => (
+                <li key={item} className="flex gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+          <article className="flex flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white/80 p-6 text-sm text-slate-600 shadow-lg shadow-emerald-100">
+            <h3 className="text-base font-semibold text-slate-900">Rollout milestones</h3>
+            <ul className="flex flex-col gap-3">
+              {rolloutMilestones.map((milestone) => (
+                <li key={milestone.label} className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">{milestone.timeframe}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900">{milestone.label}</p>
+                  <p className="text-xs text-slate-600">{milestone.description}</p>
+                </li>
+              ))}
+            </ul>
+          </article>
+          <article className="flex flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white/80 p-6 text-sm text-slate-600 shadow-lg shadow-emerald-100">
+            <h3 className="text-base font-semibold text-slate-900">Momentum signals</h3>
+            <ul className="flex flex-col gap-3">
+              {momentumSignals.map((signal) => (
+                <li key={signal} className="flex gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  <span>{signal}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </div>
       </section>
     </div>
   )
