@@ -20,6 +20,7 @@
 - [x] Retirement readiness lab (glide path projections)
 - [x] Protection safety net lab (coverage gaps + runway modeling)
 - [x] Tax strategy lab (contribution & conversion planning)
+- [x] Estate planning lab (legacy readiness modeling)
 
 ## LATER
 - [ ] Bank import integration (production credentials)

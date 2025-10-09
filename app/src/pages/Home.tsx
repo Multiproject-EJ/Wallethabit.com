@@ -37,6 +37,11 @@ const features = [
       'Persona-driven sliders map emergency runways, insurance coverage gaps, and advisor-ready guardrails.',
   },
   {
+    title: 'Estate planning lab',
+    description:
+      'Legacy blueprints organise trusts, guardians, liquidity buffers, and giving strategies before meeting counsel.',
+  },
+  {
     title: 'Tax strategy lab',
     description:
       'Model contribution mixes, business deductions, and Roth conversions before filing deadlines.',
