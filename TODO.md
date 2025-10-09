@@ -14,6 +14,7 @@
 - [x] Profile/settings page (plan, locale)
 - [x] AI helper panel (copy skeleton)
 - [x] Bank sync blueprint (Plaid sandbox)
+- [x] Debt payoff lab (snowball vs avalanche)
 
 ## LATER
 - [ ] Bank import integration (production credentials)

@@ -23,6 +23,11 @@ const highlights = [
     value: 'Blueprint live',
     description: 'New integrations lab outlines Plaid-powered imports, guardrails, and rollout milestones.',
   },
+  {
+    label: 'Debt payoff',
+    value: 'Strategy lab',
+    description: 'Fresh payoff lab simulates snowball, avalanche, and hybrid acceleration boosts.',
+  },
 ]
 
 export default function Dashboard() {
@@ -66,6 +71,12 @@ export default function Dashboard() {
               <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
               <p>
                 <strong>Bank sync pilot</strong> — integrate Plaid Link sandbox and prep transaction schemas.
+              </p>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand"></span>
+              <p>
+                <strong>Debt lab persistence</strong> — store liability profiles + payoff preferences with Supabase.
               </p>
             </li>
             <li className="flex items-start gap-3">

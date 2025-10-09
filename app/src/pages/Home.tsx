@@ -12,6 +12,11 @@ const features = [
       'Plaid-powered integration lab lays out partners, guardrails, and rollout milestones.',
   },
   {
+    title: 'Debt payoff lab',
+    description:
+      'Snowball vs. avalanche simulations show how extra boosts shrink timelines and interest.',
+  },
+  {
     title: 'Supabase-ready',
     description:
       'Browser client scaffolded; drop in VITE_SUPABASE_URL + anon key to light up auth.',
