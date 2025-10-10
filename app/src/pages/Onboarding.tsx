@@ -339,6 +339,7 @@ type Step = {
 
 type StepStatus = 'complete' | 'current' | 'upcoming'
 type StepBlockers = Partial<Record<StepId, string[]>>
+type OutstandingEntry = { step: Step; issues: string[]; index: number }
 
 const stepDefinitions: Step[] = [
   {
@@ -691,6 +692,52 @@ export default function Onboarding() {
 
     return { completionMap, blockers }
   }, [state])
+
+  const outstandingStepEntries = useMemo<OutstandingEntry[]>(
+    () =>
+      steps
+        .map((step, index) => {
+          const issues = blockers[step.id] ?? []
+          const isOptionalSkipped = step.optional && state.skippedOptionalSteps.includes(step.id)
+          if (issues.length === 0 || isOptionalSkipped) {
+            return null
+          }
+
+          return { step, issues, index }
+        })
+        .filter((entry): entry is OutstandingEntry => entry !== null),
+    [blockers, state.skippedOptionalSteps, steps]
+  )
+
+  const criticalOutstanding = useMemo(
+    () => outstandingStepEntries.filter((entry) => !entry.step.optional),
+    [outstandingStepEntries]
+  )
+
+  const outstandingBeforeReview = useMemo(
+    () =>
+      outstandingStepEntries.filter(
+        (entry) => entry.step.id !== 'review' && entry.step.id !== 'tour'
+      ),
+    [outstandingStepEntries]
+  )
+
+  const totalOutstandingIssues = useMemo(
+    () =>
+      outstandingStepEntries.reduce(
+        (total, entry) => total + entry.issues.length,
+        0
+      ),
+    [outstandingStepEntries]
+  )
+
+  const skippedOptionalStepsList = useMemo(
+    () =>
+      steps.filter(
+        (step) => step.optional && state.skippedOptionalSteps.includes(step.id)
+      ),
+    [state.skippedOptionalSteps, steps]
+  )
 
   const updateState = (updater: (current: OnboardingState) => OnboardingState) => {
     setStateWithStep((prev) => ({ ...prev, state: updater(prev.state) }))
@@ -2241,6 +2288,7 @@ export default function Onboarding() {
       }
       case 'review': {
         const totalBudget = state.budget.categories.reduce((total, category) => total + (category.planned || 0), 0)
+        const reviewOutstanding = outstandingBeforeReview
         return (
           <div className="space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -2302,6 +2350,54 @@ export default function Onboarding() {
                 )}
               </div>
             </div>
+            {reviewOutstanding.length > 0 && (
+              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
+                <p className="font-semibold">Before you launch</p>
+                <p className="mt-1 text-xs text-amber-700">
+                  Circle back to these steps if you want everything 100% dialled in.
+                </p>
+                <ul className="mt-3 space-y-2 text-xs">
+                  {reviewOutstanding.map((entry) => (
+                    <li key={`review-outstanding-${entry.step.id}`} className="rounded-2xl bg-white/60 p-3 text-amber-700">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-amber-800">{entry.step.title}</span>
+                        <span className="rounded-full bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-700">
+                          {entry.issues.length} reminder{entry.issues.length === 1 ? '' : 's'}
+                        </span>
+                      </div>
+                      <ul className="mt-2 list-disc space-y-1 pl-4">
+                        {entry.issues.slice(0, 2).map((issue, index) => (
+                          <li key={`review-outstanding-${entry.step.id}-${index}`}>{issue}</li>
+                        ))}
+                        {entry.issues.length > 2 && (
+                          <li className="font-semibold text-amber-600">+{entry.issues.length - 2} more</li>
+                        )}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={() => goToStep(entry.index)}
+                        className="mt-3 inline-flex items-center justify-center rounded-full border border-amber-300 px-4 py-1 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100"
+                      >
+                        Jump back to {entry.step.title}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {skippedOptionalStepsList.length > 0 && (
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-700">
+                <p className="font-semibold text-slate-900">Optional steps saved for later</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  We will remind you about these once you are comfortable exploring the dashboard.
+                </p>
+                <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-slate-500">
+                  {skippedOptionalStepsList.map((step) => (
+                    <li key={`review-skipped-${step.id}`}>{step.title}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
               <p className="font-semibold">Tiny disclaimer</p>
               <p className="mt-1">WalletHabit offers guidance, not financial advice. Always personalise before acting.</p>
@@ -2532,6 +2628,86 @@ export default function Onboarding() {
             <p className="mt-3 text-xs text-slate-500">
               {completedSteps} of {steps.length} steps complete.
             </p>
+          </div>
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between text-sm font-semibold text-slate-800">
+              <span>Quick checklist</span>
+              <span className="text-xs text-slate-500">
+                {totalOutstandingIssues === 0 ? 'All clear' : `${totalOutstandingIssues} blocker${totalOutstandingIssues === 1 ? '' : 's'}`}
+              </span>
+            </div>
+            {criticalOutstanding.length > 0 ? (
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-amber-600">
+                {criticalOutstanding.length === 1
+                  ? '1 required step needs attention'
+                  : `${criticalOutstanding.length} required steps need attention`}
+              </p>
+            ) : outstandingStepEntries.length > 0 ? (
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                Optional polish — keep going if you have a minute.
+              </p>
+            ) : null}
+            {outstandingStepEntries.length === 0 ? (
+              <p className="mt-3 text-xs text-slate-500">
+                Everything required is ready. You can wrap up whenever it suits you.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {outstandingStepEntries.map((entry) => (
+                  <li key={`outstanding-${entry.step.id}`}>
+                    <button
+                      type="button"
+                      onClick={() => goToStep(entry.index)}
+                      className="flex w-full items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:border-primary/40 hover:bg-white hover:text-primary"
+                    >
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-800">
+                          {entry.step.title}
+                        </span>
+                        <span className="mt-1 block text-[11px] uppercase tracking-wide text-slate-400">
+                          {entry.step.optional ? 'Optional' : 'Required'}
+                        </span>
+                      </span>
+                      <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary">
+                        {entry.issues.length} left
+                      </span>
+                    </button>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] text-slate-500">
+                      {entry.issues.slice(0, 2).map((issue, index) => (
+                        <li key={`${entry.step.id}-issue-${index}`}>{issue}</li>
+                      ))}
+                      {entry.issues.length > 2 && (
+                        <li className="font-semibold text-slate-400">+{entry.issues.length - 2} more</li>
+                      )}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {skippedOptionalStepsList.length > 0 && (
+              <div className="mt-4 rounded-2xl border border-dashed border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-700">
+                <p className="font-semibold uppercase tracking-wide text-amber-600">Saved for later</p>
+                <ul className="mt-2 list-disc space-y-1 pl-4">
+                  {skippedOptionalStepsList.map((step) => (
+                    <li key={`skipped-${step.id}`} className="flex items-center justify-between gap-2">
+                      <span>{step.title}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const targetIndex = steps.findIndex((candidate) => candidate.id === step.id)
+                          if (targetIndex !== -1) {
+                            goToStep(targetIndex)
+                          }
+                        }}
+                        className="rounded-full border border-amber-300 px-3 py-1 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100"
+                      >
+                        Revisit
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <nav aria-label="Onboarding steps">
             <ol className="space-y-2">
