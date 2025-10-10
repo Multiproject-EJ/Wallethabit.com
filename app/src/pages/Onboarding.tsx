@@ -72,20 +72,25 @@ const moduleCatalog: Array<{
     description: 'Track property values, mortgages, and rental yields.',
   },
   {
-    key: 'insurance',
-    label: 'Insurance',
-    description: 'Spot coverage gaps and renewal reminders.',
+    id: 'Step 1',
+    title: 'Set your rhythm',
+    description:
+      'Pick your budgeting cadence, income style, and the habits you want WalletHabit to reinforce. Each choice updates the live preview on the right.',
+    highlights: ['Weekly or monthly flow', 'Select two focus habits', 'Preview reminders instantly'],
   },
   {
-    key: 'taxes',
-    label: 'Taxes',
-    description: 'Prepare filings, deductions, and estimated payments.',
-    recommendedFor: ['prepare-taxes'],
+    id: 'Step 2',
+    title: 'Add your money picture',
+    description:
+      'Link or manually add accounts, list any debts, and log the goals you are chasing. Autosave keeps everything safe while you explore.',
+    highlights: ['Checking, credit, savings', 'Debt payoff priorities', 'Goal tiles ready for launch'],
   },
   {
-    key: 'retirement',
-    label: 'Retire',
-    description: 'Project glide paths and safe-withdrawal coverage.',
+    id: 'Step 3',
+    title: 'Lock in helpful nudges',
+    description:
+      'Choose when WalletHabit taps you on the shoulder, invite a partner if you have one, and confirm how you want wins to be celebrated.',
+    highlights: ['Calendar + push reminders', 'Optional partner invite', 'Celebrations tailored to you'],
   },
   {
     key: 'aiAdvisor',
@@ -341,36 +346,21 @@ const defaultWidgets: DashboardWidget[] = [
   { id: 'insights', label: 'Insights feed', visible: true },
 ]
 
-const goalOptions: GoalSelection[] = [
+const quickWins = [
   {
-    key: 'control-spending',
-    label: 'Control spending',
-    description: 'Keep spending aligned with what matters most.',
+    label: '5 min',
+    title: 'Capture essentials',
+    description: 'Income, rent, and one goal. Enough data to unlock your Dashboard preview.',
   },
   {
-    key: 'pay-off-debt',
-    label: 'Pay off debt',
-    description: 'Accelerate payoff timelines and slash interest.',
+    label: '10 min',
+    title: 'Add accounts + debts',
+    description: 'Connect or log balances to see the Update hub personalise action cards.',
   },
   {
-    key: 'emergency-fund',
-    label: 'Build emergency fund',
-    description: 'Create a runway for curveballs and peace of mind.',
-  },
-  {
-    key: 'track-investments',
-    label: 'Track investments',
-    description: 'Monitor growth and allocation drift effortlessly.',
-  },
-  {
-    key: 'big-purchase',
-    label: 'Plan a big purchase',
-    description: 'Save toward a wedding, move, or dream trip.',
-  },
-  {
-    key: 'prepare-taxes',
-    label: 'Prepare taxes',
-    description: 'Organise deductions and estimated payments.',
+    label: 'Later',
+    title: 'Refine automations',
+    description: 'Turn on calendar nudges, partner access, and premium auto-sync when ready.',
   },
 ]
 
@@ -1393,16 +1383,9 @@ export default function Onboarding() {
     }))
   }
 
-  const handleWidgetVisibilityToggle = (id: string) => {
-    updateState((prev) => ({
-      ...prev,
-      dashboard: {
-        ...prev.dashboard,
-        widgets: prev.dashboard.widgets.map((widget) =>
-          widget.id === id ? { ...widget, visible: !widget.visible } : widget
-        ),
-      },
-    }))
+  const resetSetupState = () => {
+    localStorage.removeItem('setupComplete')
+    setSetupComplete(false)
   }
 
   const moveWidget = (id: string, direction: 'up' | 'down') => {
@@ -1592,142 +1575,21 @@ export default function Onboarding() {
                 }}
                 className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
-                <option>United Kingdom</option>
-                <option>United States</option>
-                <option>Norway</option>
-                <option>Other</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-slate-700">Currency</span>
-              <input
-                type="text"
-                value={state.profile.currency}
-                onChange={(event) =>
-                  updateState((prev) => ({
-                    ...prev,
-                    profile: { ...prev.profile, currency: event.target.value.toUpperCase() },
-                  }))
-                }
-                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm uppercase shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="GBP"
-              />
-            </label>
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-slate-700">Timezone</span>
-              <input
-                type="text"
-                value={state.profile.timezone}
-                onChange={(event) =>
-                  updateState((prev) => ({
-                    ...prev,
-                    profile: { ...prev.profile, timezone: event.target.value },
-                  }))
-                }
-                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="Europe/London"
-              />
-            </label>
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-slate-700">Date format</span>
-              <select
-                value={state.profile.dateFormat}
-                onChange={(event) =>
-                  updateState((prev) => ({
-                    ...prev,
-                    profile: { ...prev.profile, dateFormat: event.target.value },
-                  }))
-                }
-                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                Preview dashboard
+              </Link>
+              <Link
+                to="/update"
+                className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-navy transition hover:border-primary/60 hover:text-primary"
               >
-                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                <option value="DD.MM.YYYY">DD.MM.YYYY</option>
-              </select>
-            </label>
-            <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:col-span-2">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-semibold text-slate-700">Theme</p>
-                <div className="inline-flex rounded-full border border-slate-200 bg-slate-100 p-1 text-xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateState((prev) => ({
-                        ...prev,
-                        profile: { ...prev.profile, theme: 'light' },
-                        dashboard: { ...prev.dashboard, theme: 'light' },
-                      }))
-                    }
-                    className={`rounded-full px-4 py-2 transition ${
-                      state.profile.theme === 'light'
-                        ? 'bg-white text-slate-900 shadow'
-                        : 'text-slate-500'
-                    }`}
-                  >
-                    Light
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateState((prev) => ({
-                        ...prev,
-                        profile: { ...prev.profile, theme: 'dark' },
-                        dashboard: { ...prev.dashboard, theme: 'dark' },
-                      }))
-                    }
-                    className={`rounded-full px-4 py-2 transition ${
-                      state.profile.theme === 'dark'
-                        ? 'bg-midnight text-white shadow'
-                        : 'text-slate-500'
-                    }`}
-                  >
-                    Dark
-                  </button>
-                </div>
-              </div>
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-semibold text-slate-700">Accent colour</span>
-                <input
-                  type="color"
-                  value={state.profile.accentColor}
-                  onChange={(event) =>
-                    updateState((prev) => ({
-                      ...prev,
-                      profile: { ...prev.profile, accentColor: event.target.value },
-                      dashboard: { ...prev.dashboard, accentColor: event.target.value },
-                    }))
-                  }
-                  className="h-12 w-24 cursor-pointer rounded-xl border border-slate-200"
-                />
-              </label>
-            </div>
-          </form>
-        )
-      }
-      case 'focus': {
-        return (
-          <div className="grid gap-4 md:grid-cols-2">
-            {goalOptions.map((goal) => {
-              const isSelected = state.goals.includes(goal.key)
-              return (
+                Explore Update hub
+              </Link>
+              {setupComplete ? (
                 <button
                   type="button"
-                  key={goal.key}
-                  onClick={() => handleGoalToggle(goal.key)}
-                  className={`flex h-full flex-col gap-2 rounded-3xl border p-6 text-left transition focus:outline-none focus:ring-2 focus:ring-primary/30 ${
-                    isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-slate-200 bg-white shadow-sm'
-                  }`}
+                  onClick={resetSetupState}
+                  className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/60 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100/80"
                 >
-                  <span className="text-sm font-semibold uppercase tracking-wide text-primary">{goal.label}</span>
-                  <p className="text-sm text-slate-600">{goal.description}</p>
-                  {isSelected ? (
-                    <span className="mt-auto inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                      <span aria-hidden>✓</span> Selected
-                    </span>
-                  ) : (
-                    <span className="mt-auto text-xs font-medium text-slate-500">Tap to focus</span>
-                  )}
+                  Reset setup state
                 </button>
               )
             })}
@@ -2046,16 +1908,11 @@ export default function Onboarding() {
                 ] as const
               ).map((template) => (
                 <button
-                  key={template.value}
                   type="button"
-                  onClick={() => handleBudgetTemplateChange(template.value)}
-                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                    state.budget.template === template.value
-                      ? 'bg-primary text-white shadow'
-                      : 'border border-slate-200 bg-white text-slate-600 shadow-sm'
-                  }`}
+                  onClick={markSetupComplete}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-5 py-3 text-sm font-semibold text-primary transition hover:border-primary/60 hover:bg-primary/10"
                 >
-                  {template.label}
+                  Mark setup complete
                 </button>
               ))}
             </div>
@@ -2393,13 +2250,10 @@ export default function Onboarding() {
               + Add another goal
             </button>
           </div>
-        )
-      }
-      case 'investments': {
-        return (
-          <div className="space-y-4">
-            <p className="text-sm text-slate-600">
-              Add balances or skip for now. Live quotes become available when you toggle on the AI advisor or premium data.
+          <div className="grid w-full max-w-md gap-4 rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-6 text-sm text-navy/80">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-primary">Setup checklist</h2>
+            <p className="text-base text-navy/70">
+              Complete each card once and WalletHabit keeps them in sync afterward.
             </p>
             <button
               type="button"
@@ -2589,7 +2443,9 @@ export default function Onboarding() {
                       Remove investment
                     </button>
                   </div>
-                </div>
+                  <p className="mt-2 text-base font-semibold text-navy">{item.title}</p>
+                  <p className="mt-1 text-sm text-navy/70">{item.description}</p>
+                </li>
               ))}
             </div>
           </div>
