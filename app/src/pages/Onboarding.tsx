@@ -968,6 +968,10 @@ export default function Onboarding() {
     [optionalSkipSet, optionalSteps]
   )
 
+  const completedSteps = steps.filter((step) => completionMap[step.id]).length
+  const progress = steps.length === 0 ? 0 : Math.round((completedSteps / steps.length) * 100)
+  const allStepsComplete = steps.length > 0 && completedSteps === steps.length
+
   const remainingStepsCount = useMemo(
     () => steps.filter((step) => !completionMap[step.id]).length,
     [completionMap, steps]
@@ -2921,9 +2925,6 @@ export default function Onboarding() {
     }
   }
 
-  const completedSteps = steps.filter((step) => completionMap[step.id]).length
-  const progress = steps.length === 0 ? 0 : Math.round((completedSteps / steps.length) * 100)
-  const allStepsComplete = steps.length > 0 && completedSteps === steps.length
   const showBack = stepIndex > 0 && currentStep?.id !== 'review'
   const showNext = currentStep?.id !== 'review' && currentStep?.id !== 'tour'
   const stepStatuses = steps.map<StepStatus>((step, index) => {
