@@ -89,6 +89,12 @@ const moduleCatalog: Array<{
   },
 ]
 
+const moduleStepMap: Partial<Record<ModuleKey, StepId>> = {
+  debts: 'debts',
+  savings: 'savings',
+  investments: 'investments',
+}
+
 type ModuleToggle = {
   enabled: boolean
   pendingUpgrade: boolean
@@ -340,6 +346,12 @@ type Step = {
 type StepStatus = 'complete' | 'current' | 'upcoming'
 type StepBlockers = Partial<Record<StepId, string[]>>
 type OutstandingEntry = { step: Step; issues: string[]; index: number }
+type SuggestedStep = {
+  step: Step
+  issues: string[]
+  index: number
+  kind: 'required' | 'optional' | 'upcoming'
+}
 
 const stepDefinitions: Step[] = [
   {
@@ -646,7 +658,7 @@ export default function Onboarding() {
         accountBlockers.push(...accountIssues)
       }
     }
-    if (accountBlockers.length > 0 && !(hasIncomeDetails || hasAccounts)) {
+    if (accountBlockers.length > 0) {
       blockers.accounts = accountBlockers
     }
 
@@ -721,6 +733,47 @@ export default function Onboarding() {
       ),
     [outstandingStepEntries]
   )
+
+  const nextSuggestedStep = useMemo<SuggestedStep | null>(() => {
+    if (criticalOutstanding.length > 0) {
+      const first = criticalOutstanding[0]
+      return { step: first.step, issues: first.issues, index: first.index, kind: 'required' }
+    }
+
+    if (outstandingBeforeReview.length > 0) {
+      const first = outstandingBeforeReview[0]
+      return {
+        step: first.step,
+        issues: first.issues,
+        index: first.index,
+        kind: first.step.optional ? 'optional' : 'required',
+      }
+    }
+
+    const sequentialIndex = steps.findIndex((step, index) => index >= stepIndex && !completionMap[step.id])
+    if (sequentialIndex !== -1) {
+      const step = steps[sequentialIndex]
+      return {
+        step,
+        issues: blockers[step.id] ?? [],
+        index: sequentialIndex,
+        kind: 'upcoming',
+      }
+    }
+
+    const firstIncomplete = steps.findIndex((step) => !completionMap[step.id])
+    if (firstIncomplete !== -1) {
+      const step = steps[firstIncomplete]
+      return {
+        step,
+        issues: blockers[step.id] ?? [],
+        index: firstIncomplete,
+        kind: 'upcoming',
+      }
+    }
+
+    return null
+  }, [blockers, completionMap, criticalOutstanding, outstandingBeforeReview, stepIndex, steps])
 
   const totalOutstandingIssues = useMemo(
     () =>
@@ -867,6 +920,11 @@ export default function Onboarding() {
       const current = prev.modules[moduleKey]
       const nextEnabled = !current.enabled
       const pendingUpgrade = module?.premium ? nextEnabled : false
+      const relatedStepId = moduleStepMap[moduleKey]
+      const nextSkippedOptionalSteps =
+        !nextEnabled && relatedStepId
+          ? prev.skippedOptionalSteps.filter((id) => id !== relatedStepId)
+          : prev.skippedOptionalSteps
 
       return {
         ...prev,
@@ -878,8 +936,16 @@ export default function Onboarding() {
             recommended: current.recommended,
           },
         },
+        skippedOptionalSteps: nextSkippedOptionalSteps,
       }
     })
+  }
+
+  const handleUnskip = (stepId: StepId) => {
+    updateState((prev) => ({
+      ...prev,
+      skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== stepId),
+    }))
   }
 
   const handleBudgetTemplateChange = (template: OnboardingState['budget']['template']) => {
@@ -2487,6 +2553,7 @@ export default function Onboarding() {
 
   const completedSteps = steps.filter((step) => completionMap[step.id]).length
   const progress = steps.length === 0 ? 0 : Math.round((completedSteps / steps.length) * 100)
+  const allStepsComplete = steps.length > 0 && completedSteps === steps.length
   const showBack = stepIndex > 0 && currentStep?.id !== 'review'
   const showNext = currentStep?.id !== 'review' && currentStep?.id !== 'tour'
   const stepStatuses = steps.map<StepStatus>((step, index) => {
@@ -2499,6 +2566,9 @@ export default function Onboarding() {
     : false
   const outstandingItems = currentStep ? blockers[currentStep.id] ?? [] : []
   const isCurrentStepSkipped = currentStep ? state.skippedOptionalSteps.includes(currentStep.id) : false
+  const isNextSuggestedStepSkipped = nextSuggestedStep
+    ? state.skippedOptionalSteps.includes(nextSuggestedStep.step.id)
+    : false
 
   const handleSkip = () => {
     if (!currentStep?.optional) return
@@ -2549,7 +2619,24 @@ export default function Onboarding() {
                 </div>
               </div>
             </div>
-            <div className="mt-6">{renderStepContent()}</div>
+            <div className="mt-6 space-y-4">
+              {currentStep?.optional && isCurrentStepSkipped && (
+                <div className="rounded-3xl border border-dashed border-amber-200 bg-amber-50 p-4 text-xs text-amber-700">
+                  <p className="font-semibold">You previously skipped this step.</p>
+                  <p className="mt-1">
+                    Add details below to mark it complete, or remove the skip to bring it back into your active checklist.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleUnskip(currentStep.id)}
+                    className="mt-3 inline-flex items-center justify-center rounded-full border border-amber-300 px-4 py-1 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100"
+                  >
+                    Remove skip
+                  </button>
+                </div>
+              )}
+              {renderStepContent()}
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">
@@ -2629,6 +2716,72 @@ export default function Onboarding() {
               {completedSteps} of {steps.length} steps complete.
             </p>
           </div>
+          {nextSuggestedStep ? (
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p
+                className={`text-[11px] font-semibold uppercase tracking-wide ${
+                  nextSuggestedStep.kind === 'required'
+                    ? 'text-amber-600'
+                    : nextSuggestedStep.kind === 'optional'
+                    ? 'text-slate-400'
+                    : 'text-primary'
+                }`}
+              >
+                {nextSuggestedStep.kind === 'required'
+                  ? 'Requires attention'
+                  : nextSuggestedStep.kind === 'optional'
+                  ? 'Optional polish'
+                  : 'Up next'}
+              </p>
+              <h3 className="mt-2 text-sm font-semibold text-slate-800">{nextSuggestedStep.step.title}</h3>
+              <p className="mt-1 text-xs text-slate-500">{nextSuggestedStep.step.description}</p>
+              {nextSuggestedStep.issues.length > 0 ? (
+                <ul className="mt-3 list-disc space-y-1 pl-4 text-[11px] text-slate-500">
+                  {nextSuggestedStep.issues.slice(0, 3).map((issue, index) => (
+                    <li key={`suggestion-issue-${nextSuggestedStep.step.id}-${index}`}>{issue}</li>
+                  ))}
+                  {nextSuggestedStep.issues.length > 3 && (
+                    <li className="font-semibold text-slate-400">
+                      +{nextSuggestedStep.issues.length - 3} more
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <p className="mt-3 text-[11px] text-slate-400">
+                  You're clear to complete this step — take a moment to wrap it up.
+                </p>
+              )}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => goToStep(nextSuggestedStep.index)}
+                  className="inline-flex items-center justify-center rounded-full border border-primary px-4 py-1 text-[11px] font-semibold text-primary transition hover:bg-primary/10"
+                >
+                  Go to {nextSuggestedStep.step.title}
+                </button>
+                {nextSuggestedStep.step.optional && isNextSuggestedStepSkipped && (
+                  <button
+                    type="button"
+                    onClick={() => handleUnskip(nextSuggestedStep.step.id)}
+                    className="inline-flex items-center justify-center rounded-full border border-amber-300 px-4 py-1 text-[11px] font-semibold text-amber-700 transition hover:bg-amber-100"
+                  >
+                    Remove skip
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 text-sm text-slate-700 shadow-sm">
+              <p className="font-semibold text-slate-800">
+                {allStepsComplete ? 'Everything is dialled in' : 'You are in great shape'}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                {allStepsComplete
+                  ? 'All steps are complete. Review the summary or finish when it feels right.'
+                  : 'No urgent blockers detected. Continue at your own pace.'}
+              </p>
+            </div>
+          )}
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between text-sm font-semibold text-slate-800">
               <span>Quick checklist</span>
@@ -2694,6 +2847,7 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() => {
+                          handleUnskip(step.id)
                           const targetIndex = steps.findIndex((candidate) => candidate.id === step.id)
                           if (targetIndex !== -1) {
                             goToStep(targetIndex)
