@@ -23,12 +23,6 @@ type ModuleKey =
   | 'retirement'
   | 'aiAdvisor'
 
-type QuickStartGuide = {
-  title: string
-  actions: string[]
-  highlight?: string
-}
-
 const moduleCatalog: Array<{
   key: ModuleKey
   label: string
@@ -72,25 +66,20 @@ const moduleCatalog: Array<{
     description: 'Track property values, mortgages, and rental yields.',
   },
   {
-    id: 'Step 1',
-    title: 'Set your rhythm',
-    description:
-      'Pick your budgeting cadence, income style, and the habits you want WalletHabit to reinforce. Each choice updates the live preview on the right.',
-    highlights: ['Weekly or monthly flow', 'Select two focus habits', 'Preview reminders instantly'],
+    key: 'insurance',
+    label: 'Insurance',
+    description: 'Spot coverage gaps and renewal reminders.',
   },
   {
-    id: 'Step 2',
-    title: 'Add your money picture',
-    description:
-      'Link or manually add accounts, list any debts, and log the goals you are chasing. Autosave keeps everything safe while you explore.',
-    highlights: ['Checking, credit, savings', 'Debt payoff priorities', 'Goal tiles ready for launch'],
+    key: 'taxes',
+    label: 'Taxes',
+    description: 'Prepare filings, deductions, and estimated payments.',
+    recommendedFor: ['prepare-taxes'],
   },
   {
-    id: 'Step 3',
-    title: 'Lock in helpful nudges',
-    description:
-      'Choose when WalletHabit taps you on the shoulder, invite a partner if you have one, and confirm how you want wins to be celebrated.',
-    highlights: ['Calendar + push reminders', 'Optional partner invite', 'Celebrations tailored to you'],
+    key: 'retirement',
+    label: 'Retire',
+    description: 'Project glide paths and safe-withdrawal coverage.',
   },
   {
     key: 'aiAdvisor',
@@ -100,108 +89,10 @@ const moduleCatalog: Array<{
   },
 ]
 
-const moduleLabelMap = moduleCatalog.reduce(
-  (acc, module) => ({ ...acc, [module.key]: module.label }),
-  {} as Record<ModuleKey, string>
-)
-
 const moduleStepMap: Partial<Record<ModuleKey, StepId>> = {
   debts: 'debts',
   savings: 'savings',
   investments: 'investments',
-}
-
-const moduleKickoffs: Record<ModuleKey, QuickStartGuide> = {
-  budget: {
-    title: 'Budget momentum',
-    highlight: 'Lock in your first weekly check-in.',
-    actions: [
-      'Schedule a recurring “money date” to review envelopes.',
-      'Tag your top three spending categories to watch this month.',
-      'Enable overspend alerts to catch drift early.',
-    ],
-  },
-  debts: {
-    title: 'Debt payoff boost',
-    highlight: 'Pick your snowball vs avalanche plan.',
-    actions: [
-      'Rank balances by payoff strategy and lock your target order.',
-      'Add an extra-payment reminder for your focus balance.',
-      'Celebrate mini-wins every £500 of principal retired.',
-    ],
-  },
-  savings: {
-    title: 'Savings streak plan',
-    highlight: 'Automate the next transfer so progress is guaranteed.',
-    actions: [
-      'Add cover photos or emojis to keep goals front-of-mind.',
-      'Set monthly contribution nudges so habits stay automatic.',
-      'Invite an accountability buddy to follow your milestone feed.',
-    ],
-  },
-  investments: {
-    title: 'Investment tune-up',
-    highlight: 'Log your allocation so drift coaching can begin.',
-    actions: [
-      'Note your target mix (e.g. 80/20) for fast rebalance guidance.',
-      'Add risk and goal tags to each account for smarter insights.',
-      'Turn on quarterly review reminders to stay on track.',
-    ],
-  },
-  income: {
-    title: 'Income runway',
-    highlight: 'Track your next payday and side-hustle plan.',
-    actions: [
-      'Add paycheque breakdowns so cash-flow projections stay accurate.',
-      'Log upcoming gigs or invoices to forecast availability.',
-      'Mark variable income with confidence levels to smooth planning.',
-    ],
-  },
-  realEstate: {
-    title: 'Property pulse',
-    highlight: 'Capture mortgage rates and valuations for context.',
-    actions: [
-      'Log insurance, taxes, and utilities to surface carrying costs.',
-      'Track maintenance tasks with due dates for easy batching.',
-      'Set appreciation expectations for long-term planning.',
-    ],
-  },
-  insurance: {
-    title: 'Coverage confidence',
-    highlight: 'List policies so renewal reminders can start.',
-    actions: [
-      'Tag each policy with beneficiaries or dependants.',
-      'Add renewal dates and excess amounts for quick comparisons.',
-      'Flag coverage gaps (e.g. disability) to explore later.',
-    ],
-  },
-  taxes: {
-    title: 'Tax strategy lab',
-    highlight: 'Record filing status and deadlines to prevent surprises.',
-    actions: [
-      'Track deductible categories so receipts stay organised.',
-      'Schedule quarterly estimate reminders if required.',
-      'Log advisor or accountant contact details for quick reach-outs.',
-    ],
-  },
-  retirement: {
-    title: 'Retirement roadmap',
-    highlight: 'Add your dream age and target income.',
-    actions: [
-      'Note employer matches so contributions stay optimised.',
-      'Record pension or ISA allowances to monitor usage.',
-      'Capture risk comfort so glide-path suggestions feel right.',
-    ],
-  },
-  aiAdvisor: {
-    title: 'AI advisor kick-off',
-    highlight: 'Start a conversation about today’s biggest question.',
-    actions: [
-      'Pin favourite prompts for quick access later.',
-      'Enable proactive nudges so the coach spots trends for you.',
-      'Send a “progress check” request after your first week.',
-    ],
-  },
 }
 
 type ModuleToggle = {
@@ -346,87 +237,50 @@ const defaultWidgets: DashboardWidget[] = [
   { id: 'insights', label: 'Insights feed', visible: true },
 ]
 
-const quickWins = [
+const goalOptions: GoalSelection[] = [
   {
-    label: '5 min',
-    title: 'Capture essentials',
-    description: 'Income, rent, and one goal. Enough data to unlock your Dashboard preview.',
+    key: 'control-spending',
+    label: 'Control spending',
+    description: 'Keep spending aligned with what matters most.',
   },
   {
-    label: '10 min',
-    title: 'Add accounts + debts',
-    description: 'Connect or log balances to see the Update hub personalise action cards.',
+    key: 'pay-off-debt',
+    label: 'Pay off debt',
+    description: 'Accelerate payoff timelines and slash interest.',
   },
   {
-    label: 'Later',
-    title: 'Refine automations',
-    description: 'Turn on calendar nudges, partner access, and premium auto-sync when ready.',
+    key: 'emergency-fund',
+    label: 'Build emergency fund',
+    description: 'Create a runway for curveballs and peace of mind.',
+  },
+  {
+    key: 'track-investments',
+    label: 'Track investments',
+    description: 'Monitor growth and allocation drift effortlessly.',
+  },
+  {
+    key: 'big-purchase',
+    label: 'Plan a big purchase',
+    description: 'Save toward a wedding, move, or dream trip.',
+  },
+  {
+    key: 'prepare-taxes',
+    label: 'Prepare taxes',
+    description: 'Organise deductions and estimated payments.',
   },
 ]
 
-const goalLabelMap = goalOptions.reduce(
-  (acc, goal) => ({ ...acc, [goal.key]: goal.label }),
-  {} as Record<GoalFocus, string>
-)
+const createDefaultModules = (): Record<ModuleKey, ModuleToggle> =>
+  moduleCatalog.reduce((acc, module) => {
+    acc[module.key] = {
+      enabled: module.key === 'budget',
+      pendingUpgrade: false,
+      recommended: module.key === 'budget',
+    }
+    return acc
+  }, {} as Record<ModuleKey, ModuleToggle>)
 
-const goalPlaybook: Record<GoalFocus, QuickStartGuide> = {
-  'control-spending': {
-    title: 'Keep spending on script',
-    highlight: 'Use the weekly money review ritual to stay present.',
-    actions: [
-      'Tag “need vs want” on fresh transactions for clarity.',
-      'Auto-move leftovers into a guardrail savings pot.',
-      'Bookmark the Overspend Radar widget for pulse checks.',
-    ],
-  },
-  'pay-off-debt': {
-    title: 'Accelerate debt freedom',
-    highlight: 'Lock in a focus balance and schedule the next overpayment.',
-    actions: [
-      'Compare snowball vs avalanche to choose your confidence path.',
-      'Track upcoming promotional APR expiries to avoid surprises.',
-      'Note mini celebration milestones so motivation stays high.',
-    ],
-  },
-  'emergency-fund': {
-    title: 'Build your buffer',
-    highlight: 'Automate the next transfer to lock in momentum.',
-    actions: [
-      'Set a runway target (e.g. 3 months) to visualise progress.',
-      'Label the account as “do not touch” for clarity.',
-      'Turn on nudge reminders when momentum dips.',
-    ],
-  },
-  'track-investments': {
-    title: 'Stay on top of growth',
-    highlight: 'Refresh holdings monthly to keep charts accurate.',
-    actions: [
-      'Add strategy notes (e.g. ISA, long-term) to accounts.',
-      'Benchmark against your goal return to measure drift.',
-      'Schedule a quarterly rebalance review.',
-    ],
-  },
-  'big-purchase': {
-    title: 'Plan the big moment',
-    highlight: 'Break the goal into milestone checkpoints.',
-    actions: [
-      'Estimate required date and convert to monthly target.',
-      'Attach inspirational notes or images to keep energy high.',
-      'Track vendor deposits or deadlines under reminders.',
-    ],
-  },
-  'prepare-taxes': {
-    title: 'Make tax time calm',
-    highlight: 'Log deadlines now so reminders happen automatically.',
-    actions: [
-      'Track deductible categories (home office, mileage, etc.).',
-      'Upload a checklist of forms to collect in spring.',
-      'Bookmark the status page for upcoming statutory updates.',
-    ],
-  },
-}
-
-const defaultState: OnboardingState = {
+const createDefaultState = (): OnboardingState => ({
   mode: null,
   isDemo: false,
   profile: {
@@ -439,17 +293,7 @@ const defaultState: OnboardingState = {
     accentColor: '#0f766e',
   },
   goals: [],
-  modules: moduleCatalog.reduce(
-    (acc, module) => ({
-      ...acc,
-      [module.key]: {
-        enabled: module.key === 'budget',
-        pendingUpgrade: false,
-        recommended: module.key === 'budget',
-      },
-    }),
-    {} as Record<ModuleKey, ModuleToggle>
-  ),
+  modules: createDefaultModules(),
   accounts: [],
   income: {
     monthlyNet: 0,
@@ -473,13 +317,13 @@ const defaultState: OnboardingState = {
   dashboard: {
     theme: 'light',
     accentColor: '#0f766e',
-    widgets: defaultWidgets,
+    widgets: defaultWidgets.map((widget) => ({ ...widget })),
   },
   skippedOptionalSteps: [],
   completedAt: {},
   skippedAt: {},
   resumedAt: {},
-}
+})
 
 const budgetTemplates: Record<OnboardingState['budget']['template'], BudgetCategory[]> = {
   '50-30-20': [
@@ -618,27 +462,51 @@ const stepDefinitions: Step[] = [
 
 const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
   if (typeof window === 'undefined') {
-    return { state: defaultState, stepIndex: 0 }
+    return { state: createDefaultState(), stepIndex: 0 }
   }
 
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY)
     if (!stored) {
-      return { state: defaultState, stepIndex: 0 }
+      return { state: createDefaultState(), stepIndex: 0 }
     }
 
-    const parsed = JSON.parse(stored) as { state: OnboardingState; stepIndex: number }
+    const parsed = JSON.parse(stored) as { state?: OnboardingState; stepIndex?: number }
+    const defaults = createDefaultState()
+    const storedState = parsed.state ?? defaults
+
+    const mergedModules = createDefaultModules()
+    Object.entries(storedState.modules ?? {}).forEach(([key, value]) => {
+      if (key in mergedModules) {
+        const moduleKey = key as ModuleKey
+        mergedModules[moduleKey] = {
+          ...mergedModules[moduleKey],
+          ...value,
+        }
+      }
+    })
+
     return {
       state: {
-        ...defaultState,
-        ...parsed.state,
-        modules: {
-          ...defaultState.modules,
-          ...parsed.state.modules,
+        ...defaults,
+        ...storedState,
+        modules: mergedModules,
+        accounts: (storedState.accounts ?? []).map((account) => ({ ...account })),
+        debts: (storedState.debts ?? []).map((debt) => ({ ...debt })),
+        savingsGoals: (storedState.savingsGoals ?? []).map((goal) => ({ ...goal })),
+        investments: (storedState.investments ?? []).map((investment) => ({
+          ...investment,
+          holdings: (investment.holdings ?? []).map((holding) => ({ ...holding })),
+        })),
+        budget: {
+          ...defaults.budget,
+          ...storedState.budget,
+          categories: (storedState.budget?.categories ?? []).map((category) => ({ ...category })),
         },
         dashboard: {
-          ...defaultState.dashboard,
-          ...parsed.state.dashboard,
+          ...defaults.dashboard,
+          ...storedState.dashboard,
+          widgets: (storedState.dashboard?.widgets ?? defaults.dashboard.widgets).map((widget) => ({ ...widget })),
         },
         skippedOptionalSteps: parsed.state.skippedOptionalSteps ?? [],
         completedAt: {
@@ -658,7 +526,7 @@ const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
     }
   } catch (error) {
     console.warn('Failed to load onboarding state', error)
-    return { state: defaultState, stepIndex: 0 }
+    return { state: createDefaultState(), stepIndex: 0 }
   }
 }
 
@@ -1001,55 +869,6 @@ export default function Onboarding() {
     [state.skippedOptionalSteps, steps]
   )
 
-  const focusPlaybookEntries = useMemo(
-    () => {
-      const seen = new Set<GoalFocus>()
-      return state.goals
-        .filter((goal) => {
-          if (seen.has(goal)) return false
-          seen.add(goal)
-          return true
-        })
-        .map((goal) => {
-          const guide = goalPlaybook[goal]
-          if (!guide) return null
-          return {
-            key: goal,
-            label: goalLabelMap[goal] ?? goal,
-            ...guide,
-          }
-        })
-        .filter(
-          (entry): entry is QuickStartGuide & { key: GoalFocus; label: string } =>
-            entry !== null
-        )
-    },
-    [state.goals]
-  )
-
-  const moduleRampEntries = useMemo(
-    () =>
-      (Object.entries(state.modules) as Array<[
-        ModuleKey,
-        OnboardingState['modules'][ModuleKey]
-      ]>)
-        .filter(([, module]) => module?.enabled)
-        .map(([moduleKey]) => {
-          const guide = moduleKickoffs[moduleKey]
-          if (!guide) return null
-          return {
-            key: moduleKey,
-            label: moduleLabelMap[moduleKey] ?? moduleKey,
-            ...guide,
-          }
-        })
-        .filter(
-          (entry): entry is QuickStartGuide & { key: ModuleKey; label: string } =>
-            entry !== null
-        ),
-    [state.modules]
-  )
-
   const previousCompletionMapRef = useRef<Record<StepId, boolean> | null>(null)
 
   useEffect(() => {
@@ -1233,6 +1052,36 @@ export default function Onboarding() {
     setStateWithStep((prev) => ({ ...prev, stepIndex: index }))
   }
 
+  const startDemo = () => {
+    const demoState = createDemoState()
+    const filteredSteps = stepDefinitions.filter((step) => (step.guard ? step.guard(demoState) : true))
+    const reviewIndex = filteredSteps.findIndex((step) => step.id === 'review')
+
+    setStateWithStep({
+      state: demoState,
+      stepIndex: reviewIndex === -1 ? filteredSteps.length - 1 : reviewIndex,
+    })
+  }
+
+  const startGuided = () => {
+    setStateWithStep((prev) => {
+      if (prev.state.isDemo) {
+        const resetState = createDefaultState()
+        resetState.mode = 'build'
+        return { state: resetState, stepIndex: 0 }
+      }
+
+      return {
+        ...prev,
+        state: {
+          ...prev.state,
+          mode: 'build',
+          isDemo: false,
+        },
+      }
+    })
+  }
+
   const handleNext = () => {
     if (!currentStep) return
 
@@ -1282,7 +1131,7 @@ export default function Onboarding() {
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem(STORAGE_KEY)
     }
-    setStateWithStep({ state: defaultState, stepIndex: 0 })
+    setStateWithStep({ state: createDefaultState(), stepIndex: 0 })
   }
 
   const handleGoalToggle = (goal: GoalFocus) => {
@@ -1383,9 +1232,16 @@ export default function Onboarding() {
     }))
   }
 
-  const resetSetupState = () => {
-    localStorage.removeItem('setupComplete')
-    setSetupComplete(false)
+  const handleWidgetVisibilityToggle = (id: string) => {
+    updateState((prev) => ({
+      ...prev,
+      dashboard: {
+        ...prev.dashboard,
+        widgets: prev.dashboard.widgets.map((widget) =>
+          widget.id === id ? { ...widget, visible: !widget.visible } : widget
+        ),
+      },
+    }))
   }
 
   const moveWidget = (id: string, direction: 'up' | 'down') => {
@@ -1483,13 +1339,13 @@ export default function Onboarding() {
               </div>
               <button
                 type="button"
-                onClick={() => updateState((prev) => ({ ...prev, mode: 'demo' }))}
+                onClick={startDemo}
                 className="mt-auto inline-flex items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"
               >
                 Load demo workspace
               </button>
               <p className="text-xs text-slate-500">
-                You can swap to real data anytime from the dashboard.
+                We’ll prefill realistic accounts, a budget, goals, and insights so you can explore instantly.
               </p>
             </article>
             <article
@@ -1510,12 +1366,14 @@ export default function Onboarding() {
               </div>
               <button
                 type="button"
-                onClick={() => updateState((prev) => ({ ...prev, mode: 'build' }))}
+                onClick={startGuided}
                 className="mt-auto inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
               >
                 Start guided setup
               </button>
-              <p className="text-xs text-slate-500">Progress auto-saves, so you can pause anytime.</p>
+              <p className="text-xs text-slate-500">
+                Progress auto-saves, so you can pause anytime. Switching from demo resets everything to a fresh slate.
+              </p>
             </article>
           </div>
         )
@@ -1575,21 +1433,142 @@ export default function Onboarding() {
                 }}
                 className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
-                Preview dashboard
-              </Link>
-              <Link
-                to="/update"
-                className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-navy transition hover:border-primary/60 hover:text-primary"
+                <option>United Kingdom</option>
+                <option>United States</option>
+                <option>Norway</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-slate-700">Currency</span>
+              <input
+                type="text"
+                value={state.profile.currency}
+                onChange={(event) =>
+                  updateState((prev) => ({
+                    ...prev,
+                    profile: { ...prev.profile, currency: event.target.value.toUpperCase() },
+                  }))
+                }
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm uppercase shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="GBP"
+              />
+            </label>
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-slate-700">Timezone</span>
+              <input
+                type="text"
+                value={state.profile.timezone}
+                onChange={(event) =>
+                  updateState((prev) => ({
+                    ...prev,
+                    profile: { ...prev.profile, timezone: event.target.value },
+                  }))
+                }
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="Europe/London"
+              />
+            </label>
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-semibold text-slate-700">Date format</span>
+              <select
+                value={state.profile.dateFormat}
+                onChange={(event) =>
+                  updateState((prev) => ({
+                    ...prev,
+                    profile: { ...prev.profile, dateFormat: event.target.value },
+                  }))
+                }
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               >
-                Explore Update hub
-              </Link>
-              {setupComplete ? (
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                <option value="DD.MM.YYYY">DD.MM.YYYY</option>
+              </select>
+            </label>
+            <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:col-span-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-semibold text-slate-700">Theme</p>
+                <div className="inline-flex rounded-full border border-slate-200 bg-slate-100 p-1 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateState((prev) => ({
+                        ...prev,
+                        profile: { ...prev.profile, theme: 'light' },
+                        dashboard: { ...prev.dashboard, theme: 'light' },
+                      }))
+                    }
+                    className={`rounded-full px-4 py-2 transition ${
+                      state.profile.theme === 'light'
+                        ? 'bg-white text-slate-900 shadow'
+                        : 'text-slate-500'
+                    }`}
+                  >
+                    Light
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateState((prev) => ({
+                        ...prev,
+                        profile: { ...prev.profile, theme: 'dark' },
+                        dashboard: { ...prev.dashboard, theme: 'dark' },
+                      }))
+                    }
+                    className={`rounded-full px-4 py-2 transition ${
+                      state.profile.theme === 'dark'
+                        ? 'bg-midnight text-white shadow'
+                        : 'text-slate-500'
+                    }`}
+                  >
+                    Dark
+                  </button>
+                </div>
+              </div>
+              <label className="flex flex-col gap-2">
+                <span className="text-sm font-semibold text-slate-700">Accent colour</span>
+                <input
+                  type="color"
+                  value={state.profile.accentColor}
+                  onChange={(event) =>
+                    updateState((prev) => ({
+                      ...prev,
+                      profile: { ...prev.profile, accentColor: event.target.value },
+                      dashboard: { ...prev.dashboard, accentColor: event.target.value },
+                    }))
+                  }
+                  className="h-12 w-24 cursor-pointer rounded-xl border border-slate-200"
+                />
+              </label>
+            </div>
+          </form>
+        )
+      }
+      case 'focus': {
+        return (
+          <div className="grid gap-4 md:grid-cols-2">
+            {goalOptions.map((goal) => {
+              const isSelected = state.goals.includes(goal.key)
+              return (
                 <button
                   type="button"
-                  onClick={resetSetupState}
-                  className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/60 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100/80"
+                  key={goal.key}
+                  onClick={() => handleGoalToggle(goal.key)}
+                  className={`flex h-full flex-col gap-2 rounded-3xl border p-6 text-left transition focus:outline-none focus:ring-2 focus:ring-primary/30 ${
+                    isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-slate-200 bg-white shadow-sm'
+                  }`}
                 >
-                  Reset setup state
+                  <span className="text-sm font-semibold uppercase tracking-wide text-primary">{goal.label}</span>
+                  <p className="text-sm text-slate-600">{goal.description}</p>
+                  {isSelected ? (
+                    <span className="mt-auto inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                      <span aria-hidden>✓</span> Selected
+                    </span>
+                  ) : (
+                    <span className="mt-auto text-xs font-medium text-slate-500">Tap to focus</span>
+                  )}
                 </button>
               )
             })}
@@ -1908,11 +1887,16 @@ export default function Onboarding() {
                 ] as const
               ).map((template) => (
                 <button
+                  key={template.value}
                   type="button"
-                  onClick={markSetupComplete}
-                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-5 py-3 text-sm font-semibold text-primary transition hover:border-primary/60 hover:bg-primary/10"
+                  onClick={() => handleBudgetTemplateChange(template.value)}
+                  className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                    state.budget.template === template.value
+                      ? 'bg-primary text-white shadow'
+                      : 'border border-slate-200 bg-white text-slate-600 shadow-sm'
+                  }`}
                 >
-                  Mark setup complete
+                  {template.label}
                 </button>
               ))}
             </div>
@@ -2250,10 +2234,13 @@ export default function Onboarding() {
               + Add another goal
             </button>
           </div>
-          <div className="grid w-full max-w-md gap-4 rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-6 text-sm text-navy/80">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-primary">Setup checklist</h2>
-            <p className="text-base text-navy/70">
-              Complete each card once and WalletHabit keeps them in sync afterward.
+        )
+      }
+      case 'investments': {
+        return (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Add balances or skip for now. Live quotes become available when you toggle on the AI advisor or premium data.
             </p>
             <button
               type="button"
@@ -2443,9 +2430,7 @@ export default function Onboarding() {
                       Remove investment
                     </button>
                   </div>
-                  <p className="mt-2 text-base font-semibold text-navy">{item.title}</p>
-                  <p className="mt-1 text-sm text-navy/70">{item.description}</p>
-                </li>
+                </div>
               ))}
             </div>
           </div>
@@ -2777,72 +2762,6 @@ export default function Onboarding() {
                 </ol>
               </div>
             )}
-            {(focusPlaybookEntries.length > 0 || moduleRampEntries.length > 0) && (
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-700 shadow-sm">
-                <p className="font-semibold text-slate-900">Launch playbook</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Based on your goals and enabled modules, here are quick wins to keep momentum after launch.
-                </p>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  {focusPlaybookEntries.length > 0 && (
-                    <div className="space-y-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Goals</p>
-                      <ul className="space-y-3">
-                        {focusPlaybookEntries.map((entry) => (
-                          <li
-                            key={`focus-guide-${entry.key}`}
-                            className="rounded-2xl border border-slate-100 bg-slate-50 p-4 shadow-sm"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-semibold text-slate-800">{entry.label}</span>
-                              {entry.highlight && (
-                                <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
-                                  {entry.highlight}
-                                </span>
-                              )}
-                            </div>
-                            <p className="mt-1 text-xs text-slate-500">{entry.title}</p>
-                            <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-500">
-                              {entry.actions.map((action, index) => (
-                                <li key={`focus-guide-${entry.key}-${index}`}>{action}</li>
-                              ))}
-                            </ul>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {moduleRampEntries.length > 0 && (
-                    <div className="space-y-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Modules</p>
-                      <ul className="space-y-3">
-                        {moduleRampEntries.map((entry) => (
-                          <li
-                            key={`module-guide-${entry.key}`}
-                            className="rounded-2xl border border-slate-100 bg-slate-50 p-4 shadow-sm"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-semibold text-slate-800">{entry.label}</span>
-                              {entry.highlight && (
-                                <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
-                                  {entry.highlight}
-                                </span>
-                              )}
-                            </div>
-                            <p className="mt-1 text-xs text-slate-500">{entry.title}</p>
-                            <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-500">
-                              {entry.actions.map((action, index) => (
-                                <li key={`module-guide-${entry.key}-${index}`}>{action}</li>
-                              ))}
-                            </ul>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
             {reviewOutstanding.length > 0 && (
               <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
                 <p className="font-semibold">Before you launch</p>
@@ -2930,14 +2849,7 @@ export default function Onboarding() {
               {!state.isDemo && (
                 <button
                   type="button"
-                  onClick={() =>
-                    updateState((prev) => ({
-                      ...prev,
-                      mode: 'demo',
-                      isDemo: true,
-                      profile: { ...prev.profile, onboardedAt: new Date().toISOString() },
-                    }))
-                  }
+                  onClick={startDemo}
                   className="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
                 >
                   Load with demo data instead
