@@ -9,7 +9,8 @@ This document captures the proposed 12-step onboarding wizard that introduces ne
 ## Step 1 — Welcome & Mode Selection
 - Headline: “Let’s build your personal Finance OS.”
 - Options: **Explore with Demo Data** or **Build My Plan**.
-- Demo sets an in-session `is_demo=true` flag. Do not write demo data until the flow finishes.
+- Demo sets an in-session `is_demo=true` flag and preloads a curated dataset (accounts, starter budget, debts, savings, investments, and notifications) so the dashboard feels alive immediately.
+- Choosing demo also skips directly to the **Review** step; switching back to **Build My Plan** flushes the staged demo data so the user starts with a clean slate.
 - Selecting **Build My Plan** advances to Step 2.
 
 ## Step 2 — Basics (Name & Region)
