@@ -19,6 +19,7 @@ import Protection from './pages/Protection'
 import Taxes from './pages/Taxes'
 import Estate from './pages/Estate'
 import Security from './pages/Security'
+import Onboarding from './pages/Onboarding'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="start" element={<Onboarding />} />
           <Route path="budget" element={<Budget />} />
           <Route path="assistant" element={<Assistant />} />
           <Route path="integrations" element={<Integrations />} />
