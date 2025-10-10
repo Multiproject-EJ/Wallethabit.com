@@ -252,7 +252,17 @@ const goalOptions: GoalSelection[] = [
   },
 ]
 
-const defaultState: OnboardingState = {
+const createDefaultModules = (): Record<ModuleKey, ModuleToggle> =>
+  moduleCatalog.reduce((acc, module) => {
+    acc[module.key] = {
+      enabled: module.key === 'budget',
+      pendingUpgrade: false,
+      recommended: module.key === 'budget',
+    }
+    return acc
+  }, {} as Record<ModuleKey, ModuleToggle>)
+
+const createDefaultState = (): OnboardingState => ({
   mode: null,
   isDemo: false,
   profile: {
@@ -265,17 +275,7 @@ const defaultState: OnboardingState = {
     accentColor: '#0f766e',
   },
   goals: [],
-  modules: moduleCatalog.reduce(
-    (acc, module) => ({
-      ...acc,
-      [module.key]: {
-        enabled: module.key === 'budget',
-        pendingUpgrade: false,
-        recommended: module.key === 'budget',
-      },
-    }),
-    {} as Record<ModuleKey, ModuleToggle>
-  ),
+  modules: createDefaultModules(),
   accounts: [],
   income: {
     monthlyNet: 0,
@@ -299,7 +299,7 @@ const defaultState: OnboardingState = {
   dashboard: {
     theme: 'light',
     accentColor: '#0f766e',
-    widgets: defaultWidgets,
+    widgets: defaultWidgets.map((widget) => ({ ...widget })),
   },
   skippedOptionalSteps: [],
 }
@@ -416,27 +416,51 @@ const stepDefinitions: Step[] = [
 
 const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
   if (typeof window === 'undefined') {
-    return { state: defaultState, stepIndex: 0 }
+    return { state: createDefaultState(), stepIndex: 0 }
   }
 
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY)
     if (!stored) {
-      return { state: defaultState, stepIndex: 0 }
+      return { state: createDefaultState(), stepIndex: 0 }
     }
 
-    const parsed = JSON.parse(stored) as { state: OnboardingState; stepIndex: number }
+    const parsed = JSON.parse(stored) as { state?: OnboardingState; stepIndex?: number }
+    const defaults = createDefaultState()
+    const storedState = parsed.state ?? defaults
+
+    const mergedModules = createDefaultModules()
+    Object.entries(storedState.modules ?? {}).forEach(([key, value]) => {
+      if (key in mergedModules) {
+        const moduleKey = key as ModuleKey
+        mergedModules[moduleKey] = {
+          ...mergedModules[moduleKey],
+          ...value,
+        }
+      }
+    })
+
     return {
       state: {
-        ...defaultState,
-        ...parsed.state,
-        modules: {
-          ...defaultState.modules,
-          ...parsed.state.modules,
+        ...defaults,
+        ...storedState,
+        modules: mergedModules,
+        accounts: (storedState.accounts ?? []).map((account) => ({ ...account })),
+        debts: (storedState.debts ?? []).map((debt) => ({ ...debt })),
+        savingsGoals: (storedState.savingsGoals ?? []).map((goal) => ({ ...goal })),
+        investments: (storedState.investments ?? []).map((investment) => ({
+          ...investment,
+          holdings: (investment.holdings ?? []).map((holding) => ({ ...holding })),
+        })),
+        budget: {
+          ...defaults.budget,
+          ...storedState.budget,
+          categories: (storedState.budget?.categories ?? []).map((category) => ({ ...category })),
         },
         dashboard: {
-          ...defaultState.dashboard,
-          ...parsed.state.dashboard,
+          ...defaults.dashboard,
+          ...storedState.dashboard,
+          widgets: (storedState.dashboard?.widgets ?? defaults.dashboard.widgets).map((widget) => ({ ...widget })),
         },
         skippedOptionalSteps: parsed.state.skippedOptionalSteps ?? [],
       },
@@ -444,7 +468,7 @@ const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
     }
   } catch (error) {
     console.warn('Failed to load onboarding state', error)
-    return { state: defaultState, stepIndex: 0 }
+    return { state: createDefaultState(), stepIndex: 0 }
   }
 }
 
@@ -676,6 +700,36 @@ export default function Onboarding() {
     setStateWithStep((prev) => ({ ...prev, stepIndex: index }))
   }
 
+  const startDemo = () => {
+    const demoState = createDemoState()
+    const filteredSteps = stepDefinitions.filter((step) => (step.guard ? step.guard(demoState) : true))
+    const reviewIndex = filteredSteps.findIndex((step) => step.id === 'review')
+
+    setStateWithStep({
+      state: demoState,
+      stepIndex: reviewIndex === -1 ? filteredSteps.length - 1 : reviewIndex,
+    })
+  }
+
+  const startGuided = () => {
+    setStateWithStep((prev) => {
+      if (prev.state.isDemo) {
+        const resetState = createDefaultState()
+        resetState.mode = 'build'
+        return { state: resetState, stepIndex: 0 }
+      }
+
+      return {
+        ...prev,
+        state: {
+          ...prev.state,
+          mode: 'build',
+          isDemo: false,
+        },
+      }
+    })
+  }
+
   const handleNext = () => {
     if (!currentStep) return
 
@@ -725,7 +779,7 @@ export default function Onboarding() {
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem(STORAGE_KEY)
     }
-    setStateWithStep({ state: defaultState, stepIndex: 0 })
+    setStateWithStep({ state: createDefaultState(), stepIndex: 0 })
   }
 
   const handleGoalToggle = (goal: GoalFocus) => {
@@ -899,13 +953,13 @@ export default function Onboarding() {
               </div>
               <button
                 type="button"
-                onClick={() => updateState((prev) => ({ ...prev, mode: 'demo' }))}
+                onClick={startDemo}
                 className="mt-auto inline-flex items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"
               >
                 Load demo workspace
               </button>
               <p className="text-xs text-slate-500">
-                You can swap to real data anytime from the dashboard.
+                We’ll prefill realistic accounts, a budget, goals, and insights so you can explore instantly.
               </p>
             </article>
             <article
@@ -926,12 +980,14 @@ export default function Onboarding() {
               </div>
               <button
                 type="button"
-                onClick={() => updateState((prev) => ({ ...prev, mode: 'build' }))}
+                onClick={startGuided}
                 className="mt-auto inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
               >
                 Start guided setup
               </button>
-              <p className="text-xs text-slate-500">Progress auto-saves, so you can pause anytime.</p>
+              <p className="text-xs text-slate-500">
+                Progress auto-saves, so you can pause anytime. Switching from demo resets everything to a fresh slate.
+              </p>
             </article>
           </div>
         )
@@ -2261,14 +2317,7 @@ export default function Onboarding() {
               {!state.isDemo && (
                 <button
                   type="button"
-                  onClick={() =>
-                    updateState((prev) => ({
-                      ...prev,
-                      mode: 'demo',
-                      isDemo: true,
-                      profile: { ...prev.profile, onboardedAt: new Date().toISOString() },
-                    }))
-                  }
+                  onClick={startDemo}
                   className="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
                 >
                   Load with demo data instead
