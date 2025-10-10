@@ -223,6 +223,7 @@ type OnboardingState = {
   skippedOptionalSteps: StepId[]
   completedAt: Partial<Record<StepId, string>>
   skippedAt: Partial<Record<StepId, string>>
+  resumedAt: Partial<Record<StepId, string>>
 }
 
 const STORAGE_KEY = 'walletHabit.onboardingState.v1'
@@ -321,6 +322,7 @@ const createDefaultState = (): OnboardingState => ({
   skippedOptionalSteps: [],
   completedAt: {},
   skippedAt: {},
+  resumedAt: {},
 }
 
 const budgetTemplates: Record<OnboardingState['budget']['template'], BudgetCategory[]> = {
@@ -364,6 +366,24 @@ type SuggestedStep = {
   issues: string[]
   index: number
   kind: 'required' | 'optional' | 'upcoming'
+}
+
+type ActivityEvent = {
+  step: Step
+  timestamp: string
+  type: 'completed' | 'skipped' | 'resumed'
+}
+
+const activityLabelMap: Record<ActivityEvent['type'], string> = {
+  completed: 'Completed',
+  skipped: 'Saved for later',
+  resumed: 'Resumed',
+}
+
+const activityBadgeClassMap: Record<ActivityEvent['type'], string> = {
+  completed: 'bg-primary/10 text-primary',
+  skipped: 'bg-amber-100 text-amber-700',
+  resumed: 'bg-emerald-100 text-emerald-700',
 }
 
 const stepDefinitions: Step[] = [
@@ -496,6 +516,19 @@ const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
         skippedAt: {
           ...defaultState.skippedAt,
           ...(parsed.state.skippedAt ?? {}),
+        },
+        skippedOptionalSteps: parsed.state.skippedOptionalSteps ?? [],
+        completedAt: {
+          ...defaultState.completedAt,
+          ...(parsed.state.completedAt ?? {}),
+        },
+        skippedAt: {
+          ...defaultState.skippedAt,
+          ...(parsed.state.skippedAt ?? {}),
+        },
+        resumedAt: {
+          ...defaultState.resumedAt,
+          ...(parsed.state.resumedAt ?? {}),
         },
       },
       stepIndex: parsed.stepIndex ?? 0,
@@ -972,6 +1005,33 @@ export default function Onboarding() {
     return 'More than 10 minutes left — pace yourself and take breaks.'
   }, [estimatedMinutesRemaining])
 
+  const activityTimeline = useMemo<ActivityEvent[]>(() => {
+    const events: ActivityEvent[] = []
+
+    const pushEvent = (stepId: StepId, timestamp: string | undefined, type: ActivityEvent['type']) => {
+      if (!timestamp) return
+      const step = stepDefinitions.find((definition) => definition.id === stepId)
+      if (!step) return
+      events.push({ step, timestamp, type })
+    }
+
+    Object.entries(state.completedAt).forEach(([stepId, timestamp]) => {
+      pushEvent(stepId as StepId, timestamp, 'completed')
+    })
+
+    Object.entries(state.skippedAt).forEach(([stepId, timestamp]) => {
+      pushEvent(stepId as StepId, timestamp, 'skipped')
+    })
+
+    Object.entries(state.resumedAt).forEach(([stepId, timestamp]) => {
+      pushEvent(stepId as StepId, timestamp, 'resumed')
+    })
+
+    return events.sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+  }, [state.completedAt, state.resumedAt, state.skippedAt])
+
   const completionTimeline = useMemo(
     () =>
       Object.entries(state.completedAt)
@@ -991,6 +1051,7 @@ export default function Onboarding() {
   )
 
   const lastCompletedEntry = completionTimeline[0] ?? null
+  const latestActivityEntry = activityTimeline[0] ?? null
 
   const updateState = (updater: (current: OnboardingState) => OnboardingState) => {
     setStateWithStep((prev) => ({ ...prev, state: updater(prev.state) }))
@@ -1132,6 +1193,9 @@ export default function Onboarding() {
       const nextCompletedAt = shouldDisableStep && relatedStep
         ? omitStepKey(prev.completedAt, relatedStep)
         : prev.completedAt
+      const nextResumedAt = shouldDisableStep && relatedStep
+        ? omitStepKey(prev.resumedAt, relatedStep)
+        : prev.resumedAt
 
       return {
         ...prev,
@@ -1146,6 +1210,22 @@ export default function Onboarding() {
         skippedOptionalSteps: nextSkippedOptionalSteps,
         skippedAt: nextSkippedAt,
         completedAt: nextCompletedAt,
+        resumedAt: nextResumedAt,
+      }
+    })
+  }
+
+  const handleUnskip = (stepId: StepId) => {
+    updateState((prev) => {
+      if (!prev.skippedOptionalSteps.includes(stepId)) {
+        return prev
+      }
+
+      return {
+        ...prev,
+        skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== stepId),
+        skippedAt: omitStepKey(prev.skippedAt, stepId),
+        resumedAt: { ...prev.resumedAt, [stepId]: new Date().toISOString() },
       }
     })
   }
@@ -1890,21 +1970,27 @@ export default function Onboarding() {
             <button
               type="button"
               onClick={() =>
-                updateState((prev) => ({
-                  ...prev,
-                  debts: [
-                    ...prev.debts,
-                    {
-                      id: `debt-${prev.debts.length + 1}`,
-                      name: prev.debts.length === 0 ? 'Amex credit card' : 'Student loan',
-                      balance: prev.debts.length === 0 ? 3400 : 12400,
-                      apr: prev.debts.length === 0 ? 19.9 : 4.5,
-                      minPayment: prev.debts.length === 0 ? 95 : 210,
-                    },
-                  ],
-                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'debts'),
-                  skippedAt: omitStepKey(prev.skippedAt, 'debts'),
-                }))
+                updateState((prev) => {
+                  const wasSkipped = prev.skippedOptionalSteps.includes('debts')
+                  return {
+                    ...prev,
+                    debts: [
+                      ...prev.debts,
+                      {
+                        id: `debt-${prev.debts.length + 1}`,
+                        name: prev.debts.length === 0 ? 'Amex credit card' : 'Student loan',
+                        balance: prev.debts.length === 0 ? 3400 : 12400,
+                        apr: prev.debts.length === 0 ? 19.9 : 4.5,
+                        minPayment: prev.debts.length === 0 ? 95 : 210,
+                      },
+                    ],
+                    skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'debts'),
+                    skippedAt: omitStepKey(prev.skippedAt, 'debts'),
+                    resumedAt: wasSkipped
+                      ? { ...prev.resumedAt, debts: new Date().toISOString() }
+                      : prev.resumedAt,
+                  }
+                })
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
             >
@@ -2014,19 +2100,33 @@ export default function Onboarding() {
               <button
                 type="button"
                 onClick={() =>
-                  updateState((prev) => ({
-                    ...prev,
-                    savingsGoals: [
-                      ...prev.savingsGoals,
-                      {
-                        id: `goal-${prev.savingsGoals.length + 1}`,
-                        name: 'Emergency fund',
-                        target: emergencyTarget,
-                        monthlyContribution: Math.round((totalExpenses || state.income.monthlyNet) * 0.2),
-                        etaMonths: Math.max(1, Math.round(emergencyTarget / Math.max(200, prev.income.monthlyNet / 5 || 1))),
-                      },
-                    ],
-                  }))
+                  updateState((prev) => {
+                    const wasSkipped = prev.skippedOptionalSteps.includes('savings')
+                    return {
+                      ...prev,
+                      savingsGoals: [
+                        ...prev.savingsGoals,
+                        {
+                          id: `goal-${prev.savingsGoals.length + 1}`,
+                          name: 'Emergency fund',
+                          target: emergencyTarget,
+                          monthlyContribution: Math.round((totalExpenses || state.income.monthlyNet) * 0.2),
+                          etaMonths: Math.max(
+                            1,
+                            Math.round(
+                              emergencyTarget /
+                                Math.max(200, prev.income.monthlyNet / 5 || 1)
+                            )
+                          ),
+                        },
+                      ],
+                      skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'savings'),
+                      skippedAt: omitStepKey(prev.skippedAt, 'savings'),
+                      resumedAt: wasSkipped
+                        ? { ...prev.resumedAt, savings: new Date().toISOString() }
+                        : prev.resumedAt,
+                    }
+                  })
                 }
                 className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
               >
@@ -2124,21 +2224,27 @@ export default function Onboarding() {
             <button
               type="button"
               onClick={() =>
-                updateState((prev) => ({
-                  ...prev,
-                  savingsGoals: [
-                    ...prev.savingsGoals,
-                    {
-                      id: `goal-${prev.savingsGoals.length + 1}`,
-                      name: 'Holiday fund',
-                      target: 2500,
-                      monthlyContribution: 210,
-                      etaMonths: 12,
-                    },
-                  ],
-                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'savings'),
-                  skippedAt: omitStepKey(prev.skippedAt, 'savings'),
-                }))
+                updateState((prev) => {
+                  const wasSkipped = prev.skippedOptionalSteps.includes('savings')
+                  return {
+                    ...prev,
+                    savingsGoals: [
+                      ...prev.savingsGoals,
+                      {
+                        id: `goal-${prev.savingsGoals.length + 1}`,
+                        name: 'Holiday fund',
+                        target: 2500,
+                        monthlyContribution: 210,
+                        etaMonths: 12,
+                      },
+                    ],
+                    skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'savings'),
+                    skippedAt: omitStepKey(prev.skippedAt, 'savings'),
+                    resumedAt: wasSkipped
+                      ? { ...prev.resumedAt, savings: new Date().toISOString() }
+                      : prev.resumedAt,
+                  }
+                })
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
             >
@@ -2156,28 +2262,34 @@ export default function Onboarding() {
             <button
               type="button"
               onClick={() =>
-                updateState((prev) => ({
-                  ...prev,
-                  investments: [
-                    ...prev.investments,
-                    {
-                      id: `investment-${prev.investments.length + 1}`,
-                      name: prev.investments.length === 0 ? 'Brokerage' : 'Crypto wallet',
-                      balance: prev.investments.length === 0 ? 8200 : 1600,
-                      holdings:
-                        prev.investments.length === 0
-                          ? [
-                              { symbol: 'VOO', quantity: 12, price: 410 },
-                              { symbol: 'MSFT', quantity: 5, price: 325 },
-                            ]
-                          : [
-                              { symbol: 'BTC', quantity: 0.08, price: 52000 },
-                            ],
-                    },
-                  ],
-                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'investments'),
-                  skippedAt: omitStepKey(prev.skippedAt, 'investments'),
-                }))
+                updateState((prev) => {
+                  const wasSkipped = prev.skippedOptionalSteps.includes('investments')
+                  return {
+                    ...prev,
+                    investments: [
+                      ...prev.investments,
+                      {
+                        id: `investment-${prev.investments.length + 1}`,
+                        name: prev.investments.length === 0 ? 'Brokerage' : 'Crypto wallet',
+                        balance: prev.investments.length === 0 ? 8200 : 1600,
+                        holdings:
+                          prev.investments.length === 0
+                            ? [
+                                { symbol: 'VOO', quantity: 12, price: 410 },
+                                { symbol: 'MSFT', quantity: 5, price: 325 },
+                              ]
+                            : [
+                                { symbol: 'BTC', quantity: 0.08, price: 52000 },
+                              ],
+                      },
+                    ],
+                    skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'investments'),
+                    skippedAt: omitStepKey(prev.skippedAt, 'investments'),
+                    resumedAt: wasSkipped
+                      ? { ...prev.resumedAt, investments: new Date().toISOString() }
+                      : prev.resumedAt,
+                  }
+                })
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
             >
@@ -2639,25 +2751,31 @@ export default function Onboarding() {
                 )}
               </div>
             </div>
-            {completionTimeline.length > 0 && (
+            {activityTimeline.length > 0 && (
               <div className="rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-700 shadow-sm">
-                <p className="font-semibold text-slate-900">Progress timeline</p>
-                <p className="mt-1 text-xs text-slate-500">Your most recent wins at a glance.</p>
+                <p className="font-semibold text-slate-900">Activity timeline</p>
+                <p className="mt-1 text-xs text-slate-500">Latest completions, skips, and resumptions.</p>
                 <ol className="mt-3 space-y-2 text-xs text-slate-500">
-                  {completionTimeline.slice(0, 5).map((entry) => (
-                    <li
-                      key={`review-timeline-${entry.step.id}`}
-                      className="flex items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-800">{entry.step.title}</p>
-                        <p className="text-[11px] text-slate-400">{entry.step.description}</p>
-                      </div>
-                      <span className="shrink-0 text-[11px] text-slate-400">
-                        {formatRelativeTimeFromNow(entry.timestamp) || 'just now'}
-                      </span>
-                    </li>
-                  ))}
+                  {activityTimeline.slice(0, 5).map((entry) => {
+                    const relative = formatRelativeTimeFromNow(entry.timestamp) || 'just now'
+                    return (
+                      <li
+                        key={`review-timeline-${entry.step.id}-${entry.timestamp}-${entry.type}`}
+                        className="flex items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
+                      >
+                        <div className="space-y-1">
+                          <p className="font-semibold text-slate-800">{entry.step.title}</p>
+                          <p className="text-[11px] text-slate-400">{entry.step.description}</p>
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-1 text-[10px] font-semibold ${activityBadgeClassMap[entry.type]}`}
+                          >
+                            {activityLabelMap[entry.type]}
+                          </span>
+                        </div>
+                        <span className="shrink-0 text-[11px] text-slate-400">{relative}</span>
+                      </li>
+                    )
+                  })}
                 </ol>
               </div>
             )}
@@ -2702,15 +2820,34 @@ export default function Onboarding() {
                 <p className="mt-1 text-xs text-slate-500">
                   We will remind you about these once you are comfortable exploring the dashboard.
                 </p>
-                <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-slate-500">
-                  {skippedOptionalStepsList.map((step) => (
-                    <li key={`review-skipped-${step.id}`} className="flex items-center justify-between gap-2">
-                      <span>{step.title}</span>
-                      <span className="text-[10px] uppercase tracking-wide text-slate-400">
-                        {formatRelativeTimeFromNow(state.skippedAt[step.id]) || 'just now'}
-                      </span>
-                    </li>
-                  ))}
+                <ul className="mt-3 space-y-2 text-xs text-slate-500">
+                  {skippedOptionalStepsList.map((step) => {
+                    const relative = formatRelativeTimeFromNow(state.skippedAt[step.id]) || 'just now'
+                    return (
+                      <li
+                        key={`review-skipped-${step.id}`}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2"
+                      >
+                        <div>
+                          <span className="block font-semibold text-slate-700">{step.title}</span>
+                          <span className="block text-[10px] uppercase tracking-wide text-slate-400">Saved {relative}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleUnskip(step.id)
+                            const targetIndex = steps.findIndex((candidate) => candidate.id === step.id)
+                            if (targetIndex !== -1) {
+                              goToStep(targetIndex)
+                            }
+                          }}
+                          className="inline-flex items-center justify-center rounded-full border border-slate-300 px-3 py-1 text-[11px] font-semibold text-slate-600 transition hover:border-primary/60 hover:text-primary"
+                        >
+                          Resume now
+                        </button>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )}
@@ -2832,6 +2969,7 @@ export default function Onboarding() {
         skippedOptionalSteps: [...prev.skippedOptionalSteps, stepId],
         skippedAt: { ...prev.skippedAt, [stepId]: new Date().toISOString() },
         completedAt: omitStepKey(prev.completedAt, stepId),
+        resumedAt: omitStepKey(prev.resumedAt, stepId),
       }
     })
     goToStep(Math.min(stepIndex + 1, steps.length - 1))
@@ -2993,6 +3131,15 @@ export default function Onboarding() {
               </div>
             </dl>
             <p className="mt-3 text-[11px] text-slate-400">{estimatedTimeLabel}</p>
+            {latestActivityEntry && (
+              <p className="mt-3 text-[11px] text-slate-400">
+                Latest activity: {activityLabelMap[latestActivityEntry.type]} — {latestActivityEntry.step.title}
+                {(() => {
+                  const relative = formatRelativeTimeFromNow(latestActivityEntry.timestamp)
+                  return relative ? ` (${relative})` : ''
+                })()}
+              </p>
+            )}
             {lastCompletedEntry && (
               <p className="mt-3 rounded-2xl bg-primary/5 px-3 py-2 text-[11px] font-semibold text-primary">
                 Last milestone: {lastCompletedEntry.step.title}
@@ -3003,31 +3150,36 @@ export default function Onboarding() {
               </p>
             )}
           </div>
-          {completionTimeline.length > 0 && (
+          {activityTimeline.length > 0 && (
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Recent momentum
+                Activity log
               </p>
               <ul className="mt-3 space-y-2 text-xs text-slate-600">
-                {completionTimeline.slice(0, 3).map((entry) => {
-                  const relative = formatRelativeTimeFromNow(entry.timestamp)
+                {activityTimeline.slice(0, 4).map((entry) => {
+                  const relative = formatRelativeTimeFromNow(entry.timestamp) || 'just now'
                   return (
                     <li
-                      key={`timeline-${entry.step.id}`}
+                      key={`timeline-${entry.step.id}-${entry.timestamp}-${entry.type}`}
                       className="flex items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2"
                     >
-                      <div>
+                      <div className="space-y-1">
                         <p className="font-semibold text-slate-800">{entry.step.title}</p>
                         <p className="text-[11px] text-slate-400">{entry.step.description}</p>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-1 text-[10px] font-semibold ${activityBadgeClassMap[entry.type]}`}
+                        >
+                          {activityLabelMap[entry.type]}
+                        </span>
                       </div>
-                      <span className="shrink-0 text-[11px] text-slate-400">{relative || 'just now'}</span>
+                      <span className="shrink-0 text-[11px] text-slate-400">{relative}</span>
                     </li>
                   )
                 })}
               </ul>
-              {completionTimeline.length > 3 && (
+              {activityTimeline.length > 4 && (
                 <p className="mt-3 text-[11px] text-slate-400">
-                  +{completionTimeline.length - 3} more wins logged.
+                  +{activityTimeline.length - 4} more touchpoints logged.
                 </p>
               )}
             </div>
