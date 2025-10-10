@@ -3,13 +3,16 @@ import { Link } from 'react-router-dom'
 
 const cards = [
   {
-    key: 'setup',
-    title: 'Setup',
-    description: 'Dial in your rhythm, add accounts, and finish the starter checklist to unlock the full experience.',
-    to: '/start',
+    key: 'start-update',
+    title: 'Get started or log updates',
+    description:
+      'Launch the guided setup when you are brand new or jump straight into the update hub to keep weekly rituals humming.',
     accent: 'from-primary/10 to-primary/5 shadow-primary/30',
-    badge: 'Start here',
-    cta: 'Jump in',
+    badge: 'Start or update',
+    actions: [
+      { label: 'Start setup', to: '/start', helper: 'Finish onboarding in focused steps.' },
+      { label: 'Open update hub', to: '/update', helper: 'Log wins, receipts, and weekly tweaks.' },
+    ],
   },
   {
     key: 'dashboard',
@@ -121,6 +124,51 @@ export default function Home() {
               </div>
             </>
           )
+
+          if (card.key === 'start-update' && 'actions' in card) {
+            return (
+              <div
+                key={card.key}
+                className={[
+                  'group relative flex flex-col gap-5 rounded-3xl border border-slate-200 bg-white/90 p-8 text-left transition-all duration-200',
+                  'focus-within:outline focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-primary/70',
+                  'hover:-translate-y-1',
+                ].join(' ')}
+              >
+                <div
+                  className={`pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${card.accent}`}
+                />
+                <div className="relative flex flex-col gap-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-primary/80">{card.title}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-navy/60 transition group-hover:border-primary/40 group-hover:text-primary/80">
+                      {card.badge ?? 'Open'}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-semibold text-navy">{card.title}</h2>
+                  <p className="text-sm text-navy/70">{card.description}</p>
+                </div>
+
+                <div className="relative mt-2 grid gap-3 sm:grid-cols-2">
+                  {card.actions.map((action) => (
+                    <Link
+                      key={action.to}
+                      to={action.to}
+                      className="group/action flex flex-col gap-1 rounded-2xl border border-slate-200 bg-white/90 p-4 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/70"
+                    >
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover/action:text-primary-dark">
+                        {action.label}
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" />
+                        </svg>
+                      </span>
+                      {action.helper ? <p className="text-xs text-navy/60">{action.helper}</p> : null}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )
+          }
 
           if (card.key === 'modules') {
             return (
