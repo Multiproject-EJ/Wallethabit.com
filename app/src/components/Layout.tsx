@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import DemoUserBadge from './DemoUserBadge'
 
 const navItems = [
+  { to: '/start', label: 'Start' },
   { to: '/community', label: 'Community' },
   { to: '/habits', label: 'Habits', accent: true },
 ]
