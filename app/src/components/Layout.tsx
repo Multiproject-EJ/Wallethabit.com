@@ -4,6 +4,7 @@ import DemoUserBadge from './DemoUserBadge'
 
 const navItems = [
   { to: '/', label: 'Overview', end: true },
+  { to: '/start', label: 'Setup guide' },
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/assistant', label: 'AI copilot' },
   { to: '/integrations', label: 'Bank sync lab' },
