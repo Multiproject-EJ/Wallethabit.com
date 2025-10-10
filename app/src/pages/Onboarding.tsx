@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const steps = [
@@ -49,6 +50,21 @@ const assurances = [
 ]
 
 export default function Onboarding() {
+  const [setupComplete, setSetupComplete] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('setupComplete') === 'true'
+  })
+
+  const markSetupComplete = () => {
+    localStorage.setItem('setupComplete', 'true')
+    setSetupComplete(true)
+  }
+
+  const resetSetupState = () => {
+    localStorage.removeItem('setupComplete')
+    setSetupComplete(false)
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-16 pb-16">
       <section className="rounded-3xl border border-slate-200 bg-white px-8 py-12 shadow-sm sm:px-12">
@@ -77,7 +93,30 @@ export default function Onboarding() {
               >
                 Explore Update hub
               </Link>
+              {setupComplete ? (
+                <button
+                  type="button"
+                  onClick={resetSetupState}
+                  className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/60 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100/80"
+                >
+                  Reset setup state
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={markSetupComplete}
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-5 py-3 text-sm font-semibold text-primary transition hover:border-primary/60 hover:bg-primary/10"
+                >
+                  Mark setup complete
+                </button>
+              )}
             </div>
+            {setupComplete && (
+              <p className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200/60 bg-emerald-50/60 px-4 py-2 text-sm font-semibold text-emerald-700">
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+                Setup finished — revisit anytime to adjust the flow.
+              </p>
+            )}
           </div>
           <div className="grid w-full max-w-md gap-4 rounded-3xl border border-dashed border-primary/40 bg-primary/5 p-6 text-sm text-navy/80">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-primary">Setup checklist</h2>
