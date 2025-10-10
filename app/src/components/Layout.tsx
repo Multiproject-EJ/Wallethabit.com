@@ -3,9 +3,8 @@ import { NavLink, Outlet } from 'react-router-dom'
 import DemoUserBadge from './DemoUserBadge'
 
 const navItems = [
-  { to: '/', label: 'Setup', end: true },
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/update', label: 'Update' },
+  { to: '/community', label: 'Community' },
+  { to: '/habits', label: 'Habits', accent: true },
 ]
 
 export default function Layout() {
@@ -17,7 +16,7 @@ export default function Layout() {
             Wallet<span className="text-primary-light">Habit</span>
           </NavLink>
           <nav className="flex flex-1 flex-wrap items-center gap-1 text-sm font-medium text-navy/80">
-            {navItems.map(({ to, label, end }) => (
+            {navItems.map(({ to, label, end, accent }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -25,7 +24,11 @@ export default function Layout() {
                 className={({ isActive }) =>
                   [
                     'rounded-full px-3 py-2 transition-colors border border-transparent',
-                    isActive
+                    accent
+                      ? isActive
+                        ? 'bg-gold text-navy font-semibold shadow-[0_10px_30px_rgba(31,42,68,0.22)]'
+                        : 'bg-gold/80 text-navy font-semibold shadow-sm hover:bg-gold hover:text-navy/90'
+                      : isActive
                       ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                       : 'hover:text-primary-dark hover:bg-white/60',
                   ].join(' ')
