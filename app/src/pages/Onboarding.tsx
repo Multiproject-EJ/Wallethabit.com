@@ -338,6 +338,7 @@ type Step = {
 }
 
 type StepStatus = 'complete' | 'current' | 'upcoming'
+type StepBlockers = Partial<Record<StepId, string[]>>
 
 const stepDefinitions: Step[] = [
   {
@@ -505,41 +506,190 @@ export default function Onboarding() {
 
   const currentStep = steps[stepIndex] ?? steps[0]
 
-  const completionMap = useMemo<Record<StepId, boolean>>(() => {
+  const { completionMap, blockers } = useMemo(() => {
     const optionalSkips = new Set(state.skippedOptionalSteps)
     const hasAnyModuleEnabled = Object.values(state.modules).some((module) => module.enabled)
     const totalIncome = state.income.monthlyNet + state.income.sideIncome
-    const hasAccounts =
-      state.accounts.length > 0 &&
-      state.accounts.every((account) => account.name.trim().length > 0 && Number.isFinite(account.balance))
     const hasIncomeDetails = totalIncome > 0
+
+    const accountIssues: string[] = []
+    state.accounts.forEach((account, index) => {
+      const label = `Account ${index + 1}`
+      if (account.name.trim().length === 0) {
+        accountIssues.push(`${label}: add a name.`)
+      }
+      if (!Number.isFinite(account.balance) || account.balance < 0) {
+        accountIssues.push(`${label}: enter a balance of 0 or above.`)
+      }
+    })
+    const hasAccounts = state.accounts.length > 0 && accountIssues.length === 0
+
     const budgetSource = state.budget.categories.length
       ? state.budget.categories
       : budgetTemplates[state.budget.template]
     const hasBudgetPlan =
       budgetSource.some((category) => category.planned > 0) || state.budget.monthlyTakeHome > 0 || totalIncome > 0
 
-    return {
+    const debtsEnabled = state.modules.debts?.enabled ?? false
+    const debtsIssues: string[] = []
+    if (debtsEnabled && !optionalSkips.has('debts')) {
+      if (state.debts.length === 0) {
+        debtsIssues.push('Add at least one debt or choose Skip for now.')
+      }
+      state.debts.forEach((debt, index) => {
+        const label = `Debt ${index + 1}`
+        if (debt.name.trim().length === 0) {
+          debtsIssues.push(`${label}: add a name.`)
+        }
+        if (!Number.isFinite(debt.balance) || debt.balance <= 0) {
+          debtsIssues.push(`${label}: enter a balance above 0.`)
+        }
+        if (!Number.isFinite(debt.apr) || debt.apr < 0) {
+          debtsIssues.push(`${label}: add an APR (0 if not sure).`)
+        }
+        if (!Number.isFinite(debt.minPayment) || debt.minPayment <= 0) {
+          debtsIssues.push(`${label}: enter a minimum payment above 0.`)
+        }
+      })
+    }
+    const debtsComplete = !debtsEnabled || optionalSkips.has('debts') || (state.debts.length > 0 && debtsIssues.length === 0)
+
+    const savingsEnabled = state.modules.savings?.enabled ?? false
+    const savingsIssues: string[] = []
+    if (savingsEnabled && !optionalSkips.has('savings')) {
+      if (state.savingsGoals.length === 0) {
+        savingsIssues.push('Add at least one savings goal or choose Skip for now.')
+      }
+      state.savingsGoals.forEach((goal, index) => {
+        const label = `Goal ${index + 1}`
+        if (goal.name.trim().length === 0) {
+          savingsIssues.push(`${label}: add a name.`)
+        }
+        if (!Number.isFinite(goal.target) || goal.target <= 0) {
+          savingsIssues.push(`${label}: set a target amount above 0.`)
+        }
+        if (!Number.isFinite(goal.monthlyContribution) || goal.monthlyContribution < 0) {
+          savingsIssues.push(`${label}: enter a monthly contribution (0 if undecided).`)
+        }
+        if (!Number.isFinite(goal.etaMonths) || goal.etaMonths <= 0) {
+          savingsIssues.push(`${label}: add an ETA in months.`)
+        }
+      })
+    }
+    const savingsComplete =
+      !savingsEnabled || optionalSkips.has('savings') || (state.savingsGoals.length > 0 && savingsIssues.length === 0)
+
+    const investmentsEnabled = state.modules.investments?.enabled ?? false
+    const investmentIssues: string[] = []
+    if (investmentsEnabled && !optionalSkips.has('investments')) {
+      if (state.investments.length === 0) {
+        investmentIssues.push('Add at least one investment account or choose Skip for now.')
+      }
+      state.investments.forEach((investment, index) => {
+        const label = `Investment ${index + 1}`
+        if (investment.name.trim().length === 0) {
+          investmentIssues.push(`${label}: add a name.`)
+        }
+        if (!Number.isFinite(investment.balance) || investment.balance < 0) {
+          investmentIssues.push(`${label}: enter a balance (0 if new).`)
+        }
+        investment.holdings.forEach((holding, holdingIndex) => {
+          const holdingLabel = `${label} holding ${holdingIndex + 1}`
+          if (holding.symbol.trim().length === 0) {
+            investmentIssues.push(`${holdingLabel}: add a ticker symbol.`)
+          }
+          if (!Number.isFinite(holding.quantity) || holding.quantity <= 0) {
+            investmentIssues.push(`${holdingLabel}: enter a quantity above 0.`)
+          }
+          if (!Number.isFinite(holding.price) || holding.price <= 0) {
+            investmentIssues.push(`${holdingLabel}: add a price above 0.`)
+          }
+        })
+      })
+    }
+    const investmentsComplete =
+      !investmentsEnabled || optionalSkips.has('investments') || (state.investments.length > 0 && investmentIssues.length === 0)
+
+    const hasVisibleWidget = state.dashboard.widgets.some((widget) => widget.visible)
+    const layoutComplete = state.dashboard.widgets.length > 0 && hasVisibleWidget
+
+    const blockers: StepBlockers = {}
+    if (state.mode === null) {
+      blockers.welcome = ['Choose demo or guided setup to continue.']
+    }
+
+    const basicsIssues: string[] = []
+    if (state.profile.firstName.trim().length === 0) basicsIssues.push('Add your first name.')
+    if (state.profile.country.trim().length === 0) basicsIssues.push('Select your country or region.')
+    if (state.profile.currency.trim().length === 0) basicsIssues.push('Confirm your currency.')
+    if (basicsIssues.length > 0) {
+      blockers.basics = basicsIssues
+    }
+
+    if (state.goals.length === 0) {
+      blockers.focus = ['Pick at least one focus so we can tailor the journey.']
+    }
+
+    if (!hasAnyModuleEnabled) {
+      blockers.modules = ['Enable at least one module (Budget counts!) to continue.']
+    }
+
+    const accountBlockers: string[] = []
+    if (!hasIncomeDetails) {
+      accountBlockers.push('Enter your monthly net or side income (even an estimate).')
+    }
+    if (!hasAccounts) {
+      if (state.accounts.length === 0) {
+        accountBlockers.push('Add at least one account with a name and balance (0 or above).')
+      } else {
+        accountBlockers.push(...accountIssues)
+      }
+    }
+    if (accountBlockers.length > 0 && !(hasIncomeDetails || hasAccounts)) {
+      blockers.accounts = accountBlockers
+    }
+
+    if (!hasBudgetPlan) {
+      blockers.budget = ['Set a monthly take-home amount or give any category a planned amount.']
+    }
+
+    if (debtsEnabled && !debtsComplete) {
+      blockers.debts = debtsIssues
+    }
+
+    if (savingsEnabled && !savingsComplete) {
+      blockers.savings = savingsIssues
+    }
+
+    if (investmentsEnabled && !investmentsComplete) {
+      blockers.investments = investmentIssues
+    }
+
+    if (!layoutComplete) {
+      blockers.layout = ['Keep at least one dashboard widget visible for launch.']
+    }
+
+    if (!state.profile.onboardedAt) {
+      blockers.review = ['Hit “Finish & go to dashboard” to wrap up onboarding.']
+    }
+
+    const completionMap: Record<StepId, boolean> = {
       welcome: state.mode !== null,
-      basics:
-        state.profile.firstName.trim().length > 0 &&
-        state.profile.country.trim().length > 0 &&
-        state.profile.currency.trim().length > 0,
+      basics: basicsIssues.length === 0,
       focus: state.goals.length > 0,
       modules: hasAnyModuleEnabled,
       accounts: hasAccounts || hasIncomeDetails,
       budget: hasBudgetPlan,
-      debts:
-        !state.modules.debts?.enabled || state.debts.length > 0 || optionalSkips.has('debts'),
-      savings:
-        !state.modules.savings?.enabled || state.savingsGoals.length > 0 || optionalSkips.has('savings'),
-      investments:
-        !state.modules.investments?.enabled || state.investments.length > 0 || optionalSkips.has('investments'),
+      debts: debtsComplete,
+      savings: savingsComplete,
+      investments: investmentsComplete,
       notifications: true,
-      layout: state.dashboard.widgets.length > 0,
+      layout: layoutComplete,
       review: Boolean(state.profile.onboardedAt),
       tour: Boolean(state.profile.onboardedAt),
     }
+
+    return { completionMap, blockers }
   }, [state])
 
   const updateState = (updater: (current: OnboardingState) => OnboardingState) => {
@@ -2251,6 +2401,8 @@ export default function Onboarding() {
   const canAdvance = currentStep
     ? currentStep.id === 'review' || completionMap[currentStep.id]
     : false
+  const outstandingItems = currentStep ? blockers[currentStep.id] ?? [] : []
+  const isCurrentStepSkipped = currentStep ? state.skippedOptionalSteps.includes(currentStep.id) : false
 
   const handleSkip = () => {
     if (!currentStep?.optional) return
@@ -2304,50 +2456,67 @@ export default function Onboarding() {
             <div className="mt-6">{renderStepContent()}</div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
-                ✓
-              </span>
-              Progress saves on every step. On return, we resume automatically.
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                  ✓
+                </span>
+                Progress saves on every step. On return, we resume automatically.
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {showBack && (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
+                  >
+                    Back
+                  </button>
+                )}
+                {canSkip && (
+                  <button
+                    type="button"
+                    onClick={handleSkip}
+                    className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
+                  >
+                    Skip for now
+                  </button>
+                )}
+                {showNext && (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={!canAdvance}
+                    className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {showBack && (
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
-                >
-                  Back
-                </button>
-              )}
-              {canSkip && (
-                <button
-                  type="button"
-                  onClick={handleSkip}
-                  className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
-                >
-                  Skip for now
-                </button>
-              )}
-              {showNext && (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={!canAdvance}
-                  className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Next
-                </button>
-              )}
-              {!canAdvance && showNext && (
-                <p className="text-xs font-semibold text-amber-600">
-                  {currentStep?.optional
-                    ? 'Add details above or choose “Skip for now” to continue.'
-                    : 'Complete the required items above to unlock Next.'}
-                </p>
-              )}
-            </div>
+            {!canAdvance && showNext && outstandingItems.length > 0 && (
+              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-700">
+                <p className="font-semibold">Before you continue:</p>
+                <ul className="mt-2 space-y-1 list-disc pl-4">
+                  {outstandingItems.map((item, index) => (
+                    <li key={`${currentStep?.id ?? 'step'}-blocker-${index}`}>{item}</li>
+                  ))}
+                </ul>
+                {currentStep?.optional && !isCurrentStepSkipped && (
+                  <p className="mt-2 text-[11px] text-amber-600">
+                    Prefer to move on? Choose “Skip for now” — you can return anytime.
+                  </p>
+                )}
+              </div>
+            )}
+            {!canAdvance && showNext && outstandingItems.length === 0 && (
+              <p className="text-xs font-semibold text-amber-600">
+                {currentStep?.optional
+                  ? 'Add details above or choose “Skip for now” to continue.'
+                  : 'Complete the required items above to unlock Next.'}
+              </p>
+            )}
           </div>
         </div>
 
@@ -2370,6 +2539,9 @@ export default function Onboarding() {
                 const status = stepStatuses[index]
                 const isDisabled = index > stepIndex && !completionMap[step.id]
                 const isSkipped = state.skippedOptionalSteps.includes(step.id)
+                const outstandingCount = blockers[step.id]?.length ?? 0
+                const showOutstanding =
+                  outstandingCount > 0 && status !== 'complete' && !(step.optional && isSkipped)
                 const buttonClasses = [
                   'flex w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm transition',
                   status === 'current'
@@ -2419,6 +2591,11 @@ export default function Onboarding() {
                             }`}
                           >
                             {isSkipped ? 'Skipped' : 'Optional'}
+                          </span>
+                        )}
+                        {showOutstanding && (
+                          <span className="mt-1 text-[11px] font-semibold uppercase text-amber-500">
+                            {outstandingCount === 1 ? '1 item left' : `${outstandingCount} items left`}
                           </span>
                         )}
                       </div>
