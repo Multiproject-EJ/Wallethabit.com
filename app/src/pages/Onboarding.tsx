@@ -236,7 +236,17 @@ const goalOptions: GoalSelection[] = [
   },
 ]
 
-const defaultState: OnboardingState = {
+const createDefaultModules = (): Record<ModuleKey, ModuleToggle> =>
+  moduleCatalog.reduce((acc, module) => {
+    acc[module.key] = {
+      enabled: module.key === 'budget',
+      pendingUpgrade: false,
+      recommended: module.key === 'budget',
+    }
+    return acc
+  }, {} as Record<ModuleKey, ModuleToggle>)
+
+const createDefaultState = (): OnboardingState => ({
   mode: null,
   isDemo: false,
   profile: {
@@ -249,17 +259,7 @@ const defaultState: OnboardingState = {
     accentColor: '#0f766e',
   },
   goals: [],
-  modules: moduleCatalog.reduce(
-    (acc, module) => ({
-      ...acc,
-      [module.key]: {
-        enabled: module.key === 'budget',
-        pendingUpgrade: false,
-        recommended: module.key === 'budget',
-      },
-    }),
-    {} as Record<ModuleKey, ModuleToggle>
-  ),
+  modules: createDefaultModules(),
   accounts: [],
   income: {
     monthlyNet: 0,
@@ -283,8 +283,148 @@ const defaultState: OnboardingState = {
   dashboard: {
     theme: 'light',
     accentColor: '#0f766e',
-    widgets: defaultWidgets,
+    widgets: defaultWidgets.map((widget) => ({ ...widget })),
   },
+})
+
+const createDemoState = (): OnboardingState => {
+  const base = createDefaultState()
+  const modules = createDefaultModules()
+
+  const enableModule = (key: ModuleKey, pendingUpgrade = false) => {
+    modules[key] = {
+      ...modules[key],
+      enabled: true,
+      pendingUpgrade,
+      recommended: true,
+    }
+  }
+
+  enableModule('budget')
+  enableModule('debts')
+  enableModule('savings')
+  enableModule('investments')
+  enableModule('income')
+  enableModule('taxes')
+  enableModule('retirement')
+  enableModule('aiAdvisor', true)
+
+  const monthlyNet = 5200
+  const demoCategories = budgetTemplates['50-30-20'].map((category) => {
+    if (category.id === 'needs') {
+      return { ...category, planned: Math.round(monthlyNet * 0.5) }
+    }
+    if (category.id === 'wants') {
+      return { ...category, planned: Math.round(monthlyNet * 0.3) }
+    }
+    return { ...category, planned: Math.round(monthlyNet * 0.2) }
+  })
+
+  return {
+    ...base,
+    mode: 'demo',
+    isDemo: true,
+    profile: {
+      ...base.profile,
+      firstName: 'Taylor',
+      country: 'United States',
+      currency: 'USD',
+      timezone: 'America/New_York',
+      dateFormat: 'MM/DD/YYYY',
+      theme: 'light',
+      accentColor: '#14b8a6',
+      onboardedAt: new Date().toISOString(),
+    },
+    goals: ['control-spending', 'emergency-fund', 'pay-off-debt'],
+    modules,
+    accounts: [
+      {
+        id: 'checking',
+        name: 'Everyday Checking',
+        type: 'checking',
+        balance: 3250,
+        currency: 'USD',
+      },
+      {
+        id: 'savings',
+        name: 'Safety Net Savings',
+        type: 'savings',
+        balance: 8500,
+        currency: 'USD',
+      },
+      {
+        id: 'invest',
+        name: 'Future Focus Brokerage',
+        type: 'investment',
+        balance: 12000,
+        currency: 'USD',
+      },
+    ],
+    income: {
+      monthlyNet,
+      payday: '1st',
+      sideIncome: 650,
+    },
+    budget: {
+      monthlyTakeHome: monthlyNet,
+      template: '50-30-20',
+      categories: demoCategories,
+    },
+    debts: [
+      {
+        id: 'amex',
+        name: 'Amex Gold',
+        balance: 4200,
+        apr: 19.9,
+        minPayment: 160,
+      },
+      {
+        id: 'student-loan',
+        name: 'Student Loan',
+        balance: 18500,
+        apr: 4.5,
+        minPayment: 210,
+      },
+    ],
+    savingsGoals: [
+      {
+        id: 'emergency',
+        name: 'Emergency fund',
+        target: 15600,
+        monthlyContribution: 520,
+        etaMonths: 12,
+      },
+      {
+        id: 'holiday',
+        name: 'Holiday escape',
+        target: 3000,
+        monthlyContribution: 250,
+        etaMonths: 12,
+      },
+    ],
+    investments: [
+      {
+        id: 'brokerage',
+        name: 'Future Focus Brokerage',
+        balance: 12000,
+        holdings: [
+          { symbol: 'VOO', quantity: 20, price: 420 },
+          { symbol: 'BTC', quantity: 0.25, price: 60000 },
+        ],
+      },
+    ],
+    notifications: {
+      monthlyReport: 'smart',
+      overspendAlerts: true,
+      billReminders: true,
+      goalNudges: true,
+    },
+    dashboard: {
+      theme: 'light',
+      accentColor: '#14b8a6',
+      widgets: defaultWidgets.map((widget) => ({ ...widget, visible: true })),
+    },
+  }
 }
 
 const budgetTemplates: Record<OnboardingState['budget']['template'], BudgetCategory[]> = {
@@ -411,34 +551,58 @@ const stepDefinitions: Step[] = [
 
 const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
   if (typeof window === 'undefined') {
-    return { state: defaultState, stepIndex: 0 }
+    return { state: createDefaultState(), stepIndex: 0 }
   }
 
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY)
     if (!stored) {
-      return { state: defaultState, stepIndex: 0 }
+      return { state: createDefaultState(), stepIndex: 0 }
     }
 
-    const parsed = JSON.parse(stored) as { state: OnboardingState; stepIndex: number }
+    const parsed = JSON.parse(stored) as { state?: OnboardingState; stepIndex?: number }
+    const defaults = createDefaultState()
+    const storedState = parsed.state ?? defaults
+
+    const mergedModules = createDefaultModules()
+    Object.entries(storedState.modules ?? {}).forEach(([key, value]) => {
+      if (key in mergedModules) {
+        const moduleKey = key as ModuleKey
+        mergedModules[moduleKey] = {
+          ...mergedModules[moduleKey],
+          ...value,
+        }
+      }
+    })
+
     return {
       state: {
-        ...defaultState,
-        ...parsed.state,
-        modules: {
-          ...defaultState.modules,
-          ...parsed.state.modules,
+        ...defaults,
+        ...storedState,
+        modules: mergedModules,
+        accounts: (storedState.accounts ?? []).map((account) => ({ ...account })),
+        debts: (storedState.debts ?? []).map((debt) => ({ ...debt })),
+        savingsGoals: (storedState.savingsGoals ?? []).map((goal) => ({ ...goal })),
+        investments: (storedState.investments ?? []).map((investment) => ({
+          ...investment,
+          holdings: (investment.holdings ?? []).map((holding) => ({ ...holding })),
+        })),
+        budget: {
+          ...defaults.budget,
+          ...storedState.budget,
+          categories: (storedState.budget?.categories ?? []).map((category) => ({ ...category })),
         },
         dashboard: {
-          ...defaultState.dashboard,
-          ...parsed.state.dashboard,
+          ...defaults.dashboard,
+          ...storedState.dashboard,
+          widgets: (storedState.dashboard?.widgets ?? defaults.dashboard.widgets).map((widget) => ({ ...widget })),
         },
       },
       stepIndex: parsed.stepIndex ?? 0,
     }
   } catch (error) {
     console.warn('Failed to load onboarding state', error)
-    return { state: defaultState, stepIndex: 0 }
+    return { state: createDefaultState(), stepIndex: 0 }
   }
 }
 
@@ -482,6 +646,36 @@ export default function Onboarding() {
 
   const goToStep = (index: number) => {
     setStateWithStep((prev) => ({ ...prev, stepIndex: index }))
+  }
+
+  const startDemo = () => {
+    const demoState = createDemoState()
+    const filteredSteps = stepDefinitions.filter((step) => (step.guard ? step.guard(demoState) : true))
+    const reviewIndex = filteredSteps.findIndex((step) => step.id === 'review')
+
+    setStateWithStep({
+      state: demoState,
+      stepIndex: reviewIndex === -1 ? filteredSteps.length - 1 : reviewIndex,
+    })
+  }
+
+  const startGuided = () => {
+    setStateWithStep((prev) => {
+      if (prev.state.isDemo) {
+        const resetState = createDefaultState()
+        resetState.mode = 'build'
+        return { state: resetState, stepIndex: 0 }
+      }
+
+      return {
+        ...prev,
+        state: {
+          ...prev.state,
+          mode: 'build',
+          isDemo: false,
+        },
+      }
+    })
   }
 
   const handleNext = () => {
@@ -529,7 +723,7 @@ export default function Onboarding() {
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem(STORAGE_KEY)
     }
-    setStateWithStep({ state: defaultState, stepIndex: 0 })
+    setStateWithStep({ state: createDefaultState(), stepIndex: 0 })
   }
 
   const handleGoalToggle = (goal: GoalFocus) => {
@@ -657,13 +851,13 @@ export default function Onboarding() {
               </div>
               <button
                 type="button"
-                onClick={() => updateState((prev) => ({ ...prev, mode: 'demo' }))}
+                onClick={startDemo}
                 className="mt-auto inline-flex items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark"
               >
                 Load demo workspace
               </button>
               <p className="text-xs text-slate-500">
-                You can swap to real data anytime from the dashboard.
+                We’ll prefill realistic accounts, a budget, goals, and insights so you can explore instantly.
               </p>
             </article>
             <article
@@ -684,12 +878,14 @@ export default function Onboarding() {
               </div>
               <button
                 type="button"
-                onClick={() => updateState((prev) => ({ ...prev, mode: 'build' }))}
+                onClick={startGuided}
                 className="mt-auto inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark"
               >
                 Start guided setup
               </button>
-              <p className="text-xs text-slate-500">Progress auto-saves, so you can pause anytime.</p>
+              <p className="text-xs text-slate-500">
+                Progress auto-saves, so you can pause anytime. Switching from demo resets everything to a fresh slate.
+              </p>
             </article>
           </div>
         )
@@ -1968,14 +2164,7 @@ export default function Onboarding() {
               {!state.isDemo && (
                 <button
                   type="button"
-                  onClick={() =>
-                    updateState((prev) => ({
-                      ...prev,
-                      mode: 'demo',
-                      isDemo: true,
-                      profile: { ...prev.profile, onboardedAt: new Date().toISOString() },
-                    }))
-                  }
+                  onClick={startDemo}
                   className="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
                 >
                   Load with demo data instead
