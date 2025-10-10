@@ -1,4 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+
+import type { DemoProfile } from '../lib/demoData'
+import { useDemoData } from '../lib/demoDataStore'
 
 type LegacyScenario = {
   id: string
@@ -10,130 +13,463 @@ type LegacyScenario = {
   guardianshipConfidence: number
 }
 
-const scenarios: LegacyScenario[] = [
-  {
-    id: 'builders',
-    label: 'Wealth builders',
-    description:
-      'Dual-career family compressing debt while growing equity comp and brokerage savings. Needs a simple trust with child safeguards.',
-    estateValue: 2.4,
-    liquidityCoverage: 8,
-    philanthropicIntent: 2,
-    guardianshipConfidence: 6,
-  },
-  {
-    id: 'solo',
-    label: 'Solo professional',
-    description:
-      'Tech lead with concentrated RSUs, aging parents, and charitable goals. Needs beneficiary updates and donor-advised giving workflow.',
-    estateValue: 1.1,
-    liquidityCoverage: 5,
-    philanthropicIntent: 7,
-    guardianshipConfidence: 9,
-  },
-  {
-    id: 'founders',
-    label: 'Founder couple',
-    description:
-      'LLC owners scaling a services firm. Needs operating agreements, key-person insurance, and tax-efficient succession plan.',
-    estateValue: 4.8,
-    liquidityCoverage: 6,
-    philanthropicIntent: 4,
-    guardianshipConfidence: 5,
-  },
-  {
-    id: 'caregivers',
-    label: 'Sandwich generation',
-    description:
-      'Caregivers supporting teens plus an elder parent. Needs health proxies, long-term care triggers, and trust funding roadmap.',
-    estateValue: 1.9,
-    liquidityCoverage: 4,
-    philanthropicIntent: 3,
-    guardianshipConfidence: 3,
-  },
-]
+type EstateStrategy = {
+  title: string
+  description: string
+}
 
-const trustStrategies = [
-  {
-    title: 'Revocable living trust',
-    description:
-      'Avoids probate, centralises asset titling, and makes successor trustee transitions seamless when incapacity or death occurs.',
-  },
-  {
-    title: 'Will + guardianship package',
-    description:
-      'Outlines guardians, emergency plans, and asset distribution so minors and dependents are cared for without court delays.',
-  },
-  {
-    title: 'Advanced directives stack',
-    description:
-      'Durable power of attorney, healthcare proxy, and HIPAA releases keep finances and medical wishes aligned if crises hit.',
-  },
-  {
-    title: 'Philanthropic giving vehicles',
-    description:
-      'Donor-advised funds, charitable remainder trusts, or legacy scholarships align giving goals with tax-savvy distribution.',
-  },
-]
+type EstateRolloutMilestone = {
+  label: string
+  timeframe: string
+  description: string
+}
 
-const rolloutMilestones = [
-  {
-    label: 'Legacy data model',
-    timeframe: 'Week 1',
-    description: 'Create Supabase tables for beneficiaries, trustees, healthcare agents, and estate documents.',
-  },
-  {
-    label: 'Document checklist sync',
-    timeframe: 'Week 2',
-    description: 'Capture will, trust, insurance, and directive statuses with reminder automation.',
-  },
-  {
-    label: 'Advisor workspace',
-    timeframe: 'Week 3',
-    description: 'Invite legal/financial pros with scoped access to collaborate on action items.',
-  },
-  {
-    label: 'Copilot legacy nudges',
-    timeframe: 'Week 4',
-    description: 'AI reminders watch expiring documents, equity cliffs, and beneficiary gaps.',
-  },
-]
+type EstateRegionId = DemoProfile['region']
 
-const readinessChecklist = [
-  'Inventory titled assets, digital accounts, and insurance policies with owners + beneficiaries.',
-  'Capture healthcare preferences, end-of-life wishes, and share the plan with trusted contacts.',
-  'Schedule legal reviews every 18–24 months or after major life events to keep documents fresh.',
-  'Note outstanding estate taxes, liquidity needs, and insurance to cover settlement costs.',
-]
+type EstateRegionDefinition = {
+  id: EstateRegionId
+  label: string
+  heroTitle: string
+  heroSubtitle: string
+  personaIntro: string
+  trustIntro: string
+  checklistIntro: string
+  guardianshipIntro: string
+  roadmapIntro: string
+  scenarios: LegacyScenario[]
+  trustStrategies: EstateStrategy[]
+  readinessChecklist: string[]
+  guardianshipPlaybook: { title: string; detail: string }[]
+  rolloutMilestones: EstateRolloutMilestone[]
+  controls: {
+    estateRange: { min: number; max: number; step: number }
+    liquidityRange: { min: number; max: number; step: number }
+  }
+}
 
-const guardianshipPlaybook = [
-  {
-    title: 'Emergency bridge plan',
-    detail:
-      'Fund a high-yield cash account or policy payout instructions that cover 12–18 months of living costs for dependents.',
+const estateRegions: Record<EstateRegionId, EstateRegionDefinition> = {
+  uk: {
+    id: 'uk',
+    label: 'United Kingdom',
+    heroTitle: 'Legacy readiness tuned for UK life admin.',
+    heroSubtitle:
+      'Line up wills, Lasting Power of Attorney, pensions, and guardianship notes before your solicitor meeting. WalletHabit keeps HMCTS paperwork tidy so every witness and instruction stays in sync.',
+    personaIntro:
+      'Pick the household that mirrors your reality. WalletHabit preloads UK inheritance thresholds, pension nomination tasks, and LPA touchpoints before you loop in a solicitor.',
+    trustIntro: 'Blend these UK planning moves to arrive solicitor-ready with less back-and-forth.',
+    checklistIntro:
+      'Lock down the essentials that keep probate flowing across England, Wales, Scotland, and Northern Ireland.',
+    guardianshipIntro:
+      'Brief guardians, attorneys, and executors so your trusted circle knows exactly how to activate LPAs and will instructions.',
+    roadmapIntro: 'Here is how the WalletHabit estate preset rolls out for UK demos.',
+    scenarios: [
+      {
+        id: 'uk-creatives',
+        label: 'London creatives',
+        description:
+          'Product designer and remote partner balancing shared-ownership equity, pensions, and ISA savings. Needs coordinated wills and LPAs with pension nominations refreshed.',
+        estateValue: 1.8,
+        liquidityCoverage: 9,
+        philanthropicIntent: 3,
+        guardianshipConfidence: 6,
+      },
+      {
+        id: 'uk-solo',
+        label: 'Solo pro with parents',
+        description:
+          'Tech lead supporting parents in Manchester with RSUs and lifetime gifts. Prioritises beneficiary refresh, letters of wishes, and charitable giving to design foundations.',
+        estateValue: 1.2,
+        liquidityCoverage: 6,
+        philanthropicIntent: 5,
+        guardianshipConfidence: 7,
+      },
+      {
+        id: 'uk-founders',
+        label: 'Founders with Ltd company',
+        description:
+          'Agency co-founders running a limited company with EMI options. Needs shareholders agreement, key-person cover, and discretionary trust funding for future children.',
+        estateValue: 3.6,
+        liquidityCoverage: 8,
+        philanthropicIntent: 4,
+        guardianshipConfidence: 5,
+      },
+      {
+        id: 'uk-caregivers',
+        label: 'Caregiving sibling',
+        description:
+          'London-based sibling coordinating care for a younger brother and parents abroad. Needs cross-border probate plan, replacement attorneys, and liquidity for care costs.',
+        estateValue: 2.1,
+        liquidityCoverage: 5,
+        philanthropicIntent: 2,
+        guardianshipConfidence: 4,
+      },
+    ],
+    trustStrategies: [
+      {
+        title: 'Will & LPA pack',
+        description:
+          'Coordinate wills, executors, and both LPAs (finance + health) so witnesses, attorneys, and guardians are locked in before any emergencies hit.',
+      },
+      {
+        title: 'Discretionary family trust',
+        description:
+          'Ring-fence inheritances for children or dependants, manage school fee planning, and smooth inheritance tax exposure.',
+      },
+      {
+        title: 'Pension & death benefit sync',
+        description:
+          'Refresh SIPP, workplace pension, and life assurance nominations so HMRC bypasses probate delays.',
+      },
+      {
+        title: 'Gift Aid giving blueprint',
+        description:
+          'Use Gift Aid declarations, donor-advised funds, or charitable legacies to magnify impact and reduce taxable estate value.',
+      },
+    ],
+    readinessChecklist: [
+      'Document wills, LPAs, and letters of wishes with signed witnesses stored in your secure vault.',
+      'Capture pension, ISA, and life insurance beneficiaries so death benefits transfer outside probate.',
+      'Model inheritance tax exposure versus available nil-rate bands and consider lifetime gifts to soften spikes.',
+      'List offshore assets or property in Scotland/Northern Ireland with their own probate instructions.',
+    ],
+    guardianshipPlaybook: [
+      {
+        title: 'Emergency guardian brief',
+        detail:
+          'Prep a handoff packet with school contacts, medical needs, and financial routines for the first 30 days.',
+      },
+      {
+        title: 'Attorney activation map',
+        detail:
+          'Clarify which attorney handles finances versus health decisions and how they coordinate with executors.',
+      },
+      {
+        title: 'Annual witness check-in',
+        detail:
+          'Schedule yearly reviews to confirm addresses, replacement guardians, and solicitor notes stay current.',
+      },
+    ],
+    rolloutMilestones: [
+      {
+        label: 'Estate data spine',
+        timeframe: 'Week 1',
+        description: 'Set up Supabase tables for executors, attorneys, beneficiaries, and document audit trails.',
+      },
+      {
+        label: 'Document vault sync',
+        timeframe: 'Week 2',
+        description: 'Track will, LPA, and insurance artefacts with renewal reminders and witness tasks.',
+      },
+      {
+        label: 'Advisor collaboration',
+        timeframe: 'Week 3',
+        description: 'Invite solicitors or financial planners with scoped access to review assumptions.',
+      },
+      {
+        label: 'Copilot estate nudges',
+        timeframe: 'Week 4',
+        description: 'Surface HMCTS deadlines, inheritance tax alerts, and beneficiary drift inside Copilot.',
+      },
+    ],
+    controls: {
+      estateRange: { min: 0.4, max: 7, step: 0.1 },
+      liquidityRange: { min: 0, max: 18, step: 1 },
+    },
   },
-  {
-    title: 'Succession timelines',
-    detail:
-      'Outline who steps in immediately, within 30 days, and at the 6-month mark for finances, caregiving, and business continuity.',
+  us: {
+    id: 'us',
+    label: 'United States',
+    heroTitle: 'Legacy readiness calibrated for US estate paths.',
+    heroSubtitle:
+      'Coordinate revocable trusts, POAs, beneficiary designations, and state tax thresholds before your attorney kickoff. WalletHabit keeps the binder organised so everyone knows their role.',
+    personaIntro:
+      'Choose the household that matches your plan. We preload US estate thresholds, insurance coverage, and charitable intentions before the attorney packet ships.',
+    trustIntro: 'Stack these US planning moves to finish your attorney-ready binder.',
+    checklistIntro: 'Cover the essentials every US household needs before trusts and estate attorneys join.',
+    guardianshipIntro: 'Brief guardians, trustees, and POA agents on the cadence they can expect by state.',
+    roadmapIntro: 'Upcoming milestones keep the US estate workflow humming.',
+    scenarios: [
+      {
+        id: 'us-bay-area',
+        label: 'Bay Area builders',
+        description:
+          'Dual-income household with stock options and a young child. Needs revocable trust funding, 529 beneficiary refresh, and insurance to cover liquidity.',
+        estateValue: 4.2,
+        liquidityCoverage: 7,
+        philanthropicIntent: 3,
+        guardianshipConfidence: 5,
+      },
+      {
+        id: 'us-solo',
+        label: 'Solo technologist',
+        description:
+          'Senior engineer with concentrated RSUs, aging parents, and donor-advised giving goals. Prioritises beneficiary updates and letters of intent.',
+        estateValue: 1.3,
+        liquidityCoverage: 5,
+        philanthropicIntent: 6,
+        guardianshipConfidence: 8,
+      },
+      {
+        id: 'us-founders',
+        label: 'LLC founders',
+        description:
+          'Co-founders scaling a services firm with buy-sell agreements and key-person coverage. Needs succession funding and tax-efficient equity transfers.',
+        estateValue: 6.5,
+        liquidityCoverage: 9,
+        philanthropicIntent: 4,
+        guardianshipConfidence: 6,
+      },
+      {
+        id: 'us-caregivers',
+        label: 'Caregiving duo',
+        description:
+          'Siblings supporting teens plus an elder parent. Needs long-term care directives, healthcare proxies, and liquidity for elder care.',
+        estateValue: 2.8,
+        liquidityCoverage: 6,
+        philanthropicIntent: 5,
+        guardianshipConfidence: 4,
+      },
+    ],
+    trustStrategies: [
+      {
+        title: 'Revocable living trust',
+        description:
+          'Avoid probate, centralise titling, and streamline successor trustee transitions during incapacity or death.',
+      },
+      {
+        title: 'Will & guardianship binder',
+        description:
+          'Clarify guardians, emergency plans, and distribution so minors and dependents stay protected without court delays.',
+      },
+      {
+        title: 'Advance directives stack',
+        description:
+          'Durable POA, healthcare proxy, and HIPAA releases align finances and medical wishes across states.',
+      },
+      {
+        title: 'Charitable giving vehicles',
+        description:
+          'Donor-advised funds, charitable remainder trusts, or scholarship endowments connect impact with tax planning.',
+      },
+    ],
+    readinessChecklist: [
+      'Inventory titled assets, beneficiary designations, and insurance coverage with current values.',
+      'Capture state-specific healthcare directives and HIPAA releases for each adult.',
+      'Review estate tax exposure against federal and state exemptions with annual gifting opportunities.',
+      'Document business succession and key-person insurance funding for buy-sell agreements.',
+    ],
+    guardianshipPlaybook: [
+      {
+        title: 'Emergency binder',
+        detail:
+          'Share contacts, routines, and funding instructions guardians need for the first 60 days.',
+      },
+      {
+        title: 'Succession runbook',
+        detail:
+          'Map who steps in immediately versus within 30 days for finances, caregiving, and business ops.',
+      },
+      {
+        title: 'Communication cadence',
+        detail:
+          'Schedule quarterly syncs with guardians and trustees so expectations stay aligned.',
+      },
+    ],
+    rolloutMilestones: [
+      {
+        label: 'Estate data model',
+        timeframe: 'Week 1',
+        description: 'Create Supabase tables for trustees, beneficiaries, directives, and document metadata.',
+      },
+      {
+        label: 'Document checklist sync',
+        timeframe: 'Week 2',
+        description: 'Track will, trust, insurance, and directive statuses with reminder automation.',
+      },
+      {
+        label: 'Advisor workspace',
+        timeframe: 'Week 3',
+        description: 'Invite legal and financial pros with scoped access to collaborate on action items.',
+      },
+      {
+        label: 'Copilot legacy nudges',
+        timeframe: 'Week 4',
+        description: 'AI reminders watch expiring documents, equity cliffs, and beneficiary gaps.',
+      },
+    ],
+    controls: {
+      estateRange: { min: 0.5, max: 12, step: 0.1 },
+      liquidityRange: { min: 0, max: 24, step: 1 },
+    },
   },
-  {
-    title: 'Communication cadence',
-    detail:
-      'Set quarterly check-ins with guardians and trustees so expectations stay fresh and new needs surface early.',
+  no: {
+    id: 'no',
+    label: 'Norway',
+    heroTitle: 'Arv & livsplanlegging shaped for Norway.',
+    heroSubtitle:
+      'Coordinate testament, fremtidsfullmakt, samboeravtaler, and guardianship ahead of your advokat session. WalletHabit keeps Altinn tasks and Skatteetaten notes connected for your family.',
+    personaIntro:
+      'Select the household that fits your Norwegian reality. We preload local inheritance rules, folketrygd survivor benefits, and BankID logistics before advisors join.',
+    trustIntro: 'Combine these Norwegian planning levers so your advokat receives a ready-made brief.',
+    checklistIntro: 'Secure the fundamentals required for norsk skifte and vergemål readiness.',
+    guardianshipIntro: 'Give guardians and nærmeste pårørende a clear routine for activating care and financial support.',
+    roadmapIntro: 'This is the launch path for the Norway estate preset inside WalletHabit.',
+    scenarios: [
+      {
+        id: 'no-oslo',
+        label: 'Oslo tech couple',
+        description:
+          'Product designer and consultant with bolig, IPS savings, and equity compensation. Needs testament, fremtidsfullmakt, and coordinated life insurance payouts.',
+        estateValue: 2.2,
+        liquidityCoverage: 10,
+        philanthropicIntent: 4,
+        guardianshipConfidence: 6,
+      },
+      {
+        id: 'no-bergen',
+        label: 'Bergen solo parent',
+        description:
+          'Marketing lead raising one child with help from grandparents. Focused on vergemål instructions, barnefordeling planning, and liquidity for care expenses.',
+        estateValue: 1.4,
+        liquidityCoverage: 7,
+        philanthropicIntent: 3,
+        guardianshipConfidence: 5,
+      },
+      {
+        id: 'no-trondheim',
+        label: 'Trondheim founders',
+        description:
+          'Co-founders running a tech studio with aksjeselskap shares. Needs shareholders agreement, livsforsikring, and succession planning for employees.',
+        estateValue: 3.1,
+        liquidityCoverage: 8,
+        philanthropicIntent: 2,
+        guardianshipConfidence: 5,
+      },
+      {
+        id: 'no-stavanger',
+        label: 'Stavanger caregivers',
+        description:
+          'Siblings supporting parents and a special-needs adult child. Requires samboeravtale, long-term care funding, and municipal support coordination.',
+        estateValue: 2.5,
+        liquidityCoverage: 6,
+        philanthropicIntent: 5,
+        guardianshipConfidence: 4,
+      },
+    ],
+    trustStrategies: [
+      {
+        title: 'Testament & fremtidsfullmakt',
+        description:
+          'Set testament, fremtidsfullmakt, and health directives so representatives can act quickly with BankID authorisations.',
+      },
+      {
+        title: 'Samboer-/ektepakt plan',
+        description:
+          'Clarify ownership splits, arv for særkullsbarn, and rights for samboere or ektefeller.',
+      },
+      {
+        title: 'Livsforsikring & IPS sync',
+        description:
+          'Coordinate livsforsikring, IPS, and pensjon payouts so liquidity covers skifte costs and survivor income.',
+      },
+      {
+        title: 'Gaver & veldedighet',
+        description:
+          'Document gavebrev, forskudd på arv, and charitable gifts with the right tax deductions.',
+      },
+    ],
+    readinessChecklist: [
+      'Register or store testament copies with reliable witnesses and notify key family members.',
+      'Prepare fremtidsfullmakt and healthcare directives with alternates for both finance and health decisions.',
+      'Record BankID-secured asset lists, digital accounts, and property details for skifteoppgjør.',
+      'Plan liquidity for estate settlement, potential arveoppgjør disputes, and ongoing caregiver costs.',
+    ],
+    guardianshipPlaybook: [
+      {
+        title: 'Akutt omsorgsplan',
+        detail:
+          'Map the first 72 hours of care, access to bolig keys, and emergency funds for dependants.',
+      },
+      {
+        title: 'Vergemål coordination',
+        detail:
+          'Clarify roles across siblings, municipal support, and potential verge to keep decisions aligned.',
+      },
+      {
+        title: 'Altinn & sharing cadence',
+        detail:
+          'Set quarterly check-ins using Altinn or secure vault sharing so updates reach nærmeste pårørende.',
+      },
+    ],
+    rolloutMilestones: [
+      {
+        label: 'Arv data foundation',
+        timeframe: 'Uke 1',
+        description: 'Spin up tables for arvinger, fullmaktshavere, and dokumentjournal with Norwegian labels.',
+      },
+      {
+        label: 'Altinn document sync',
+        timeframe: 'Uke 2',
+        description: 'Track testament, fremtidsfullmakt, and livsforsikring paperwork with reminders tied to BankID tasks.',
+      },
+      {
+        label: 'Advokat workspace',
+        timeframe: 'Uke 3',
+        description: 'Invite advokat or regnskapsfører collaborators with scoped access to assumptions.',
+      },
+      {
+        label: 'Copilot varsler',
+        timeframe: 'Uke 4',
+        description: 'Automate nudges around oppdateringsbehov, arvemelding deadlines, and liquidity gaps.',
+      },
+    ],
+    controls: {
+      estateRange: { min: 0.3, max: 6, step: 0.1 },
+      liquidityRange: { min: 0, max: 18, step: 1 },
+    },
   },
-]
-
-function formatCurrencyMillions(value: number) {
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}M`
 }
 
 export default function Estate() {
-  const [scenario, setScenario] = useState<LegacyScenario>(scenarios[0])
+  const {
+    state: { profile: demoProfile },
+  } = useDemoData()
+
+  const activeRegion = useMemo(
+    () => estateRegions[demoProfile.region] ?? estateRegions.uk,
+    [demoProfile.region],
+  )
+
+  const compactCurrencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(demoProfile.localeId, {
+        style: 'currency',
+        currency: demoProfile.currency,
+        notation: 'compact',
+        maximumFractionDigits: 1,
+      }),
+    [demoProfile.currency, demoProfile.localeId],
+  )
+
+  const formatEstateValue = useMemo(
+    () => (value: number) => compactCurrencyFormatter.format(value * 1_000_000),
+    [compactCurrencyFormatter],
+  )
+
+  const [scenario, setScenario] = useState<LegacyScenario>(activeRegion.scenarios[0])
   const [estateValue, setEstateValue] = useState(scenario.estateValue)
   const [liquidityCoverage, setLiquidityCoverage] = useState(scenario.liquidityCoverage)
   const [philanthropicIntent, setPhilanthropicIntent] = useState(scenario.philanthropicIntent)
   const [guardianshipConfidence, setGuardianshipConfidence] = useState(scenario.guardianshipConfidence)
+
+  useEffect(() => {
+    const defaultScenario = activeRegion.scenarios[0]
+    setScenario(defaultScenario)
+    setEstateValue(defaultScenario.estateValue)
+    setLiquidityCoverage(defaultScenario.liquidityCoverage)
+    setPhilanthropicIntent(defaultScenario.philanthropicIntent)
+    setGuardianshipConfidence(defaultScenario.guardianshipConfidence)
+  }, [activeRegion])
 
   const readinessScore = useMemo(() => {
     const estateWeight = Math.min(estateValue / 5, 1)
@@ -251,10 +587,8 @@ export default function Estate() {
             <span className="w-fit rounded-full bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100">
               Estate lab
             </span>
-            <h1 className="text-3xl font-semibold sm:text-4xl">Legacy readiness, choreographed with clarity.</h1>
-            <p className="max-w-3xl text-sm text-emerald-50/80">
-              Map guardians, trusts, liquidity, and philanthropic goals before engaging legal pros. WalletHabit keeps every detail organised so your legacy stays aligned with your values and Copilot can surface the next best move.
-            </p>
+            <h1 className="text-3xl font-semibold sm:text-4xl">{activeRegion.heroTitle}</h1>
+            <p className="max-w-3xl text-sm text-emerald-50/80">{activeRegion.heroSubtitle}</p>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[1.15fr,0.85fr]">
@@ -264,7 +598,7 @@ export default function Estate() {
                   <span className="h-2 w-2 rounded-full bg-primary-light" /> {scenario.label}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-emerald-50">
-                  Estate {formatCurrencyMillions(estateValue)}
+                  Estate {formatEstateValue(estateValue)}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-emerald-50">
                   Liquidity {liquidityCoverage.toFixed(0)} mo
@@ -295,7 +629,7 @@ export default function Estate() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm backdrop-blur">
               <p className="text-xs font-semibold uppercase tracking-wide text-emerald-100/70">Estate outlook</p>
-              <p className="mt-2 text-xl font-semibold text-white">{formatCurrencyMillions(estateValue)}</p>
+              <p className="mt-2 text-xl font-semibold text-white">{formatEstateValue(estateValue)}</p>
               <p className="mt-1 text-xs text-emerald-50/80">Projected estate value including property, investments, and business equity.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm backdrop-blur">
@@ -321,13 +655,11 @@ export default function Estate() {
         <article className="flex flex-col gap-6 rounded-[28px] border border-slate-200/80 bg-white/90 p-7 shadow-uplift">
           <div className="flex flex-col gap-3">
             <h2 className="text-xl font-semibold text-slate-900">Persona blueprints</h2>
-            <p className="text-sm text-slate-600">
-              Select the scenario that mirrors your household. WalletHabit will soon sync these profiles so Copilot can pre-build planning packets for attorneys and advisors.
-            </p>
+            <p className="text-sm text-slate-600">{activeRegion.personaIntro}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            {scenarios.map((option) => {
+            {activeRegion.scenarios.map((option) => {
               const isActive = option.id === scenario.id
               return (
                 <button
@@ -351,7 +683,7 @@ export default function Estate() {
                     <p className="text-xs leading-relaxed text-current/80">{option.description}</p>
                   </div>
                   <div className="flex flex-wrap gap-3 text-[10px] font-semibold uppercase tracking-wide text-current/70">
-                    <span>Estate {formatCurrencyMillions(option.estateValue)}</span>
+                    <span>Estate {formatEstateValue(option.estateValue)}</span>
                     <span>Liquidity {option.liquidityCoverage} mo</span>
                     <span>Giving {option.philanthropicIntent}/10</span>
                     <span>Guardians {option.guardianshipConfidence}/10</span>
@@ -427,13 +759,13 @@ export default function Estate() {
               <input
                 className="w-full accent-brand"
                 type="range"
-                min={0.5}
-                max={10}
-                step={0.1}
+                min={activeRegion.controls.estateRange.min}
+                max={activeRegion.controls.estateRange.max}
+                step={activeRegion.controls.estateRange.step}
                 value={estateValue}
                 onChange={(event) => setEstateValue(parseFloat(event.target.value))}
               />
-              <span className="text-lg font-semibold text-slate-900">{formatCurrencyMillions(estateValue)}</span>
+              <span className="text-lg font-semibold text-slate-900">{formatEstateValue(estateValue)}</span>
               <p className="text-xs text-slate-500">Includes real estate, brokerage, retirement, and business equity.</p>
             </label>
 
@@ -442,9 +774,9 @@ export default function Estate() {
               <input
                 className="w-full accent-brand"
                 type="range"
-                min={0}
-                max={18}
-                step={1}
+                min={activeRegion.controls.liquidityRange.min}
+                max={activeRegion.controls.liquidityRange.max}
+                step={activeRegion.controls.liquidityRange.step}
                 value={liquidityCoverage}
                 onChange={(event) => setLiquidityCoverage(parseInt(event.target.value, 10))}
               />
@@ -495,11 +827,9 @@ export default function Estate() {
 
         <aside className="flex flex-col gap-5 rounded-[28px] border border-slate-200/80 bg-white p-7 shadow-uplift">
           <h3 className="text-base font-semibold text-slate-900">Trust strategies</h3>
-          <p className="text-sm text-slate-600">
-            Mix and match the playbooks below to draft a legacy plan before meeting your attorney.
-          </p>
+          <p className="text-sm text-slate-600">{activeRegion.trustIntro}</p>
           <div className="mt-2 space-y-3">
-            {trustStrategies.map((item) => (
+            {activeRegion.trustStrategies.map((item) => (
               <div key={item.title} className="rounded-2xl border border-slate-200 bg-sand p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{item.title}</p>
                 <p className="mt-2 text-sm text-slate-700">{item.description}</p>
@@ -512,8 +842,9 @@ export default function Estate() {
       <section className="grid gap-8 lg:grid-cols-2">
         <article className="flex flex-col gap-5 rounded-[28px] border border-slate-200/80 bg-white p-7 shadow-uplift">
           <h3 className="text-lg font-semibold text-slate-900">Readiness checklist</h3>
+          <p className="text-sm text-slate-600">{activeRegion.checklistIntro}</p>
           <ul className="space-y-4 text-sm text-slate-600">
-            {readinessChecklist.map((item) => (
+            {activeRegion.readinessChecklist.map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand" />
                 <p>{item}</p>
@@ -523,8 +854,9 @@ export default function Estate() {
         </article>
         <article className="flex flex-col gap-5 rounded-[28px] border border-slate-200/80 bg-white p-7 shadow-uplift">
           <h3 className="text-lg font-semibold text-slate-900">Guardianship playbook</h3>
+          <p className="text-sm text-slate-600">{activeRegion.guardianshipIntro}</p>
           <div className="space-y-4 text-sm text-slate-600">
-            {guardianshipPlaybook.map((item) => (
+            {activeRegion.guardianshipPlaybook.map((item) => (
               <div key={item.title} className="rounded-2xl border border-slate-200 bg-sand p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{item.title}</p>
                 <p className="mt-2 text-sm text-slate-700">{item.detail}</p>
@@ -536,8 +868,9 @@ export default function Estate() {
 
       <section className="rounded-[28px] border border-slate-200/80 bg-white p-8 shadow-uplift">
         <h3 className="text-lg font-semibold text-slate-900">Rollout roadmap</h3>
+        <p className="mt-2 text-sm text-slate-600">{activeRegion.roadmapIntro}</p>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {rolloutMilestones.map((step) => (
+          {activeRegion.rolloutMilestones.map((step) => (
             <article key={step.label} className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-sand p-5">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{step.timeframe}</span>
               <h4 className="text-base font-semibold text-slate-900">{step.label}</h4>
