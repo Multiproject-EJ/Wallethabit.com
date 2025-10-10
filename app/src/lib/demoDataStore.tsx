@@ -94,11 +94,16 @@ export type DemoDataContextValue = {
   isAuthenticated: boolean
   signIn: () => void
   signOut: () => void
+  setBudgetCadence: (cadence: DemoProfile['budgetCadence']) => void
   updatePlan: (planId: string) => void
   updateLocale: (localeId: string) => void
   updateFirstDayOfWeek: (value: DemoProfile['firstDayOfWeek']) => void
   updateRoundingMode: (mode: DemoProfile['roundingMode']) => void
+  setFocusHabits: (habits: DemoProfile['focusHabits']) => void
+  setReminderCadence: (cadence: DemoProfile['reminderCadence']) => void
+  setCelebrationStyle: (style: DemoProfile['celebrationStyle']) => void
   toggleNotification: (id: string) => void
+  updateMonthlyIncome: (income: number) => void
   updateEnvelopePlanned: (id: string, planned: number) => void
   resetEnvelopePlanned: (id: string) => void
   resetBudget: () => void
@@ -153,6 +158,16 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
           },
         }))
       },
+      setBudgetCadence: (cadence: DemoProfile['budgetCadence']) => {
+        updateState((previous) => ({
+          ...previous,
+          profile: {
+            ...previous.profile,
+            budgetCadence: cadence,
+            lastActiveAt: new Date().toISOString(),
+          },
+        }))
+      },
       updatePlan: (planId: string) => {
         updateState((previous) => ({
           ...previous,
@@ -193,6 +208,36 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
           },
         }))
       },
+      setFocusHabits: (habits: DemoProfile['focusHabits']) => {
+        updateState((previous) => ({
+          ...previous,
+          profile: {
+            ...previous.profile,
+            focusHabits: habits,
+            lastActiveAt: new Date().toISOString(),
+          },
+        }))
+      },
+      setReminderCadence: (cadence: DemoProfile['reminderCadence']) => {
+        updateState((previous) => ({
+          ...previous,
+          profile: {
+            ...previous.profile,
+            reminderCadence: cadence,
+            lastActiveAt: new Date().toISOString(),
+          },
+        }))
+      },
+      setCelebrationStyle: (style: DemoProfile['celebrationStyle']) => {
+        updateState((previous) => ({
+          ...previous,
+          profile: {
+            ...previous.profile,
+            celebrationStyle: style,
+            lastActiveAt: new Date().toISOString(),
+          },
+        }))
+      },
       toggleNotification: (id: string) => {
         updateState((previous) => ({
           ...previous,
@@ -203,6 +248,16 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
               [id]: !previous.profile.notifications[id],
             },
             lastActiveAt: new Date().toISOString(),
+          },
+        }))
+      },
+      updateMonthlyIncome: (income: number) => {
+        updateState((previous) => ({
+          ...previous,
+          budget: {
+            ...previous.budget,
+            monthlyIncome: Math.max(0, Math.round(income)),
+            lastReconciledAt: new Date().toISOString(),
           },
         }))
       },

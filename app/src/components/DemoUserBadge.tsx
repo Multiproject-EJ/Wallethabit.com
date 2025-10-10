@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-
 import { useDemoData } from '../lib/demoDataStore'
 
 export default function DemoUserBadge() {
@@ -39,12 +37,6 @@ export default function DemoUserBadge() {
           {isAuthenticated ? 'Sign out' : 'Resume demo'}
         </button>
       </div>
-      <Link
-        to="/settings"
-        className="hidden rounded-full border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 transition hover:border-brand/50 hover:text-brand md:inline-flex"
-      >
-        Settings
-      </Link>
     </div>
   )
 }

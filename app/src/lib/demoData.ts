@@ -7,9 +7,13 @@ export type DemoProfile = {
   region: 'uk' | 'us' | 'no'
   localeId: string
   currency: string
+  budgetCadence: 'Weekly' | 'Monthly'
   firstDayOfWeek: 'Sunday' | 'Monday'
   roundingMode: 'exact' | 'nearest-dollar'
   notifications: Record<string, boolean>
+  focusHabits: string[]
+  reminderCadence: 'Weekly' | 'Biweekly' | 'Monthly'
+  celebrationStyle: 'Calm' | 'Cheerful' | 'Minimal'
   createdAt: string
   lastActiveAt: string
 }
@@ -82,9 +86,13 @@ export const createDefaultDemoState = (): DemoState => ({
     region: 'uk',
     localeId: 'en-GB',
     currency: 'GBP',
+    budgetCadence: 'Monthly',
     firstDayOfWeek: 'Monday',
     roundingMode: 'nearest-dollar',
     notifications: { ...notificationDefaults },
+    focusHabits: ['Build emergency fund', 'Stay on budget'],
+    reminderCadence: 'Weekly',
+    celebrationStyle: 'Cheerful',
     createdAt: '2023-11-18T12:00:00.000Z',
     lastActiveAt: '2024-02-27T09:45:00.000Z',
   },
