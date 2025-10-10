@@ -150,6 +150,21 @@ type DashboardWidget = {
   visible: boolean
 }
 
+type StepId =
+  | 'welcome'
+  | 'basics'
+  | 'focus'
+  | 'modules'
+  | 'accounts'
+  | 'budget'
+  | 'debts'
+  | 'savings'
+  | 'investments'
+  | 'notifications'
+  | 'layout'
+  | 'review'
+  | 'tour'
+
 type OnboardingState = {
   mode: OnboardingMode
   isDemo: boolean
@@ -190,6 +205,7 @@ type OnboardingState = {
     accentColor: string
     widgets: DashboardWidget[]
   }
+  skippedOptionalSteps: StepId[]
 }
 
 const STORAGE_KEY = 'walletHabit.onboardingState.v1'
@@ -285,6 +301,7 @@ const defaultState: OnboardingState = {
     accentColor: '#0f766e',
     widgets: defaultWidgets,
   },
+  skippedOptionalSteps: [],
 }
 
 const budgetTemplates: Record<OnboardingState['budget']['template'], BudgetCategory[]> = {
@@ -312,21 +329,6 @@ const budgetTemplates: Record<OnboardingState['budget']['template'], BudgetCateg
   ],
 }
 
-type StepId =
-  | 'welcome'
-  | 'basics'
-  | 'focus'
-  | 'modules'
-  | 'accounts'
-  | 'budget'
-  | 'debts'
-  | 'savings'
-  | 'investments'
-  | 'notifications'
-  | 'layout'
-  | 'review'
-  | 'tour'
-
 type Step = {
   id: StepId
   title: string
@@ -334,6 +336,8 @@ type Step = {
   optional?: boolean
   guard?: (state: OnboardingState) => boolean
 }
+
+type StepStatus = 'complete' | 'current' | 'upcoming'
 
 const stepDefinitions: Step[] = [
   {
@@ -433,6 +437,7 @@ const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
           ...defaultState.dashboard,
           ...parsed.state.dashboard,
         },
+        skippedOptionalSteps: parsed.state.skippedOptionalSteps ?? [],
       },
       stepIndex: parsed.stepIndex ?? 0,
     }
@@ -476,6 +481,43 @@ export default function Onboarding() {
 
   const currentStep = steps[stepIndex] ?? steps[0]
 
+  const completionMap = useMemo<Record<StepId, boolean>>(() => {
+    const optionalSkips = new Set(state.skippedOptionalSteps)
+    const hasAnyModuleEnabled = Object.values(state.modules).some((module) => module.enabled)
+    const totalIncome = state.income.monthlyNet + state.income.sideIncome
+    const hasAccounts =
+      state.accounts.length > 0 &&
+      state.accounts.every((account) => account.name.trim().length > 0 && Number.isFinite(account.balance))
+    const hasIncomeDetails = totalIncome > 0
+    const budgetSource = state.budget.categories.length
+      ? state.budget.categories
+      : budgetTemplates[state.budget.template]
+    const hasBudgetPlan =
+      budgetSource.some((category) => category.planned > 0) || state.budget.monthlyTakeHome > 0 || totalIncome > 0
+
+    return {
+      welcome: state.mode !== null,
+      basics:
+        state.profile.firstName.trim().length > 0 &&
+        state.profile.country.trim().length > 0 &&
+        state.profile.currency.trim().length > 0,
+      focus: state.goals.length > 0,
+      modules: hasAnyModuleEnabled,
+      accounts: hasAccounts || hasIncomeDetails,
+      budget: hasBudgetPlan,
+      debts:
+        !state.modules.debts?.enabled || state.debts.length > 0 || optionalSkips.has('debts'),
+      savings:
+        !state.modules.savings?.enabled || state.savingsGoals.length > 0 || optionalSkips.has('savings'),
+      investments:
+        !state.modules.investments?.enabled || state.investments.length > 0 || optionalSkips.has('investments'),
+      notifications: true,
+      layout: state.dashboard.widgets.length > 0,
+      review: Boolean(state.profile.onboardedAt),
+      tour: Boolean(state.profile.onboardedAt),
+    }
+  }, [state])
+
   const updateState = (updater: (current: OnboardingState) => OnboardingState) => {
     setStateWithStep((prev) => ({ ...prev, state: updater(prev.state) }))
   }
@@ -486,6 +528,10 @@ export default function Onboarding() {
 
   const handleNext = () => {
     if (!currentStep) return
+
+    if (currentStep.id !== 'review' && !completionMap[currentStep.id]) {
+      return
+    }
 
     if (currentStep.id === 'welcome') {
       if (state.mode === 'demo') {
@@ -630,6 +676,52 @@ export default function Onboarding() {
         },
       }
     })
+  }
+
+  const removeAccount = (id: string) => {
+    updateState((prev) => ({
+      ...prev,
+      accounts: prev.accounts.filter((account) => account.id !== id),
+    }))
+  }
+
+  const removeDebt = (id: string) => {
+    updateState((prev) => ({
+      ...prev,
+      debts: prev.debts.filter((debt) => debt.id !== id),
+    }))
+  }
+
+  const removeSavingsGoal = (id: string) => {
+    updateState((prev) => ({
+      ...prev,
+      savingsGoals: prev.savingsGoals.filter((goal) => goal.id !== id),
+    }))
+  }
+
+  const removeInvestment = (id: string) => {
+    updateState((prev) => ({
+      ...prev,
+      investments: prev.investments.filter((investment) => investment.id !== id),
+    }))
+  }
+
+  const removeInvestmentHolding = (investmentId: string, holdingIndex: number) => {
+    updateState((prev) => ({
+      ...prev,
+      investments: prev.investments.map((investment) => {
+        if (investment.id !== investmentId) {
+          return investment
+        }
+
+        const nextHoldings = investment.holdings.filter((_, index) => index !== holdingIndex)
+
+        return {
+          ...investment,
+          holdings: nextHoldings,
+        }
+      }),
+    }))
   }
 
   const renderStepContent = () => {
@@ -1104,6 +1196,15 @@ export default function Onboarding() {
                           className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                         />
                       </label>
+                      <div className="flex items-center justify-end md:col-span-4">
+                        <button
+                          type="button"
+                          onClick={() => removeAccount(account.id)}
+                          className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-600"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1272,6 +1373,7 @@ export default function Onboarding() {
                       minPayment: prev.debts.length === 0 ? 95 : 210,
                     },
                   ],
+                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'debts'),
                 }))
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
@@ -1352,6 +1454,15 @@ export default function Onboarding() {
                       className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </label>
+                  <div className="flex items-center justify-end md:col-span-4">
+                    <button
+                      type="button"
+                      onClick={() => removeDebt(debt.id)}
+                      className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-600"
+                    >
+                      Remove debt
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1468,6 +1579,15 @@ export default function Onboarding() {
                       className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </label>
+                  <div className="flex items-center justify-end md:col-span-4">
+                    <button
+                      type="button"
+                      onClick={() => removeSavingsGoal(goal.id)}
+                      className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-600"
+                    >
+                      Remove goal
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1486,6 +1606,7 @@ export default function Onboarding() {
                       etaMonths: 12,
                     },
                   ],
+                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'savings'),
                 }))
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
@@ -1523,6 +1644,7 @@ export default function Onboarding() {
                             ],
                     },
                   ],
+                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'investments'),
                 }))
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
@@ -1573,6 +1695,9 @@ export default function Onboarding() {
                   </div>
                   <div className="space-y-3">
                     <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Holdings</h4>
+                    {investment.holdings.length === 0 && (
+                      <p className="text-xs text-slate-500">No holdings yet. Add one to track allocation mix.</p>
+                    )}
                     {investment.holdings.map((holding, holdingIndex) => (
                       <div key={`${investment.id}-holding-${holdingIndex}`} className="grid gap-3 md:grid-cols-3">
                         <input
@@ -1635,6 +1760,15 @@ export default function Onboarding() {
                           className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                           placeholder="410"
                         />
+                        <div className="md:col-span-3 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => removeInvestmentHolding(investment.id, holdingIndex)}
+                            className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-600"
+                          >
+                            Remove holding
+                          </button>
+                        </div>
                       </div>
                     ))}
                     <button
@@ -1655,9 +1789,18 @@ export default function Onboarding() {
                           ),
                         }))
                       }
-                      className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
+                        className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
+                      >
+                        + Add holding
+                      </button>
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => removeInvestment(investment.id)}
+                      className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-600"
                     >
-                      + Add holding
+                      Remove investment
                     </button>
                   </div>
                 </div>
@@ -2047,97 +2190,196 @@ export default function Onboarding() {
     }
   }
 
-  const progress = ((stepIndex + 1) / steps.length) * 100
+  const completedSteps = steps.filter((step) => completionMap[step.id]).length
+  const progress = steps.length === 0 ? 0 : Math.round((completedSteps / steps.length) * 100)
   const showBack = stepIndex > 0 && currentStep?.id !== 'review'
   const showNext = currentStep?.id !== 'review' && currentStep?.id !== 'tour'
+  const stepStatuses = steps.map<StepStatus>((step, index) => {
+    if (index === stepIndex) return 'current'
+    return completionMap[step.id] ? 'complete' : 'upcoming'
+  })
+  const canSkip = currentStep?.optional ? !completionMap[currentStep.id] : false
+  const canAdvance = currentStep
+    ? currentStep.id === 'review' || completionMap[currentStep.id]
+    : false
+
+  const handleSkip = () => {
+    if (!currentStep?.optional) return
+    const stepId = currentStep.id
+    updateState((prev) => ({
+      ...prev,
+      skippedOptionalSteps: prev.skippedOptionalSteps.includes(stepId)
+        ? prev.skippedOptionalSteps
+        : [...prev.skippedOptionalSteps, stepId],
+    }))
+    goToStep(Math.min(stepIndex + 1, steps.length - 1))
+  }
 
   return (
-    <div className="flex flex-1 flex-col gap-8 pb-12">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Setup guide</p>
-          <h1 className="text-3xl font-bold text-slate-900">Website-wide onboarding</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Progress auto-saves. Resume anytime and pick up where you left off.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={resetOnboarding}
-          className="rounded-full border border-slate-300 px-5 py-2 text-xs font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
-        >
-          Reset guide
-        </button>
-      </div>
-
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
-              {stepIndex + 1}
-            </div>
+    <div className="flex flex-1 flex-col pb-12">
+      <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
+        <div className="order-1 flex flex-col gap-8 lg:order-2">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Step {stepIndex + 1} of {steps.length}
-                {currentStep?.optional ? ' • Optional' : ''}
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Setup guide</p>
+              <h1 className="text-3xl font-bold text-slate-900">Website-wide onboarding</h1>
+              <p className="mt-1 text-sm text-slate-600">
+                Progress auto-saves. Resume anytime and pick up where you left off.
               </p>
-              <h2 className="text-xl font-semibold text-slate-900">{currentStep?.title}</h2>
-              <p className="text-sm text-slate-600">{currentStep?.description}</p>
+            </div>
+            <button
+              type="button"
+              onClick={resetOnboarding}
+              className="rounded-full border border-slate-300 px-5 py-2 text-xs font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
+            >
+              Reset guide
+            </button>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                  {stepIndex + 1}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Step {stepIndex + 1} of {steps.length}
+                    {currentStep?.optional ? ' • Optional' : ''}
+                  </p>
+                  <h2 className="text-xl font-semibold text-slate-900">{currentStep?.title}</h2>
+                  <p className="text-sm text-slate-600">{currentStep?.description}</p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6">{renderStepContent()}</div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                ✓
+              </span>
+              Progress saves on every step. On return, we resume automatically.
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {showBack && (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
+                >
+                  Back
+                </button>
+              )}
+              {canSkip && (
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
+                >
+                  Skip for now
+                </button>
+              )}
+              {showNext && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!canAdvance}
+                  className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              )}
+              {!canAdvance && showNext && (
+                <p className="text-xs font-semibold text-amber-600">
+                  {currentStep?.optional
+                    ? 'Add details above or choose “Skip for now” to continue.'
+                    : 'Complete the required items above to unlock Next.'}
+                </p>
+              )}
             </div>
           </div>
-          <div className="hidden min-w-[200px] flex-col gap-2 text-xs text-slate-500 sm:flex">
-            <div className="flex justify-between">
+        </div>
+
+        <aside className="order-2 flex flex-col gap-4 lg:order-1">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
               <span>Progress</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="h-2 rounded-full bg-slate-100">
+            <div className="mt-3 h-2 rounded-full bg-slate-100">
               <div className="h-2 rounded-full bg-primary" style={{ width: `${progress}%` }} />
             </div>
+            <p className="mt-3 text-xs text-slate-500">
+              {completedSteps} of {steps.length} steps complete.
+            </p>
           </div>
-        </div>
-        <div className="mt-6">
-          {renderStepContent()}
-        </div>
-      </div>
+          <nav aria-label="Onboarding steps">
+            <ol className="space-y-2">
+              {steps.map((step, index) => {
+                const status = stepStatuses[index]
+                const isDisabled = index > stepIndex && !completionMap[step.id]
+                const isSkipped = state.skippedOptionalSteps.includes(step.id)
+                const buttonClasses = [
+                  'flex w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm transition',
+                  status === 'current'
+                    ? 'border-primary bg-white text-slate-900 shadow-sm'
+                    : status === 'complete'
+                    ? 'border-primary/60 bg-primary/5 text-primary'
+                    : 'border-slate-200 bg-white text-slate-500',
+                  !isDisabled ? 'hover:border-primary hover:text-primary' : 'cursor-not-allowed opacity-60',
+                ].join(' ')
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
-            ✓
-          </span>
-          Progress saves on every step. On return, we resume automatically.
-        </div>
-        <div className="flex items-center gap-3">
-          {showBack && (
-            <button
-              type="button"
-              onClick={handleBack}
-              className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand/60 hover:text-brand"
-            >
-              Back
-            </button>
-          )}
-          {showNext && (
-            <button
-              type="button"
-              onClick={() => {
-                if (currentStep?.id === 'welcome' && state.mode !== 'build') {
-                  handleNext()
-                } else {
-                  if (state.mode === 'demo' && currentStep?.id !== 'tour') {
-                    handleNext()
-                  } else {
-                    handleNext()
-                  }
-                }
-              }}
-              disabled={currentStep?.id === 'welcome' && !state.mode}
-              className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Next
-            </button>
-          )}
-        </div>
+                const indicatorClasses = [
+                  'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold',
+                  status === 'complete'
+                    ? 'bg-primary text-white'
+                    : status === 'current'
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-slate-100 text-slate-500',
+                ].join(' ')
+
+                return (
+                  <li key={step.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isDisabled) {
+                          goToStep(index)
+                        }
+                      }}
+                      disabled={isDisabled}
+                      aria-current={status === 'current' ? 'step' : undefined}
+                      className={buttonClasses}
+                    >
+                      <span className={indicatorClasses}>{status === 'complete' ? '✓' : index + 1}</span>
+                      <div className="flex flex-1 flex-col">
+                        <span
+                          className={`font-semibold ${
+                            status === 'complete' ? 'text-primary' : 'text-slate-800'
+                          }`}
+                        >
+                          {step.title}
+                        </span>
+                        <span className="text-xs text-slate-500">{step.description}</span>
+                        {step.optional && (
+                          <span
+                            className={`mt-1 text-[11px] font-semibold uppercase ${
+                              isSkipped ? 'text-amber-500' : 'text-slate-400'
+                            }`}
+                          >
+                            {isSkipped ? 'Skipped' : 'Optional'}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  </li>
+                )
+              })}
+            </ol>
+          </nav>
+        </aside>
       </div>
     </div>
   )
