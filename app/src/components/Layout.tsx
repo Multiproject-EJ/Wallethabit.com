@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
 import DemoUserBadge from './DemoUserBadge'
+import { useDemoData } from '../lib/demoDataStore'
 
 const navItems = [
   { to: '/', label: 'Start', end: true },
@@ -9,6 +10,8 @@ const navItems = [
 ]
 
 export default function Layout() {
+  const { isAuthenticated } = useDemoData()
+
   return (
     <div className="min-h-screen bg-sand text-navy">
       <header className="border-b border-sand-darker/60 bg-white/80 backdrop-blur">
@@ -26,10 +29,17 @@ export default function Layout() {
                   [
                     'rounded-full px-3 py-2 transition-colors border border-transparent',
                     accent
-                      ? isActive
+                      ? isAuthenticated
+                        ? [
+                            'border-[3px] border-gold text-navy font-semibold ring-2 ring-gold/40 ring-offset-2 ring-offset-white shadow-[0_0_20px_rgba(251,191,36,0.55)]',
+                            isActive
+                              ? 'bg-transparent shadow-[0_0_30px_rgba(251,191,36,0.65)]'
+                              : 'bg-transparent hover:bg-gold/10 hover:text-navy/90 hover:shadow-[0_0_26px_rgba(251,191,36,0.7)]',
+                          ].join(' ')
+                        : isActive
                         ? 'bg-gold text-navy font-semibold shadow-[0_10px_30px_rgba(31,42,68,0.22)]'
                         : 'bg-gold/80 text-navy font-semibold shadow-sm hover:bg-gold hover:text-navy/90'
-                      : isActive
+                      : isActive && !(to === '/' && !isAuthenticated)
                       ? 'bg-primary/10 text-primary border-primary/30 shadow-sm'
                       : 'hover:text-primary-dark hover:bg-white/60',
                   ].join(' ')
