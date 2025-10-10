@@ -150,6 +150,21 @@ type DashboardWidget = {
   visible: boolean
 }
 
+type StepId =
+  | 'welcome'
+  | 'basics'
+  | 'focus'
+  | 'modules'
+  | 'accounts'
+  | 'budget'
+  | 'debts'
+  | 'savings'
+  | 'investments'
+  | 'notifications'
+  | 'layout'
+  | 'review'
+  | 'tour'
+
 type OnboardingState = {
   mode: OnboardingMode
   isDemo: boolean
@@ -190,6 +205,7 @@ type OnboardingState = {
     accentColor: string
     widgets: DashboardWidget[]
   }
+  skippedOptionalSteps: StepId[]
 }
 
 const STORAGE_KEY = 'walletHabit.onboardingState.v1'
@@ -285,146 +301,7 @@ const createDefaultState = (): OnboardingState => ({
     accentColor: '#0f766e',
     widgets: defaultWidgets.map((widget) => ({ ...widget })),
   },
-})
-
-const createDemoState = (): OnboardingState => {
-  const base = createDefaultState()
-  const modules = createDefaultModules()
-
-  const enableModule = (key: ModuleKey, pendingUpgrade = false) => {
-    modules[key] = {
-      ...modules[key],
-      enabled: true,
-      pendingUpgrade,
-      recommended: true,
-    }
-  }
-
-  enableModule('budget')
-  enableModule('debts')
-  enableModule('savings')
-  enableModule('investments')
-  enableModule('income')
-  enableModule('taxes')
-  enableModule('retirement')
-  enableModule('aiAdvisor', true)
-
-  const monthlyNet = 5200
-  const demoCategories = budgetTemplates['50-30-20'].map((category) => {
-    if (category.id === 'needs') {
-      return { ...category, planned: Math.round(monthlyNet * 0.5) }
-    }
-    if (category.id === 'wants') {
-      return { ...category, planned: Math.round(monthlyNet * 0.3) }
-    }
-    return { ...category, planned: Math.round(monthlyNet * 0.2) }
-  })
-
-  return {
-    ...base,
-    mode: 'demo',
-    isDemo: true,
-    profile: {
-      ...base.profile,
-      firstName: 'Taylor',
-      country: 'United States',
-      currency: 'USD',
-      timezone: 'America/New_York',
-      dateFormat: 'MM/DD/YYYY',
-      theme: 'light',
-      accentColor: '#14b8a6',
-      onboardedAt: new Date().toISOString(),
-    },
-    goals: ['control-spending', 'emergency-fund', 'pay-off-debt'],
-    modules,
-    accounts: [
-      {
-        id: 'checking',
-        name: 'Everyday Checking',
-        type: 'checking',
-        balance: 3250,
-        currency: 'USD',
-      },
-      {
-        id: 'savings',
-        name: 'Safety Net Savings',
-        type: 'savings',
-        balance: 8500,
-        currency: 'USD',
-      },
-      {
-        id: 'invest',
-        name: 'Future Focus Brokerage',
-        type: 'investment',
-        balance: 12000,
-        currency: 'USD',
-      },
-    ],
-    income: {
-      monthlyNet,
-      payday: '1st',
-      sideIncome: 650,
-    },
-    budget: {
-      monthlyTakeHome: monthlyNet,
-      template: '50-30-20',
-      categories: demoCategories,
-    },
-    debts: [
-      {
-        id: 'amex',
-        name: 'Amex Gold',
-        balance: 4200,
-        apr: 19.9,
-        minPayment: 160,
-      },
-      {
-        id: 'student-loan',
-        name: 'Student Loan',
-        balance: 18500,
-        apr: 4.5,
-        minPayment: 210,
-      },
-    ],
-    savingsGoals: [
-      {
-        id: 'emergency',
-        name: 'Emergency fund',
-        target: 15600,
-        monthlyContribution: 520,
-        etaMonths: 12,
-      },
-      {
-        id: 'holiday',
-        name: 'Holiday escape',
-        target: 3000,
-        monthlyContribution: 250,
-        etaMonths: 12,
-      },
-    ],
-    investments: [
-      {
-        id: 'brokerage',
-        name: 'Future Focus Brokerage',
-        balance: 12000,
-        holdings: [
-          { symbol: 'VOO', quantity: 20, price: 420 },
-          { symbol: 'BTC', quantity: 0.25, price: 60000 },
-        ],
-      },
-    ],
-    notifications: {
-      monthlyReport: 'smart',
-      overspendAlerts: true,
-      billReminders: true,
-      goalNudges: true,
-    },
-    dashboard: {
-      theme: 'light',
-      accentColor: '#14b8a6',
-      widgets: defaultWidgets.map((widget) => ({ ...widget, visible: true })),
-    },
-  }
+  skippedOptionalSteps: [],
 }
 
 const budgetTemplates: Record<OnboardingState['budget']['template'], BudgetCategory[]> = {
@@ -451,21 +328,6 @@ const budgetTemplates: Record<OnboardingState['budget']['template'], BudgetCateg
     { id: 'fun', name: 'Fun & experiences', planned: 0 },
   ],
 }
-
-type StepId =
-  | 'welcome'
-  | 'basics'
-  | 'focus'
-  | 'modules'
-  | 'accounts'
-  | 'budget'
-  | 'debts'
-  | 'savings'
-  | 'investments'
-  | 'notifications'
-  | 'layout'
-  | 'review'
-  | 'tour'
 
 type Step = {
   id: StepId
@@ -599,6 +461,7 @@ const loadInitialState = (): { state: OnboardingState; stepIndex: number } => {
           ...storedState.dashboard,
           widgets: (storedState.dashboard?.widgets ?? defaults.dashboard.widgets).map((widget) => ({ ...widget })),
         },
+        skippedOptionalSteps: parsed.state.skippedOptionalSteps ?? [],
       },
       stepIndex: parsed.stepIndex ?? 0,
     }
@@ -642,6 +505,43 @@ export default function Onboarding() {
 
   const currentStep = steps[stepIndex] ?? steps[0]
 
+  const completionMap = useMemo<Record<StepId, boolean>>(() => {
+    const optionalSkips = new Set(state.skippedOptionalSteps)
+    const hasAnyModuleEnabled = Object.values(state.modules).some((module) => module.enabled)
+    const totalIncome = state.income.monthlyNet + state.income.sideIncome
+    const hasAccounts =
+      state.accounts.length > 0 &&
+      state.accounts.every((account) => account.name.trim().length > 0 && Number.isFinite(account.balance))
+    const hasIncomeDetails = totalIncome > 0
+    const budgetSource = state.budget.categories.length
+      ? state.budget.categories
+      : budgetTemplates[state.budget.template]
+    const hasBudgetPlan =
+      budgetSource.some((category) => category.planned > 0) || state.budget.monthlyTakeHome > 0 || totalIncome > 0
+
+    return {
+      welcome: state.mode !== null,
+      basics:
+        state.profile.firstName.trim().length > 0 &&
+        state.profile.country.trim().length > 0 &&
+        state.profile.currency.trim().length > 0,
+      focus: state.goals.length > 0,
+      modules: hasAnyModuleEnabled,
+      accounts: hasAccounts || hasIncomeDetails,
+      budget: hasBudgetPlan,
+      debts:
+        !state.modules.debts?.enabled || state.debts.length > 0 || optionalSkips.has('debts'),
+      savings:
+        !state.modules.savings?.enabled || state.savingsGoals.length > 0 || optionalSkips.has('savings'),
+      investments:
+        !state.modules.investments?.enabled || state.investments.length > 0 || optionalSkips.has('investments'),
+      notifications: true,
+      layout: state.dashboard.widgets.length > 0,
+      review: Boolean(state.profile.onboardedAt),
+      tour: Boolean(state.profile.onboardedAt),
+    }
+  }, [state])
+
   const updateState = (updater: (current: OnboardingState) => OnboardingState) => {
     setStateWithStep((prev) => ({ ...prev, state: updater(prev.state) }))
   }
@@ -682,6 +582,10 @@ export default function Onboarding() {
 
   const handleNext = () => {
     if (!currentStep) return
+
+    if (currentStep.id !== 'review' && !completionMap[currentStep.id]) {
+      return
+    }
 
     if (currentStep.id === 'welcome') {
       if (state.mode === 'demo') {
@@ -1525,6 +1429,7 @@ export default function Onboarding() {
                       minPayment: prev.debts.length === 0 ? 95 : 210,
                     },
                   ],
+                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'debts'),
                 }))
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
@@ -1757,6 +1662,7 @@ export default function Onboarding() {
                       etaMonths: 12,
                     },
                   ],
+                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'savings'),
                 }))
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
@@ -1794,6 +1700,7 @@ export default function Onboarding() {
                             ],
                     },
                   ],
+                  skippedOptionalSteps: prev.skippedOptionalSteps.filter((id) => id !== 'investments'),
                 }))
               }
               className="rounded-full border border-primary px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/10"
@@ -2332,19 +2239,28 @@ export default function Onboarding() {
     }
   }
 
-  const progress = ((stepIndex + 1) / steps.length) * 100
+  const completedSteps = steps.filter((step) => completionMap[step.id]).length
+  const progress = steps.length === 0 ? 0 : Math.round((completedSteps / steps.length) * 100)
   const showBack = stepIndex > 0 && currentStep?.id !== 'review'
   const showNext = currentStep?.id !== 'review' && currentStep?.id !== 'tour'
-  const stepStatuses = steps.map<StepStatus>((_, index) => {
-    if (index < stepIndex) return 'complete'
+  const stepStatuses = steps.map<StepStatus>((step, index) => {
     if (index === stepIndex) return 'current'
-    return 'upcoming'
+    return completionMap[step.id] ? 'complete' : 'upcoming'
   })
-  const completedSteps = stepStatuses.filter((status) => status === 'complete').length
-  const canSkip = Boolean(currentStep?.optional)
+  const canSkip = currentStep?.optional ? !completionMap[currentStep.id] : false
+  const canAdvance = currentStep
+    ? currentStep.id === 'review' || completionMap[currentStep.id]
+    : false
 
   const handleSkip = () => {
-    if (!currentStep) return
+    if (!currentStep?.optional) return
+    const stepId = currentStep.id
+    updateState((prev) => ({
+      ...prev,
+      skippedOptionalSteps: prev.skippedOptionalSteps.includes(stepId)
+        ? prev.skippedOptionalSteps
+        : [...prev.skippedOptionalSteps, stepId],
+    }))
     goToStep(Math.min(stepIndex + 1, steps.length - 1))
   }
 
@@ -2417,22 +2333,19 @@ export default function Onboarding() {
               {showNext && (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (currentStep?.id === 'welcome' && state.mode !== 'build') {
-                      handleNext()
-                    } else {
-                      if (state.mode === 'demo' && currentStep?.id !== 'tour') {
-                        handleNext()
-                      } else {
-                        handleNext()
-                      }
-                    }
-                  }}
-                  disabled={currentStep?.id === 'welcome' && !state.mode}
+                  onClick={handleNext}
+                  disabled={!canAdvance}
                   className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
                 </button>
+              )}
+              {!canAdvance && showNext && (
+                <p className="text-xs font-semibold text-amber-600">
+                  {currentStep?.optional
+                    ? 'Add details above or choose “Skip for now” to continue.'
+                    : 'Complete the required items above to unlock Next.'}
+                </p>
               )}
             </div>
           </div>
@@ -2455,7 +2368,8 @@ export default function Onboarding() {
             <ol className="space-y-2">
               {steps.map((step, index) => {
                 const status = stepStatuses[index]
-                const isDisabled = index > stepIndex
+                const isDisabled = index > stepIndex && !completionMap[step.id]
+                const isSkipped = state.skippedOptionalSteps.includes(step.id)
                 const buttonClasses = [
                   'flex w-full items-center gap-3 rounded-2xl border p-3 text-left text-sm transition',
                   status === 'current'
@@ -2499,7 +2413,13 @@ export default function Onboarding() {
                         </span>
                         <span className="text-xs text-slate-500">{step.description}</span>
                         {step.optional && (
-                          <span className="mt-1 text-[11px] font-semibold uppercase text-slate-400">Optional</span>
+                          <span
+                            className={`mt-1 text-[11px] font-semibold uppercase ${
+                              isSkipped ? 'text-amber-500' : 'text-slate-400'
+                            }`}
+                          >
+                            {isSkipped ? 'Skipped' : 'Optional'}
+                          </span>
                         )}
                       </div>
                     </button>
