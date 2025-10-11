@@ -1,5 +1,4 @@
-import subscriptionCode from '../content/subscription-tracker/code.gs?raw'
-import subscriptionDialog from '../content/subscription-tracker/dialog.html?raw'
+import { SubscriptionTrackerApp } from './SubscriptionTrackerApp'
 
 type SubscriptionWorkspaceSectionProps = {
   title: string
@@ -8,37 +7,12 @@ type SubscriptionWorkspaceSectionProps = {
   id?: string
 }
 
-type CodePanelProps = {
-  label: string
-  filename: string
-  code: string
-}
-
 const highlights = [
   'Daily reminder triggers with enable, disable, and test actions directly from the sheet menu.',
   'Timezone-aware upcoming renewals with configurable lead times and dashboard groupings.',
   'Local caching in the sidebar UI for quick reloads plus demo data seeding helpers.',
   'Theme, currency, and category preferences saved within the sheet Settings tab.',
 ]
-
-function CodePanel({ label, filename, code }: CodePanelProps) {
-  return (
-    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-xs font-semibold uppercase tracking-wide text-primary/70">{label}</span>
-          <span className="font-mono text-sm text-navy/80">{filename}</span>
-        </div>
-        <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-          Read only
-        </span>
-      </div>
-      <pre className="max-h-[32rem] overflow-auto rounded-xl bg-navy/90 p-4 text-xs leading-relaxed text-white">
-        <code>{code}</code>
-      </pre>
-    </div>
-  )
-}
 
 export function SubscriptionWorkspaceSection({ title, description, footnote, id }: SubscriptionWorkspaceSectionProps) {
   return (
@@ -60,9 +34,8 @@ export function SubscriptionWorkspaceSection({ title, description, footnote, id 
         {footnote ? <p className="text-xs text-navy/60">{footnote}</p> : null}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <CodePanel label="Apps Script" filename="code.gs" code={subscriptionCode} />
-        <CodePanel label="Tracker dialog" filename="dialog.html" code={subscriptionDialog} />
+      <div className="rounded-[28px] border border-slate-200 bg-white/95 shadow-lg">
+        <SubscriptionTrackerApp />
       </div>
     </section>
   )
