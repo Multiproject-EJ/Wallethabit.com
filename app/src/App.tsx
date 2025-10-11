@@ -20,6 +20,8 @@ import Estate from './pages/Estate'
 import Security from './pages/Security'
 import Integrations from './pages/Integrations'
 import Assistant from './pages/Assistant'
+import SubscriptionTracker from './pages/SubscriptionTracker'
+import BillsTracker from './pages/BillsTracker'
 
 export default function App() {
   return (
@@ -42,6 +44,8 @@ export default function App() {
           <Route path="security" element={<Security />} />
           <Route path="integrations" element={<Integrations />} />
           <Route path="assistant" element={<Assistant />} />
+          <Route path="subscriptions" element={<SubscriptionTracker />} />
+          <Route path="bills" element={<BillsTracker />} />
           <Route path="community" element={<Community />} />
           <Route path="habits" element={<Habits />} />
           <Route path="*" element={<NotFound />} />

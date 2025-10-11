@@ -17,6 +17,8 @@ type ModuleKey =
   | 'savings'
   | 'investments'
   | 'income'
+  | 'subscriptions'
+  | 'bills'
   | 'realEstate'
   | 'insurance'
   | 'taxes'
@@ -59,6 +61,18 @@ const moduleCatalog: Array<{
     label: 'Income / Side Hustles',
     description: 'Track paydays, gigs, and momentum boosts.',
     recommendedFor: ['control-spending', 'big-purchase'],
+  },
+  {
+    key: 'subscriptions',
+    label: 'Subscription Tracker',
+    description: 'Monitor renewals, reminders, and recurring spend.',
+    recommendedFor: ['control-spending', 'emergency-fund'],
+  },
+  {
+    key: 'bills',
+    label: 'Bills Tracker',
+    description: 'Organise utilities, policies, and due dates.',
+    recommendedFor: ['control-spending'],
   },
   {
     key: 'realEstate',
