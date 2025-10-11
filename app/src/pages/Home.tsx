@@ -432,12 +432,6 @@ export default function Home() {
     <div className="flex flex-1 flex-col gap-12 py-6">
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-wide text-primary">WalletHabit guides</p>
-        <h1 className="text-4xl font-bold tracking-tight text-navy sm:text-5xl">Pick where you want to dive in.</h1>
-        <p className="max-w-2xl text-base text-navy/70">
-          Each workspace is focused on momentum. Start in setup, revisit the dashboard for clarity, and lean on the update hub
-          whenever you need a gentle nudge. Then swing by the community spaces to vote on the next big feature or add your
-          stars to the habit rituals that keep everyone consistent.
-        </p>
       </header>
 
       <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
