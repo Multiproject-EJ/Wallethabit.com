@@ -1,5 +1,306 @@
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+
+type AnimatedIconProps = {
+  className?: string
+}
+
+function AnimatedBudgetIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect
+        x="6"
+        y="12"
+        width="4"
+        height="14"
+        rx="1.5"
+        className="animate-bar-bounce fill-current"
+        opacity={0.45}
+        style={{ animationDelay: '0s', transformOrigin: 'center bottom' }}
+      />
+      <rect
+        x="14"
+        y="8"
+        width="4"
+        height="18"
+        rx="1.5"
+        className="animate-bar-bounce fill-current"
+        opacity={0.75}
+        style={{ animationDelay: '0.15s', transformOrigin: 'center bottom' }}
+      />
+      <rect
+        x="22"
+        y="10"
+        width="4"
+        height="16"
+        rx="1.5"
+        className="animate-bar-bounce fill-current"
+        opacity={0.6}
+        style={{ animationDelay: '0.3s', transformOrigin: 'center bottom' }}
+      />
+      <path d="M5 26h22" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.35} />
+    </svg>
+  )
+}
+
+function AnimatedDebtIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="6" y="6" width="20" height="20" rx="4" stroke="currentColor" strokeWidth="1.5" opacity={0.5} />
+      <rect
+        x="10"
+        y="10"
+        width="12"
+        height="4"
+        rx="1.5"
+        className="animate-pulse-soft fill-current"
+        opacity={0.45}
+      />
+      <path d="M11 18h4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.7} />
+      <path d="M17 18h4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.4} />
+      <path d="M11 21h6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.7} />
+    </svg>
+  )
+}
+
+function AnimatedGoalsIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="16" r="10" className="animate-pulse-soft stroke-current" strokeWidth="1.5" opacity={0.4} />
+      <circle
+        cx="16"
+        cy="16"
+        r="6"
+        className="animate-pulse-soft stroke-current"
+        strokeWidth="1.5"
+        opacity={0.7}
+        style={{ animationDelay: '0.2s' }}
+      />
+      <circle cx="16" cy="16" r="2.5" className="fill-current" opacity={0.9} />
+      <path d="M19 13l5-5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.6} />
+      <path d="M22 8l2 2" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.6} />
+    </svg>
+  )
+}
+
+function AnimatedIncomeIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path
+        d="M8 22l6-6 4 4 6-8"
+        className="animate-dash stroke-current"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.7}
+      />
+      <path
+        d="M22 9h4v4"
+        className="animate-float stroke-current"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.6}
+        style={{ animationDelay: '0.2s' }}
+      />
+      <path d="M6 24h20" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.35} />
+    </svg>
+  )
+}
+
+function AnimatedInvestingIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path d="M8 22h16" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.3} />
+      <path
+        d="M10 20l4-7 4 3 4-8"
+        className="animate-dash stroke-current"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.75}
+      />
+      <circle cx="14" cy="13" r="2" className="animate-float fill-current" opacity={0.35} style={{ animationDelay: '0.2s' }} />
+      <circle cx="22" cy="8" r="2.5" className="animate-float fill-current" opacity={0.5} />
+    </svg>
+  )
+}
+
+function AnimatedRetirementIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path d="M7 22c2.5-2 5.5-3 9-3s6.5 1 9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.4} />
+      <path
+        d="M13 12l6 2-2 2"
+        className="animate-float stroke-current"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.7}
+      />
+      <path d="M11 14l4-4 6 2" className="stroke-current" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={0.6} />
+      <circle cx="14" cy="11" r="0.8" className="fill-current" />
+      <circle cx="19" cy="12.5" r="0.8" className="fill-current" />
+    </svg>
+  )
+}
+
+function AnimatedTaxesIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path d="M11 6h10l5 6v14H11V6z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" opacity={0.55} />
+      <path d="M21 6v6h5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" opacity={0.4} />
+      <path d="M14 17h6" className="animate-pulse-soft stroke-current" strokeWidth="1.5" strokeLinecap="round" opacity={0.6} />
+      <path
+        d="M14 21h4"
+        className="animate-pulse-soft stroke-current"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity={0.4}
+        style={{ animationDelay: '0.3s' }}
+      />
+      <path
+        d="M14 13l2.5 3 4.5-5"
+        className="animate-dash stroke-current"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity={0.75}
+      />
+    </svg>
+  )
+}
+
+function AnimatedProtectionIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path
+        d="M16 6l10 4v6c0 6-4.5 9.5-10 10-5.5-.5-10-4-10-10V10l10-4z"
+        className="animate-pulse-soft stroke-current"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        opacity={0.65}
+      />
+      <path d="M16 12v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.5} />
+      <circle cx="16" cy="20" r="1.5" className="fill-current" opacity={0.7} />
+    </svg>
+  )
+}
+
+function AnimatedEstateIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="9" y="8" width="14" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
+      <path d="M13 12h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.6} />
+      <path d="M13 17h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.45} />
+      <path d="M13 21h4" className="animate-float stroke-current" strokeWidth="1.5" strokeLinecap="round" opacity={0.45} />
+      <path d="M11 8V6h10v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.4} />
+    </svg>
+  )
+}
+
+function AnimatedSecurityIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="10" y="14" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
+      <path d="M12 14v-2a4 4 0 018 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.55} />
+      <circle
+        cx="16"
+        cy="20"
+        r="1.5"
+        className="animate-pulse-soft fill-current"
+        opacity={0.8}
+        style={{ animationDelay: '0.2s' }}
+      />
+      <path d="M16 21.5v2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity={0.5} />
+    </svg>
+  )
+}
+
+function AnimatedIntegrationsIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="16" r="9" stroke="currentColor" strokeWidth="1.5" opacity={0.35} />
+      <circle cx="16" cy="16" r="5" stroke="currentColor" strokeWidth="1.5" opacity={0.5} />
+      <g className="animate-orbital" style={{ transformOrigin: 'center' }}>
+        <circle cx="16" cy="7" r="2" className="fill-current" opacity={0.65} />
+      </g>
+      <circle cx="16" cy="16" r="1.5" className="fill-current" opacity={0.5} />
+    </svg>
+  )
+}
+
+function AnimatedAssistantIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path
+        d="M9 10c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v6c0 2.2-1.8 4-4 4h-2l-4 4v-4h0c-2.2 0-4-1.8-4-4v-6z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        opacity={0.55}
+      />
+      {[0, 1, 2].map((dot) => (
+        <circle
+          key={dot}
+          cx={13 + dot * 3}
+          cy={15}
+          r={0.9}
+          className="animate-dot-blink fill-current"
+          opacity={0.7}
+          style={{ animationDelay: `${dot * 0.2}s` }}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function AnimatedSubscriptionsIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="9" y="7" width="14" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
+      <path d="M12 11h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.5} />
+      <path
+        d="M12 16h6"
+        className="animate-bar-bounce stroke-current"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity={0.6}
+        style={{ animationDelay: '0.1s', transformOrigin: 'left center' }}
+      />
+      <path
+        d="M12 20h5"
+        className="animate-bar-bounce stroke-current"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity={0.45}
+        style={{ animationDelay: '0.25s', transformOrigin: 'left center' }}
+      />
+      <circle cx="19" cy="16" r="1.2" className="fill-current" opacity={0.5} />
+    </svg>
+  )
+}
+
+function AnimatedBillsIcon({ className }: AnimatedIconProps) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="8" y="8" width="16" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
+      <path d="M8 13h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.45} />
+      <rect x="12" y="16" width="8" height="6" rx="1.5" className="animate-float fill-current" opacity={0.45} />
+      <path d="M12 10v-2h8v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.5} />
+    </svg>
+  )
+}
+
+const iconClassName = 'h-6 w-6 text-primary'
+
+type ModuleShortcut = {
+  key: string
+  title: string
+  description: string
+  to: string
+  icon: ReactNode
+}
 
 const cards = [
   {
@@ -34,21 +335,63 @@ const cards = [
 ] as const
 
 const moduleShortcuts = [
-  { key: 'budget', title: 'Budget', description: 'Plan envelopes and cash flow.', icon: '📊', to: '/budget' },
-  { key: 'debt', title: 'Debt', description: 'Track balances and payoff plans.', icon: '🧮', to: '/debt' },
-  { key: 'goals', title: 'Goals', description: 'Set milestones for big dreams.', icon: '🎯', to: '/goals' },
-  { key: 'income', title: 'Income', description: 'Map income streams with clarity.', icon: '💼', to: '/income' },
-  { key: 'investing', title: 'Investing', description: 'Review allocations and performance.', icon: '📈', to: '/investing' },
-  { key: 'retirement', title: 'Retirement', description: 'Stress test long-term plans.', icon: '🛫', to: '/retirement' },
-  { key: 'taxes', title: 'Taxes', description: 'Prep documents and tax to-dos.', icon: '🧾', to: '/taxes' },
-  { key: 'protection', title: 'Protection', description: 'Evaluate coverage and risk gaps.', icon: '🛡️', to: '/protection' },
-  { key: 'estate', title: 'Estate', description: 'Keep estate wishes organized.', icon: '📜', to: '/estate' },
-  { key: 'security', title: 'Security', description: 'Audit digital and identity safety.', icon: '🔐', to: '/security' },
-  { key: 'integrations', title: 'Integrations', description: 'Connect the tools you already use.', icon: '🔗', to: '/integrations' },
-  { key: 'assistant', title: 'AI Assistant', description: 'Chat through next best actions.', icon: '🤖', to: '/assistant' },
-  { key: 'subscriptions', title: 'Subscription Tracker', description: 'Manage renewals with reminders.', icon: '🧾', to: '/subscriptions' },
-  { key: 'bills', title: 'Bills Tracker', description: 'Prepare the bills cockpit.', icon: '🗂️', to: '/bills' },
-] as const
+  { key: 'budget', title: 'Budget', description: 'Plan envelopes and cash flow.', icon: <AnimatedBudgetIcon className={iconClassName} />, to: '/budget' },
+  { key: 'debt', title: 'Debt', description: 'Track balances and payoff plans.', icon: <AnimatedDebtIcon className={iconClassName} />, to: '/debt' },
+  { key: 'goals', title: 'Goals', description: 'Set milestones for big dreams.', icon: <AnimatedGoalsIcon className={iconClassName} />, to: '/goals' },
+  { key: 'income', title: 'Income', description: 'Map income streams with clarity.', icon: <AnimatedIncomeIcon className={iconClassName} />, to: '/income' },
+  {
+    key: 'investing',
+    title: 'Investing',
+    description: 'Review allocations and performance.',
+    icon: <AnimatedInvestingIcon className={iconClassName} />,
+    to: '/investing',
+  },
+  {
+    key: 'retirement',
+    title: 'Retirement',
+    description: 'Stress test long-term plans.',
+    icon: <AnimatedRetirementIcon className={iconClassName} />,
+    to: '/retirement',
+  },
+  { key: 'taxes', title: 'Taxes', description: 'Prep documents and tax to-dos.', icon: <AnimatedTaxesIcon className={iconClassName} />, to: '/taxes' },
+  {
+    key: 'protection',
+    title: 'Protection',
+    description: 'Evaluate coverage and risk gaps.',
+    icon: <AnimatedProtectionIcon className={iconClassName} />,
+    to: '/protection',
+  },
+  { key: 'estate', title: 'Estate', description: 'Keep estate wishes organized.', icon: <AnimatedEstateIcon className={iconClassName} />, to: '/estate' },
+  {
+    key: 'security',
+    title: 'Security',
+    description: 'Audit digital and identity safety.',
+    icon: <AnimatedSecurityIcon className={iconClassName} />,
+    to: '/security',
+  },
+  {
+    key: 'integrations',
+    title: 'Integrations',
+    description: 'Connect the tools you already use.',
+    icon: <AnimatedIntegrationsIcon className={iconClassName} />,
+    to: '/integrations',
+  },
+  {
+    key: 'assistant',
+    title: 'AI Assistant',
+    description: 'Chat through next best actions.',
+    icon: <AnimatedAssistantIcon className={iconClassName} />,
+    to: '/assistant',
+  },
+  {
+    key: 'subscriptions',
+    title: 'Subscription Tracker',
+    description: 'Manage renewals with reminders.',
+    icon: <AnimatedSubscriptionsIcon className={iconClassName} />,
+    to: '/subscriptions',
+  },
+  { key: 'bills', title: 'Bills Tracker', description: 'Prepare the bills cockpit.', icon: <AnimatedBillsIcon className={iconClassName} />, to: '/bills' },
+] satisfies ReadonlyArray<ModuleShortcut>
 
 const communityHighlights = [
   {
@@ -274,7 +617,9 @@ export default function Home() {
                   onClick={() => setIsModulesOpen(false)}
                   className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-white/90 p-4 transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-xl">{module.icon}</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary/80">
+                    {module.icon}
+                  </span>
                   <div className="space-y-1">
                     <h3 className="text-base font-semibold text-navy transition group-hover:text-primary-dark">{module.title}</h3>
                     <p className="text-sm text-navy/70">{module.description}</p>
