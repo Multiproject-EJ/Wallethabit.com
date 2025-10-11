@@ -292,7 +292,7 @@ function AnimatedBillsIcon({ className }: AnimatedIconProps) {
   )
 }
 
-const iconClassName = 'h-6 w-6 text-primary'
+const iconClassName = 'h-14 w-14 text-primary'
 
 type ModuleShortcut = {
   key: string
@@ -615,13 +615,13 @@ export default function Home() {
                   key={module.key}
                   to={module.to}
                   onClick={() => setIsModulesOpen(false)}
-                  className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-white/90 p-4 transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
+                  className="group flex flex-col items-center gap-5 rounded-3xl border border-slate-200/70 bg-white/95 p-6 text-center shadow-sm transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary/80">
+                  <span className="flex h-24 w-24 items-center justify-center rounded-3xl bg-primary/10 text-primary/80 shadow-inner">
                     {module.icon}
                   </span>
-                  <div className="space-y-1">
-                    <h3 className="text-base font-semibold text-navy transition group-hover:text-primary-dark">{module.title}</h3>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-navy transition group-hover:text-primary-dark">{module.title}</h3>
                     <p className="text-sm text-navy/70">{module.description}</p>
                   </div>
                   <span className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-primary transition group-hover:text-primary-dark">
