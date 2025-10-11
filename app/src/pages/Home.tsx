@@ -46,6 +46,8 @@ const moduleShortcuts = [
   { key: 'security', title: 'Security', description: 'Audit digital and identity safety.', icon: '🔐', to: '/security' },
   { key: 'integrations', title: 'Integrations', description: 'Connect the tools you already use.', icon: '🔗', to: '/integrations' },
   { key: 'assistant', title: 'AI Assistant', description: 'Chat through next best actions.', icon: '🤖', to: '/assistant' },
+  { key: 'subscriptions', title: 'Subscription Tracker', description: 'Manage renewals with reminders.', icon: '🧾', to: '/subscriptions' },
+  { key: 'bills', title: 'Bills Tracker', description: 'Prepare the bills cockpit.', icon: '🗂️', to: '/bills' },
 ] as const
 
 const communityHighlights = [
