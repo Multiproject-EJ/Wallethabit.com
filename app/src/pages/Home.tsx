@@ -239,7 +239,7 @@ export default function Home() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="modules-library-heading"
-            className="relative w-full max-w-4xl rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-2xl"
+            className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-2xl sm:p-8"
             onClick={(event) => event.stopPropagation()}
           >
             <button
@@ -253,7 +253,7 @@ export default function Home() {
               </svg>
             </button>
 
-            <div className="space-y-2 pb-6 pr-10">
+            <div className="space-y-2 pb-6 pr-6 sm:pr-10">
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary/80">
                 Modules library
               </span>
@@ -266,17 +266,17 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {moduleShortcuts.map((module) => (
                 <Link
                   key={module.key}
                   to={module.to}
                   onClick={() => setIsModulesOpen(false)}
-                  className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-5 transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
+                  className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-white/90 p-4 transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl">{module.icon}</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-xl">{module.icon}</span>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-navy transition group-hover:text-primary-dark">{module.title}</h3>
+                    <h3 className="text-base font-semibold text-navy transition group-hover:text-primary-dark">{module.title}</h3>
                     <p className="text-sm text-navy/70">{module.description}</p>
                   </div>
                   <span className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-primary transition group-hover:text-primary-dark">
