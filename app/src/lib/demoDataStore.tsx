@@ -94,6 +94,7 @@ export type DemoDataContextValue = {
   isAuthenticated: boolean
   signIn: () => void
   signOut: () => void
+  toggleSkin: () => void
   updatePlan: (planId: string) => void
   updateLocale: (localeId: string) => void
   updateFirstDayOfWeek: (value: DemoProfile['firstDayOfWeek']) => void
@@ -150,6 +151,15 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
           session: {
             ...previous.session,
             isAuthenticated: false,
+          },
+        }))
+      },
+      toggleSkin: () => {
+        updateState((previous) => ({
+          ...previous,
+          profile: {
+            ...previous.profile,
+            skin: previous.profile.skin === 'ultimate-budget' ? 'classic' : 'ultimate-budget',
           },
         }))
       },
