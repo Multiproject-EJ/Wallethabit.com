@@ -3,6 +3,7 @@ export type DemoProfile = {
   email: string
   fullName: string
   initials: string
+  skin?: 'classic' | 'ultimate-budget'
   planId: string
   region: 'uk' | 'us' | 'no'
   localeId: string
@@ -78,6 +79,7 @@ export const createDefaultDemoState = (): DemoState => ({
     email: 'alex@wallethabit.com',
     fullName: 'Alex Rivera',
     initials: 'AR',
+    skin: 'classic',
     planId: 'foundation',
     region: 'uk',
     localeId: 'en-GB',
