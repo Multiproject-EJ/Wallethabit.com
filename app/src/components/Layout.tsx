@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import DemoUserBadge from './DemoUserBadge'
@@ -9,6 +10,93 @@ const navItems = [
   { to: '/habits', label: 'Habits', accent: true },
 ]
 
+type ModuleKey =
+  | 'budget'
+  | 'debts'
+  | 'savings'
+  | 'investments'
+  | 'income'
+  | 'subscriptions'
+  | 'bills'
+  | 'realEstate'
+  | 'insurance'
+  | 'taxes'
+  | 'retirement'
+  | 'aiAdvisor'
+
+type ModuleInfo = {
+  key: ModuleKey
+  label: string
+  description: string
+  premium?: boolean
+}
+
+const moduleCatalog: ModuleInfo[] = [
+  {
+    key: 'budget',
+    label: 'Budget planner',
+    description: 'Plan spending with real-time envelope tracking.',
+  },
+  {
+    key: 'debts',
+    label: 'Debt payoff lab',
+    description: 'Model snowball vs avalanche, track payoff forecasts.',
+  },
+  {
+    key: 'savings',
+    label: 'Savings tracker',
+    description: 'Create goals, automate transfers, and celebrate milestones.',
+  },
+  {
+    key: 'investments',
+    label: 'Investments hub',
+    description: 'Monitor holdings, projected growth, and allocation drift.',
+  },
+  {
+    key: 'income',
+    label: 'Income & side hustles',
+    description: 'Track paydays, gigs, and momentum boosts.',
+  },
+  {
+    key: 'subscriptions',
+    label: 'Subscription tracker',
+    description: 'Monitor renewals, reminders, and recurring spend.',
+  },
+  {
+    key: 'bills',
+    label: 'Bills tracker',
+    description: 'Organise utilities, policies, and due dates.',
+  },
+  {
+    key: 'realEstate',
+    label: 'Real estate',
+    description: 'Track property values, mortgages, and rental yields.',
+  },
+  {
+    key: 'insurance',
+    label: 'Insurance vault',
+    description: 'Spot coverage gaps and renewal reminders.',
+  },
+  {
+    key: 'taxes',
+    label: 'Taxes workspace',
+    description: 'Prepare filings, deductions, and estimated payments.',
+  },
+  {
+    key: 'retirement',
+    label: 'Retirement studio',
+    description: 'Project glide paths and safe-withdrawal coverage.',
+  },
+  {
+    key: 'aiAdvisor',
+    label: 'AI advisor',
+    description: 'Pro insights, smart nudges, and conversational planning.',
+    premium: true,
+  },
+]
+
+const myModuleKeys = new Set<ModuleKey>(['savings'])
+
 export default function Layout() {
   const {
     state: { profile },
@@ -17,6 +105,16 @@ export default function Layout() {
 
   const skin = profile.skin ?? 'classic'
   const isUltimate = skin === 'ultimate-budget'
+
+  const [isModulesOpen, setModulesOpen] = useState(false)
+  const modulesButtonRef = useRef<HTMLButtonElement | null>(null)
+  const modulesPanelRef = useRef<HTMLDivElement | null>(null)
+
+  const moduleGroups = useMemo(() => {
+    const myModules = moduleCatalog.filter((module) => myModuleKeys.has(module.key))
+    const allModules = moduleCatalog.filter((module) => !myModuleKeys.has(module.key))
+    return { myModules, allModules }
+  }, [])
 
   const accentActiveClass = isUltimate
     ? 'bg-[#d9cbb8] text-[#3f2a1e] font-semibold shadow-[0_12px_30px_rgba(63,42,30,0.18)]'
@@ -33,6 +131,62 @@ export default function Layout() {
   const navHoverClass = isUltimate
     ? 'hover:text-[#4f6745] hover:bg-[#f3e7d4]'
     : 'hover:text-primary-dark hover:bg-white/60'
+
+  const focusRingClass = isUltimate
+    ? 'focus-visible:outline-[#8aa27b]'
+    : 'focus-visible:outline-primary'
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setModulesOpen(false)
+    }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    if (!isModulesOpen) {
+      return
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (
+        modulesPanelRef.current?.contains(target) ||
+        modulesButtonRef.current?.contains(target)
+      ) {
+        return
+      }
+      setModulesOpen(false)
+    }
+
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target as Node
+      if (
+        modulesPanelRef.current?.contains(target) ||
+        modulesButtonRef.current?.contains(target)
+      ) {
+        return
+      }
+      setModulesOpen(false)
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setModulesOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('touchstart', handlePointerDown)
+    document.addEventListener('focusin', handleFocusIn)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('touchstart', handlePointerDown)
+      document.removeEventListener('focusin', handleFocusIn)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isModulesOpen])
 
   return (
     <div
@@ -82,6 +236,146 @@ export default function Layout() {
                 {label}
               </NavLink>
             ))}
+            {isAuthenticated && (
+              <div
+                className="relative"
+                onMouseEnter={() => setModulesOpen(true)}
+                onMouseLeave={() => setModulesOpen(false)}
+              >
+                <button
+                  ref={modulesButtonRef}
+                  type="button"
+                  id="modules-menu-button"
+                  aria-haspopup="true"
+                  aria-expanded={isModulesOpen}
+                  onClick={() => setModulesOpen((open) => !open)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setModulesOpen(true)
+                    }
+                  }}
+                  className={[
+                    'flex items-center gap-2 rounded-full px-3 py-2 text-left transition-colors border border-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                    isModulesOpen ? navActiveClass : navHoverClass,
+                    focusRingClass,
+                  ].join(' ')}
+                >
+                  Modules
+                  <span
+                    aria-hidden="true"
+                    className={`text-[0.65rem] font-semibold transition-transform ${
+                      isModulesOpen ? 'rotate-180' : 'rotate-0'
+                    }`}
+                  >
+                    ▼
+                  </span>
+                </button>
+                <div
+                  ref={modulesPanelRef}
+                  role="menu"
+                  aria-labelledby="modules-menu-button"
+                  className={[
+                    'absolute left-0 top-full z-30 mt-3 w-[min(28rem,calc(100vw-3rem))] rounded-3xl border p-6 transition-all duration-150 ease-out',
+                    isModulesOpen
+                      ? 'pointer-events-auto translate-y-0 opacity-100'
+                      : 'pointer-events-none -translate-y-1 opacity-0',
+                    isUltimate
+                      ? 'border-[#e0d1bd] bg-[#fef9f3] text-[#3f2a1e] shadow-[0_24px_60px_rgba(63,42,30,0.18)]'
+                      : 'border-sand-darker/50 bg-white text-navy shadow-[0_22px_60px_rgba(31,42,68,0.18)]',
+                  ].join(' ')}
+                >
+                  <div className="space-y-5">
+                    <section>
+                      <p
+                        className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                          isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
+                        }`}
+                      >
+                        My modules
+                      </p>
+                      <ul className="mt-3 space-y-2">
+                        {moduleGroups.myModules.map((module) => (
+                          <li key={module.key}>
+                            <div
+                              className={[
+                                'rounded-2xl px-4 py-3 transition-colors',
+                                isUltimate
+                                  ? 'bg-[#efe2cc] text-[#3f2a1e] shadow-sm'
+                                  : 'bg-primary/10 text-navy shadow-sm',
+                              ].join(' ')}
+                            >
+                              <div className="flex flex-col gap-1 sm:grid sm:grid-cols-[160px_1fr] sm:items-start sm:gap-3">
+                                <span className="text-sm font-semibold">{module.label}</span>
+                                <p
+                                  className={`text-sm leading-relaxed ${
+                                    isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
+                                  }`}
+                                >
+                                  {module.description}
+                                </p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                    <div
+                      className={`h-px w-full ${
+                        isUltimate ? 'bg-[#e6d9c4]' : 'bg-sand-darker/40'
+                      }`}
+                    />
+                    <section>
+                      <p
+                        className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                          isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
+                        }`}
+                      >
+                        All modules
+                      </p>
+                      <ul className="mt-3 space-y-2">
+                        {moduleGroups.allModules.map((module) => (
+                          <li key={module.key}>
+                            <div
+                              className={[
+                                'rounded-2xl px-4 py-3 transition-colors',
+                                isUltimate
+                                  ? 'hover:bg-[#f3e7d4]'
+                                  : 'hover:bg-primary/5',
+                              ].join(' ')}
+                            >
+                              <div className="flex flex-col gap-1 sm:grid sm:grid-cols-[160px_1fr] sm:items-start sm:gap-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold">{module.label}</span>
+                                  {module.premium && (
+                                    <span
+                                      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${
+                                        isUltimate
+                                          ? 'bg-[#efe2cc] text-[#6b4e36]'
+                                          : 'bg-primary/10 text-primary-dark'
+                                      }`}
+                                    >
+                                      Premium
+                                    </span>
+                                  )}
+                                </div>
+                                <p
+                                  className={`text-sm leading-relaxed ${
+                                    isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
+                                  }`}
+                                >
+                                  {module.description}
+                                </p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            )}
           </nav>
           <DemoUserBadge />
         </div>
