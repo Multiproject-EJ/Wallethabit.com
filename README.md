@@ -10,7 +10,7 @@
 |------|----------|------|
 | Overall Build | ![p](https://progress-bar.dev/72/) | Landing, dashboard, budget/goals planners, bank, debt, income, investing, retirement, protection, tax, and estate labs |
 | Deployment | ![p](https://progress-bar.dev/100/) | Actions + Pages wired |
-| Supabase | ![p](https://progress-bar.dev/30/) | Browser client booted; waiting on secrets |
+| Supabase | ![p](https://progress-bar.dev/70/) | Auth, customer accounts, and module unlocks backed by Supabase (see supabase/schema.sql) |
 | Stripe | ![p](https://progress-bar.dev/25/) | Checkout placeholders blocked on publishable key |
 | UI/UX | ![p](https://progress-bar.dev/97/) | Home, dashboard, pricing, budget, goals, strategy lab, settings, AI copilot, bank sync, debt payoff, income boost, investment, retirement, protection, tax, estate labs, and security & trust center |
 
