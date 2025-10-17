@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 
 import IntegrationStatus from '../components/IntegrationStatus'
 import { hasStripeConfig, stripeEnvGuidance } from '../lib/stripeClient'
 import { hasSupabaseConfig, supabaseEnvGuidance } from '../lib/supabaseClient'
 import { getPlaidEnvironmentLabel, hasPlaidConfig, plaidEnvGuidance } from '../lib/plaidClient'
 import { useDemoData } from '../lib/demoDataStore'
+import { useSupabaseApp } from '../lib/supabaseDataStore'
 
 const planTiers = [
   {
@@ -112,6 +114,8 @@ export default function Settings() {
     resetDemoData,
   } = useDemoData()
 
+  const supabaseApp = useSupabaseApp()
+
   const notifications = profile.notifications
   const plaidEnvironmentLabel = getPlaidEnvironmentLabel()
 
@@ -156,6 +160,60 @@ export default function Settings() {
           </div>
         </div>
       </header>
+
+      {supabaseApp.isEnabled ? (
+        <section className="space-y-3 rounded-3xl border border-slate-200 bg-white p-6 text-sm text-slate-700 shadow-sm">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Customer account</h2>
+            <p className="text-sm text-slate-600">
+              Supabase keeps purchases and module access in sync. View the latest status or jump to the
+              account dashboard for full history.
+            </p>
+          </div>
+          {supabaseApp.session ? (
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Signed in as</p>
+                <p className="mt-1 font-semibold text-slate-900">{supabaseApp.session.user.email}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Plan</p>
+                <p className="mt-1 font-semibold text-brand">
+                  {supabaseApp.profile?.plan_tier ?? 'freemium'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Unlocked modules</p>
+                <p className="mt-1 font-semibold text-slate-900">{supabaseApp.unlockedModules.length}</p>
+              </div>
+            </div>
+          ) : (
+            <p>
+              You are not signed in yet.{' '}
+              <Link to="/auth" className="font-semibold text-brand hover:text-brand-dark">
+                Sign in to your customer account
+              </Link>{' '}
+              to manage purchases and modules.
+            </p>
+          )}
+          {supabaseApp.purchases.length > 0 ? (
+            <p className="text-xs text-slate-500">
+              Latest purchase: {new Date(supabaseApp.purchases[0].created_at).toLocaleString()} ·{' '}
+              {supabaseApp.purchases[0].plan_tier} via {supabaseApp.purchases[0].provider}
+            </p>
+          ) : null}
+          {supabaseApp.session ? (
+            <div>
+              <Link
+                to="/account"
+                className="inline-flex items-center justify-center rounded-full bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark"
+              >
+                Open account dashboard
+              </Link>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
         <div className="space-y-4">
