@@ -1,635 +1,309 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 
-type AnimatedIconProps = {
-  className?: string
-}
-
-function AnimatedBudgetIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect
-        x="6"
-        y="12"
-        width="4"
-        height="14"
-        rx="1.5"
-        className="animate-bar-bounce fill-current"
-        opacity={0.45}
-        style={{ animationDelay: '0s', transformOrigin: 'center bottom' }}
-      />
-      <rect
-        x="14"
-        y="8"
-        width="4"
-        height="18"
-        rx="1.5"
-        className="animate-bar-bounce fill-current"
-        opacity={0.75}
-        style={{ animationDelay: '0.15s', transformOrigin: 'center bottom' }}
-      />
-      <rect
-        x="22"
-        y="10"
-        width="4"
-        height="16"
-        rx="1.5"
-        className="animate-bar-bounce fill-current"
-        opacity={0.6}
-        style={{ animationDelay: '0.3s', transformOrigin: 'center bottom' }}
-      />
-      <path d="M5 26h22" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.35} />
-    </svg>
-  )
-}
-
-function AnimatedDebtIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="6" y="6" width="20" height="20" rx="4" stroke="currentColor" strokeWidth="1.5" opacity={0.5} />
-      <rect
-        x="10"
-        y="10"
-        width="12"
-        height="4"
-        rx="1.5"
-        className="animate-pulse-soft fill-current"
-        opacity={0.45}
-      />
-      <path d="M11 18h4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.7} />
-      <path d="M17 18h4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.4} />
-      <path d="M11 21h6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.7} />
-    </svg>
-  )
-}
-
-function AnimatedGoalsIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <circle cx="16" cy="16" r="10" className="animate-pulse-soft stroke-current" strokeWidth="1.5" opacity={0.4} />
-      <circle
-        cx="16"
-        cy="16"
-        r="6"
-        className="animate-pulse-soft stroke-current"
-        strokeWidth="1.5"
-        opacity={0.7}
-        style={{ animationDelay: '0.2s' }}
-      />
-      <circle cx="16" cy="16" r="2.5" className="fill-current" opacity={0.9} />
-      <path d="M19 13l5-5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.6} />
-      <path d="M22 8l2 2" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.6} />
-    </svg>
-  )
-}
-
-function AnimatedIncomeIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path
-        d="M8 22l6-6 4 4 6-8"
-        className="animate-dash stroke-current"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.7}
-      />
-      <path
-        d="M22 9h4v4"
-        className="animate-float stroke-current"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.6}
-        style={{ animationDelay: '0.2s' }}
-      />
-      <path d="M6 24h20" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.35} />
-    </svg>
-  )
-}
-
-function AnimatedInvestingIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M8 22h16" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" opacity={0.3} />
-      <path
-        d="M10 20l4-7 4 3 4-8"
-        className="animate-dash stroke-current"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.75}
-      />
-      <circle cx="14" cy="13" r="2" className="animate-float fill-current" opacity={0.35} style={{ animationDelay: '0.2s' }} />
-      <circle cx="22" cy="8" r="2.5" className="animate-float fill-current" opacity={0.5} />
-    </svg>
-  )
-}
-
-function AnimatedRetirementIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M7 22c2.5-2 5.5-3 9-3s6.5 1 9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.4} />
-      <path
-        d="M13 12l6 2-2 2"
-        className="animate-float stroke-current"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.7}
-      />
-      <path d="M11 14l4-4 6 2" className="stroke-current" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity={0.6} />
-      <circle cx="14" cy="11" r="0.8" className="fill-current" />
-      <circle cx="19" cy="12.5" r="0.8" className="fill-current" />
-    </svg>
-  )
-}
-
-function AnimatedTaxesIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M11 6h10l5 6v14H11V6z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" opacity={0.55} />
-      <path d="M21 6v6h5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" opacity={0.4} />
-      <path d="M14 17h6" className="animate-pulse-soft stroke-current" strokeWidth="1.5" strokeLinecap="round" opacity={0.6} />
-      <path
-        d="M14 21h4"
-        className="animate-pulse-soft stroke-current"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity={0.4}
-        style={{ animationDelay: '0.3s' }}
-      />
-      <path
-        d="M14 13l2.5 3 4.5-5"
-        className="animate-dash stroke-current"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.75}
-      />
-    </svg>
-  )
-}
-
-function AnimatedProtectionIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path
-        d="M16 6l10 4v6c0 6-4.5 9.5-10 10-5.5-.5-10-4-10-10V10l10-4z"
-        className="animate-pulse-soft stroke-current"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        opacity={0.65}
-      />
-      <path d="M16 12v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.5} />
-      <circle cx="16" cy="20" r="1.5" className="fill-current" opacity={0.7} />
-    </svg>
-  )
-}
-
-function AnimatedEstateIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="9" y="8" width="14" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
-      <path d="M13 12h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.6} />
-      <path d="M13 17h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.45} />
-      <path d="M13 21h4" className="animate-float stroke-current" strokeWidth="1.5" strokeLinecap="round" opacity={0.45} />
-      <path d="M11 8V6h10v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.4} />
-    </svg>
-  )
-}
-
-function AnimatedSecurityIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="10" y="14" width="12" height="12" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
-      <path d="M12 14v-2a4 4 0 018 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.55} />
-      <circle
-        cx="16"
-        cy="20"
-        r="1.5"
-        className="animate-pulse-soft fill-current"
-        opacity={0.8}
-        style={{ animationDelay: '0.2s' }}
-      />
-      <path d="M16 21.5v2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity={0.5} />
-    </svg>
-  )
-}
-
-function AnimatedIntegrationsIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <circle cx="16" cy="16" r="9" stroke="currentColor" strokeWidth="1.5" opacity={0.35} />
-      <circle cx="16" cy="16" r="5" stroke="currentColor" strokeWidth="1.5" opacity={0.5} />
-      <g className="animate-orbital" style={{ transformOrigin: 'center' }}>
-        <circle cx="16" cy="7" r="2" className="fill-current" opacity={0.65} />
-      </g>
-      <circle cx="16" cy="16" r="1.5" className="fill-current" opacity={0.5} />
-    </svg>
-  )
-}
-
-function AnimatedAssistantIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path
-        d="M9 10c0-2.2 1.8-4 4-4h6c2.2 0 4 1.8 4 4v6c0 2.2-1.8 4-4 4h-2l-4 4v-4h0c-2.2 0-4-1.8-4-4v-6z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-        opacity={0.55}
-      />
-      {[0, 1, 2].map((dot) => (
-        <circle
-          key={dot}
-          cx={13 + dot * 3}
-          cy={15}
-          r={0.9}
-          className="animate-dot-blink fill-current"
-          opacity={0.7}
-          style={{ animationDelay: `${dot * 0.2}s` }}
-        />
-      ))}
-    </svg>
-  )
-}
-
-function AnimatedSubscriptionsIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="9" y="7" width="14" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
-      <path d="M12 11h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.5} />
-      <path
-        d="M12 16h6"
-        className="animate-bar-bounce stroke-current"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity={0.6}
-        style={{ animationDelay: '0.1s', transformOrigin: 'left center' }}
-      />
-      <path
-        d="M12 20h5"
-        className="animate-bar-bounce stroke-current"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity={0.45}
-        style={{ animationDelay: '0.25s', transformOrigin: 'left center' }}
-      />
-      <circle cx="19" cy="16" r="1.2" className="fill-current" opacity={0.5} />
-    </svg>
-  )
-}
-
-function AnimatedBillsIcon({ className }: AnimatedIconProps) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <rect x="8" y="8" width="16" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" opacity={0.55} />
-      <path d="M8 13h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.45} />
-      <rect x="12" y="16" width="8" height="6" rx="1.5" className="animate-float fill-current" opacity={0.45} />
-      <path d="M12 10v-2h8v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity={0.5} />
-    </svg>
-  )
-}
-
-const iconClassName = 'h-14 w-14 text-primary'
-
-type ModuleShortcut = {
-  key: string
-  title: string
-  description: string
-  to: string
-  icon: ReactNode
-}
-
-const cards = [
+const questionnairePrompts = [
   {
-    key: 'start-update',
-    title: 'Get started or log updates',
-    description:
-      'Launch the guided setup when you are brand new or jump straight into the update hub to keep weekly rituals humming.',
-    accent: 'from-primary/10 to-primary/5 shadow-primary/30',
-    badge: 'Start or update',
-    actions: [
-      { label: 'Start setup', to: '/start', helper: 'Finish onboarding in focused steps.' },
-      { label: 'Open update hub', to: '/update', helper: 'Log wins, receipts, and weekly tweaks.' },
-    ],
+    id: 'focus-area',
+    label: 'What money ritual needs the most momentum right now?',
+    options: ['Weekly spending review', 'Debt snowball tune-up', 'Retirement projections', 'Tax prep rhythm'],
   },
   {
-    key: 'dashboard',
-    title: 'Dashboard',
-    description: 'Track habit scores, streaks, and the money picture that keeps your goals within reach.',
-    to: '/dashboard',
-    accent: 'from-emerald-100/60 to-emerald-50/40 shadow-emerald-200/60',
-    badge: 'Open',
-    cta: 'Jump in',
+    id: 'support-style',
+    label: 'How do you prefer guidance to show up?',
+    options: ['Step-by-step walkthroughs', 'Visual dashboards', 'Checklists and reminders', 'Async expert nudges'],
   },
   {
-    key: 'modules',
-    title: 'Modules library',
-    description: 'Browse the guided workspaces for every money habit—from savings and debt to taxes and retirement planning.',
-    accent: 'from-sky-100/60 to-sky-50/40 shadow-sky-200/60',
-    badge: 'Workspace apps',
-    cta: 'Browse modules',
+    id: 'time-investment',
+    label: 'How much time can you invest each week?',
+    options: ['15 minutes', '30 minutes', '45 minutes', '60+ minutes'],
   },
-] as const
+]
 
-const moduleShortcuts = [
-  { key: 'budget', title: 'Budget', description: 'Plan envelopes and cash flow.', icon: <AnimatedBudgetIcon className={iconClassName} />, to: '/budget' },
-  { key: 'debt', title: 'Debt', description: 'Track balances and payoff plans.', icon: <AnimatedDebtIcon className={iconClassName} />, to: '/debt' },
-  { key: 'goals', title: 'Goals', description: 'Set milestones for big dreams.', icon: <AnimatedGoalsIcon className={iconClassName} />, to: '/goals' },
-  { key: 'income', title: 'Income', description: 'Map income streams with clarity.', icon: <AnimatedIncomeIcon className={iconClassName} />, to: '/income' },
+const testimonials = [
   {
-    key: 'investing',
-    title: 'Investing',
-    description: 'Review allocations and performance.',
-    icon: <AnimatedInvestingIcon className={iconClassName} />,
-    to: '/investing',
+    name: 'Amelia S.',
+    role: 'Founder · Denver',
+    quote:
+      'WalletHabit keeps our household rituals visible. We celebrate wins faster and never lose the thread on our next best move.',
   },
   {
-    key: 'retirement',
-    title: 'Retirement',
-    description: 'Stress test long-term plans.',
-    icon: <AnimatedRetirementIcon className={iconClassName} />,
-    to: '/retirement',
-  },
-  { key: 'taxes', title: 'Taxes', description: 'Prep documents and tax to-dos.', icon: <AnimatedTaxesIcon className={iconClassName} />, to: '/taxes' },
-  {
-    key: 'protection',
-    title: 'Protection',
-    description: 'Evaluate coverage and risk gaps.',
-    icon: <AnimatedProtectionIcon className={iconClassName} />,
-    to: '/protection',
-  },
-  { key: 'estate', title: 'Estate', description: 'Keep estate wishes organized.', icon: <AnimatedEstateIcon className={iconClassName} />, to: '/estate' },
-  {
-    key: 'security',
-    title: 'Security',
-    description: 'Audit digital and identity safety.',
-    icon: <AnimatedSecurityIcon className={iconClassName} />,
-    to: '/security',
+    name: 'Jordan M.',
+    role: 'Design Director · Austin',
+    quote:
+      'The guided workflows feel like an operating system for money habits. Every module nudges our goals forward.',
   },
   {
-    key: 'integrations',
-    title: 'Integrations',
-    description: 'Connect the tools you already use.',
-    icon: <AnimatedIntegrationsIcon className={iconClassName} />,
-    to: '/integrations',
+    name: 'Priya K.',
+    role: 'Engineer · Seattle',
+    quote:
+      'I finally trust my cadence with finances. The weekly update hub keeps receipts, notes, and insights in one calm place.',
   },
-  {
-    key: 'assistant',
-    title: 'AI Assistant',
-    description: 'Chat through next best actions.',
-    icon: <AnimatedAssistantIcon className={iconClassName} />,
-    to: '/assistant',
-  },
-  {
-    key: 'subscriptions',
-    title: 'Subscription Tracker',
-    description: 'Manage renewals with reminders.',
-    icon: <AnimatedSubscriptionsIcon className={iconClassName} />,
-    to: '/subscriptions',
-  },
-  { key: 'bills', title: 'Bills Tracker', description: 'Prepare the bills cockpit.', icon: <AnimatedBillsIcon className={iconClassName} />, to: '/bills' },
-] satisfies ReadonlyArray<ModuleShortcut>
+]
 
-const communityHighlights = [
-  {
-    key: 'community',
-    title: 'Community feedback hub',
-    description:
-      'Vote on new features, follow along as ideas climb the roadmap, and spotlight the improvements that keep you engaged.',
-    to: '/community',
-    badge: 'Feature voting',
-  },
-  {
-    key: 'habits',
-    title: 'Habits library with community stars',
-    description:
-      'Browse recommended rituals, see which ones earn the most stars, and add your vote to surface what really sticks.',
-    to: '/habits',
-    badge: 'Community stars',
-  },
-] as const
+const proofMetrics = [
+  { label: 'Teams keeping weekly rituals', value: '2,800+' },
+  { label: 'Average habit score lift in 60 days', value: '34%' },
+  { label: 'Modules launched with community feedback', value: '46' },
+]
 
 export default function Home() {
-  const [isModulesOpen, setIsModulesOpen] = useState(false)
-
-  useEffect(() => {
-    if (!isModulesOpen) return
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsModulesOpen(false)
-      }
+  const handleQuestionnaireSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const entries = Object.fromEntries(formData.entries())
+    const summary = Object.values(entries).filter(Boolean).join('\n')
+    if (summary) {
+      alert(`We noted your preferences:\n\n${summary}`)
+    } else {
+      alert('Let us know a few details so we can personalize your workspace!')
     }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isModulesOpen])
+  }
 
   return (
-    <div className="flex flex-1 flex-col gap-12 py-6">
-      <header className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primary">WalletHabit guides</p>
-      </header>
-
-      <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {cards.map((card) => {
-          const sharedContent = (
-            <>
-              <div
-                className={`pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${card.accent}`}
-              />
-              <div className="relative flex flex-col gap-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-primary/80">{card.title}</span>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-navy/60 transition group-hover:border-primary/40 group-hover:text-primary/80">
-                    {card.badge ?? 'Open'}
-                  </span>
-                </div>
-                <h2 className="text-2xl font-semibold text-navy">{card.title}</h2>
-                <p className="text-sm text-navy/70">{card.description}</p>
-                <span className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-primary transition group-hover:text-primary-dark">
-                  {card.cta ?? 'Jump in'}
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M13.5 4.5L21 12l-7.5 7.5M21 12H3"
-                    />
-                  </svg>
-                </span>
-              </div>
-            </>
-          )
-
-          if (card.key === 'start-update' && 'actions' in card) {
-            return (
-              <div
-                key={card.key}
-                className={[
-                  'group relative flex flex-col gap-5 rounded-3xl border border-slate-200 bg-white/90 p-8 text-left transition-all duration-200',
-                  'focus-within:outline focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-primary/70',
-                  'hover:-translate-y-1',
-                ].join(' ')}
-              >
-                <div
-                  className={`pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${card.accent}`}
-                />
-                <div className="relative flex flex-col gap-5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-primary/80">{card.title}</span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-navy/60 transition group-hover:border-primary/40 group-hover:text-primary/80">
-                      {card.badge ?? 'Open'}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-semibold text-navy">{card.title}</h2>
-                  <p className="text-sm text-navy/70">{card.description}</p>
-                </div>
-
-                <div className="relative mt-2 grid gap-3 sm:grid-cols-2">
-                  {card.actions.map((action) => (
-                    <Link
-                      key={action.to}
-                      to={action.to}
-                      className="group/action flex flex-col gap-1 rounded-2xl border border-slate-200 bg-white/90 p-4 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/70"
-                    >
-                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary group-hover/action:text-primary-dark">
-                        {action.label}
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" />
-                        </svg>
-                      </span>
-                      {action.helper ? <p className="text-xs text-navy/60">{action.helper}</p> : null}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )
-          }
-
-          if (card.key === 'modules') {
-            return (
-              <button
-                key={card.key}
-                type="button"
-                onClick={() => setIsModulesOpen(true)}
-                className={[
-                  'group relative flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/90 p-8 text-left transition-all duration-200',
-                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary/70',
-                  'hover:-translate-y-1',
-                ].join(' ')}
-              >
-                {sharedContent}
-              </button>
-            )
-          }
-
-          return (
-            <Link
-              key={card.key}
-              to={card.to}
-              className={[
-                'group relative flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/90 p-8 text-left transition-all duration-200',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary/70',
-                'hover:-translate-y-1',
-              ].join(' ')}
-            >
-              {sharedContent}
-            </Link>
-          )
-        })}
-      </section>
-
-      <section className="grid gap-6 rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-sm sm:grid-cols-2">
-        {communityHighlights.map((highlight) => (
-          <Link
-            key={highlight.key}
-            to={highlight.to}
-            className="group flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/90 p-6 transition hover:-translate-y-1 hover:border-primary/40"
-          >
-            <span className="inline-flex w-max items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.787 1.402 8.168L12 18.896l-7.336 3.87 1.402-8.168L.132 9.211l8.2-1.193z" />
+    <div className="flex flex-1 flex-col gap-20 py-6">
+      <section className="grid gap-12 rounded-3xl border border-slate-200 bg-white/95 p-10 shadow-sm lg:grid-cols-[1.1fr,1fr]">
+        <div className="space-y-6">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+            Personalized onboarding
+          </span>
+          <h1 className="text-4xl font-bold text-navy sm:text-5xl">A five-question check-in to tune your money system</h1>
+          <p className="max-w-xl text-base text-navy/70">
+            Pick the rituals that matter, set the pace that feels sustainable, and we will map the WalletHabit workspace that matches
+            your energy. Your answers glow straight into your dashboard when you are ready.
+          </p>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-navy/70">
+            <div className="flex items-center gap-2 rounded-full bg-sand px-4 py-2 font-semibold text-primary">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
               </svg>
-              {highlight.badge}
-            </span>
-            <h2 className="text-xl font-semibold text-navy transition group-hover:text-primary-dark">{highlight.title}</h2>
-            <p className="text-sm text-navy/70">{highlight.description}</p>
-            <span className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-primary transition group-hover:text-primary-dark">
-              Explore now
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" />
-              </svg>
-            </span>
-          </Link>
-        ))}
-      </section>
-
-      {isModulesOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-navy/40 px-4 py-10 backdrop-blur-sm"
-          onClick={() => setIsModulesOpen(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modules-library-heading"
-            className="relative w-full max-w-4xl max-h-[85vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-2xl sm:p-8"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setIsModulesOpen(false)}
-              className="absolute right-6 top-6 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-navy/60 transition hover:text-primary"
-              aria-label="Close modules library"
-            >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <div className="space-y-2 pb-6 pr-6 sm:pr-10">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary/80">
-                Modules library
-              </span>
-              <h2 id="modules-library-heading" className="text-3xl font-semibold text-navy">
-                Jump straight into the workflow you need
-              </h2>
-              <p className="max-w-2xl text-sm text-navy/70">
-                Pick any module to open a focused space—just like launching an app. Each workspace keeps the rituals, checklists,
-                and metrics for that part of your money system right where you need them.
-              </p>
+              Takes under 2 minutes
             </div>
+            <span>Instant recommendations · Export to your ritual log</span>
+          </div>
+        </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {moduleShortcuts.map((module) => (
-                <Link
-                  key={module.key}
-                  to={module.to}
-                  onClick={() => setIsModulesOpen(false)}
-                  className="group flex flex-col items-center gap-5 rounded-3xl border border-slate-200/70 bg-white/95 p-6 text-center shadow-sm transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
+        <form
+          onSubmit={handleQuestionnaireSubmit}
+          className="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-inner"
+        >
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-navy">Quick questionnaire</h2>
+            <p className="text-sm text-navy/60">Answer a few prompts and preview the modules we will curate for you.</p>
+          </div>
+
+          {questionnairePrompts.map((prompt) => (
+            <label key={prompt.id} htmlFor={prompt.id} className="flex flex-col gap-2 text-sm text-navy">
+              <span className="font-semibold text-navy/90">{prompt.label}</span>
+              <select
+                id={prompt.id}
+                name={prompt.id}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-navy/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+                defaultValue=""
+                required
+              >
+                <option value="" disabled>
+                  Select an option
+                </option>
+                {prompt.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-primary-dark"
+          >
+            See my guided plan
+          </button>
+        </form>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white/95 p-10 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="space-y-3 max-w-xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gold">
+              Social proof
+            </span>
+            <h2 className="text-3xl font-semibold text-navy">Habit-builders share why the rituals stick</h2>
+            <p className="text-sm text-navy/70">
+              Real voices from people designing calmer money systems with WalletHabit. Drop into their stories and borrow the
+              patterns that resonate.
+            </p>
+          </div>
+          <div className="flex gap-6 text-center">
+            {proofMetrics.map((metric) => (
+              <div key={metric.label} className="rounded-2xl border border-slate-200 bg-white px-6 py-4 shadow-sm">
+                <p className="text-2xl font-semibold text-primary">{metric.value}</p>
+                <p className="mt-1 w-40 text-xs text-navy/60">{metric.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {testimonials.map((testimonial) => (
+            <figure
+              key={testimonial.name}
+              className="relative flex h-full flex-col gap-4 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="absolute right-6 top-6 text-4xl text-gold/60" aria-hidden>
+                “
+              </div>
+              <blockquote className="text-sm text-navy/80">{testimonial.quote}</blockquote>
+              <figcaption className="mt-auto text-sm font-semibold text-navy">
+                {testimonial.name}
+                <span className="block text-xs font-normal uppercase tracking-wide text-navy/60">{testimonial.role}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-primary-dark via-navy to-midnight text-white shadow-lg">
+        <div className="absolute -left-24 top-1/3 h-64 w-64 rounded-full bg-primary/40 blur-3xl" aria-hidden />
+        <div className="absolute right-10 top-10 h-32 w-32 rounded-full bg-gold/40 blur-2xl" aria-hidden />
+        <div className="absolute -bottom-24 right-1/4 h-72 w-72 rounded-full bg-brand/30 blur-3xl" aria-hidden />
+
+        <div className="relative grid gap-10 px-10 py-16 lg:grid-cols-2">
+          <div className="space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/40 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+              Immersive walkthrough
+            </span>
+            <h2 className="text-3xl font-semibold leading-snug text-white sm:text-4xl">
+              Scroll the roadmap while background layers drift by. Parallax moments make every milestone feel cinematic.
+            </h2>
+            <p className="text-sm text-white/80">
+              Move through timelines that respond as you scroll—glowing cards tilt, progress markers glide, and the system gently
+              reveals what needs your attention next.
+            </p>
+            <div className="flex flex-wrap gap-4 text-sm text-white/80">
+              <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                </svg>
+                Timeline sync with rituals
+              </div>
+              <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12l2 2 6-6" />
+                </svg>
+                Guided nudges as you scroll
+              </div>
+              <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h10M4 17h7" />
+                </svg>
+                Notes follow your progress
+              </div>
+            </div>
+          </div>
+
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 scale-110 transform bg-gradient-to-tr from-white/10 to-transparent blur-3xl" aria-hidden />
+            <div className="relative grid w-full max-w-md gap-4 rounded-3xl border border-white/30 bg-white/10 p-6 backdrop-blur">
+              {['Plan your kickoff ritual', 'Preview milestone checklist', 'Bookmark weekly debrief'].map((item, index) => (
+                <div
+                  key={item}
+                  className="flex items-center justify-between rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white/90 shadow-lg shadow-primary/20"
+                  style={{ transform: `translateY(${index * 8}px)` }}
                 >
-                  <span className="flex h-24 w-24 items-center justify-center rounded-3xl bg-primary/10 text-primary/80 shadow-inner">
-                    {module.icon}
-                  </span>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-navy transition group-hover:text-primary-dark">{module.title}</h3>
-                    <p className="text-sm text-navy/70">{module.description}</p>
-                  </div>
-                  <span className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-primary transition group-hover:text-primary-dark">
-                    Open module
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12l-7.5 7.5M21 12H3" />
-                    </svg>
-                  </span>
-                </Link>
+                  <span>{item}</span>
+                  <span className="text-xs uppercase tracking-wide text-white/60">Parallax cue</span>
+                </div>
               ))}
             </div>
           </div>
         </div>
-      ) : null}
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white/95 p-10 shadow-sm">
+        <div className="grid gap-10 lg:grid-cols-[1.1fr,1fr]">
+          <div className="space-y-5">
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
+              Start free today
+            </span>
+            <h2 className="text-3xl font-semibold text-navy">Create your freemium WalletHabit account</h2>
+            <p className="text-sm text-navy/70">
+              Unlock the update hub, log unlimited wins, and preview premium modules. Freemium members can invite a partner and keep
+              everything synced at no cost.
+            </p>
+            <ul className="grid gap-3 text-sm text-navy/80 sm:grid-cols-2">
+              <li className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
+                </svg>
+                Update hub + dashboard
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
+                </svg>
+                Weekly ritual reminders
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
+                </svg>
+                Partner collaboration seats
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
+                </svg>
+                Upgrade when ready
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-inner">
+            <label className="text-sm font-semibold text-navy/80" htmlFor="freemium-email">
+              Email address
+            </label>
+            <input
+              id="freemium-email"
+              type="email"
+              required
+              placeholder="you@example.com"
+              className="rounded-2xl border border-slate-200 px-4 py-2 text-sm text-navy/80 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40"
+            />
+            <label className="text-sm font-semibold text-navy/80" htmlFor="freemium-purpose">
+              What do you want to build momentum around?
+            </label>
+            <textarea
+              id="freemium-purpose"
+              rows={3}
+              className="rounded-2xl border border-slate-200 px-4 py-2 text-sm text-navy/80 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40"
+              placeholder="Share the habit, project, or goal you want to protect."
+            />
+            <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-navy/60">
+              <label className="inline-flex items-center gap-2">
+                <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand/40" />
+                Send me early access invites
+              </label>
+              <Link to="/privacy" className="font-semibold text-brand hover:text-brand-dark">
+                Privacy notice
+              </Link>
+            </div>
+            <button
+              type="button"
+              className="mt-2 inline-flex items-center justify-center rounded-full bg-brand px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark"
+            >
+              Activate freemium access
+            </button>
+            <p className="text-xs text-navy/60">
+              Already have an account?{' '}
+              <Link to="/auth" className="font-semibold text-primary hover:text-primary-dark">
+                Log in here
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
