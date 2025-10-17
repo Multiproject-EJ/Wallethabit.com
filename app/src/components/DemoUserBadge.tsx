@@ -182,13 +182,16 @@ export default function DemoUserBadge() {
             </Link>
           </>
         ) : (
-          <span
-            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-              isUltimate ? 'bg-[#e6d8c6] text-[#5c7751]' : 'bg-brand/10 text-brand'
+          <Link
+            to="/account"
+            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
+              isUltimate
+                ? 'border border-[#d9cbb8] text-[#5c7751] hover:border-[#c9b79f] hover:text-[#4f6745]'
+                : 'border border-brand/30 text-brand hover:border-brand hover:text-brand-dark'
             }`}
           >
-            Demo active
-          </span>
+            Account
+          </Link>
         )}
         <button
           type="button"
