@@ -4,5 +4,6 @@ dist/
 .vite/
 .env
 .env.*
+!app/.env
 .DS_Store
 

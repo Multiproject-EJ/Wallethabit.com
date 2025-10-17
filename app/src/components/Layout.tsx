@@ -8,7 +8,6 @@ const navItems = [
   { to: '/', label: 'Start', end: true },
   { to: '/community', label: 'Community' },
   { to: '/habits', label: 'Habits', accent: true },
-  { to: '/account', label: 'Account' },
 ]
 
 type ModuleKey =
