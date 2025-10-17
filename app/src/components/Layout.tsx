@@ -4,10 +4,27 @@ import { NavLink, Outlet } from 'react-router-dom'
 import DemoUserBadge from './DemoUserBadge'
 import { useDemoData } from '../lib/demoDataStore'
 
-const navItems = [
-  { to: '/', label: 'Start', end: true },
-  { to: '/community', label: 'Community' },
-  { to: '/habits', label: 'Habits', accent: true },
+type InternalNavItem = {
+  type: 'internal'
+  to: string
+  label: string
+  end?: boolean
+  accent?: boolean
+}
+
+type ExternalNavItem = {
+  type: 'external'
+  href: string
+  label: string
+  accent?: boolean
+}
+
+type NavItem = InternalNavItem | ExternalNavItem
+
+const navItems: NavItem[] = [
+  { type: 'internal', to: '/', label: 'Start', end: true },
+  { type: 'external', href: 'https://www.ThriftPath.com', label: 'ThriftPath.com' },
+  { type: 'internal', to: '/habits', label: 'Habits', accent: true },
 ]
 
 type ModuleKey =
@@ -215,27 +232,45 @@ export default function Layout() {
               isUltimate ? 'text-[#5b4a39]' : 'text-navy/80'
             }`}
           >
-            {navItems.map(({ to, label, end, accent }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                  [
-                    'rounded-full px-3 py-2 transition-colors border border-transparent',
-                    accent && !isAuthenticated
-                      ? isActive
-                        ? accentActiveClass
-                        : accentIdleClass
-                      : isActive && !(to === '/' && !isAuthenticated)
-                      ? navActiveClass
-                      : navHoverClass,
-                  ].join(' ')
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
+            {navItems.map((item) => {
+              if (item.type === 'internal') {
+                const { to, label, end, accent } = item
+                return (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={end}
+                    className={({ isActive }) =>
+                      [
+                        'rounded-full px-3 py-2 transition-colors border border-transparent',
+                        accent && !isAuthenticated
+                          ? isActive
+                            ? accentActiveClass
+                            : accentIdleClass
+                          : isActive && !(to === '/' && !isAuthenticated)
+                          ? navActiveClass
+                          : navHoverClass,
+                      ].join(' ')
+                    }
+                  >
+                    {label}
+                  </NavLink>
+                )
+              }
+
+              const { href, label } = item
+              return (
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className={`rounded-full px-3 py-2 transition-colors border border-transparent ${navHoverClass} ${focusRingClass}`}
+                >
+                  {label}
+                </a>
+              )
+            })}
             {isAuthenticated && (
               <div
                 className="relative"

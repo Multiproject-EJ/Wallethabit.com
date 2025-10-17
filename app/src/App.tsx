@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import Layout from './components/Layout'
 import Home from './pages/Home'
@@ -24,6 +25,25 @@ import SubscriptionTracker from './pages/SubscriptionTracker'
 import BillsTracker from './pages/BillsTracker'
 import Auth from './pages/Auth'
 import Account from './pages/Account'
+import { useDemoData } from './lib/demoDataStore'
+import { useSupabaseApp } from './lib/supabaseDataStore'
+
+type RequireCommunityAccessProps = {
+  children: ReactNode
+}
+
+function RequireCommunityAccess({ children }: RequireCommunityAccessProps) {
+  const {
+    isAuthenticated,
+  } = useDemoData()
+  const { session } = useSupabaseApp()
+
+  if (!isAuthenticated && !session) {
+    return <Navigate to="/auth" replace />
+  }
+
+  return <>{children}</>
+}
 
 export default function App() {
   return (
@@ -50,7 +70,14 @@ export default function App() {
           <Route path="assistant" element={<Assistant />} />
           <Route path="subscriptions" element={<SubscriptionTracker />} />
           <Route path="bills" element={<BillsTracker />} />
-          <Route path="community" element={<Community />} />
+          <Route
+            path="community"
+            element={
+              <RequireCommunityAccess>
+                <Community />
+              </RequireCommunityAccess>
+            }
+          />
           <Route path="habits" element={<Habits />} />
           <Route path="*" element={<NotFound />} />
         </Route>

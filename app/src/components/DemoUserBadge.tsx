@@ -37,8 +37,8 @@ export default function DemoUserBadge() {
     return profile.fullName
   }, [profile.fullName, supabaseApp.profile?.full_name, supabaseSession])
 
-  const displayEmail = supabaseSession ? supabaseSession.user.email : profile.email
   const planTier = supabaseSession ? supabaseApp.profile?.plan_tier ?? 'freemium' : 'demo'
+  const communityUrl = '/community'
 
   useEffect(() => {
     if (supabaseSession) {
@@ -158,9 +158,14 @@ export default function DemoUserBadge() {
         >
           {displayName}
         </span>
-        {displayEmail ? (
-          <span className={`text-[13px] ${isUltimate ? 'text-[#7a6a58]' : 'text-slate-500'}`}>{displayEmail}</span>
-        ) : null}
+        <Link
+          to={communityUrl}
+          className={`text-[13px] font-semibold transition ${
+            isUltimate ? 'text-[#5c7751] hover:text-[#4f6745]' : 'text-brand hover:text-brand-dark'
+          }`}
+        >
+          Community FAQ
+        </Link>
         {supabaseSession ? (
           <>
             <span
