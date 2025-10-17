@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { useSupabaseApp } from '../lib/supabaseDataStore'
 
@@ -26,7 +27,13 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
   const [signUpNotice, setSignUpNotice] = useState<string | null>(null)
   const [signUpLoading, setSignUpLoading] = useState(false)
 
+  const [isClient, setIsClient] = useState(false)
+
   const isEnabled = supabaseApp.isEnabled
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
     if (!open) {
@@ -124,12 +131,12 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
     setSignUpLoading(false)
   }
 
-  if (!open) {
+  if (!open || !isClient) {
     return null
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4 py-6">
+  return createPortal(
+    <div className="fixed inset-0 z-[120] flex items-center justify-center overflow-y-auto px-4 py-6">
       <div className="fixed inset-0 bg-slate-900/60" aria-hidden onClick={onClose} />
       <div
         role="dialog"
@@ -285,7 +292,8 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
         )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
