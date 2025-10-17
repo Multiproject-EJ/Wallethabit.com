@@ -27,19 +27,15 @@ export default function DemoUserBadge() {
           isUltimate ? 'border-[#d9cbb8] bg-[#fdf8f0] text-[#4a3a2d]' : 'border-slate-200 bg-white/80 text-slate-800'
         }`}
       >
-        <div
-          className={`flex h-10 items-center justify-center gap-1 rounded-full px-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
-            isUltimate ? 'bg-[#e4d3bf] text-[#4f3826]' : 'bg-brand/15 text-brand-dark'
-          }`}
-        >
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={toggleSkin}
             aria-label={`Switch to ${isUltimate ? 'classic WalletHabit' : 'Ultimate Budget'} skin`}
-            className={`flex h-5 w-5 items-center justify-center rounded-full border p-0 transition ${
+            className={`flex h-5 w-5 items-center justify-center rounded-full p-0 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
               isUltimate
-                ? 'border-[#cbb498] bg-[#f7efe4] hover:bg-[#efe1ce]'
-                : 'border-brand/30 bg-white hover:bg-brand/10'
+                ? 'text-[#5c7751] hover:text-[#4f6745] focus-visible:outline-[#5c7751]'
+                : 'text-brand hover:text-brand-dark focus-visible:outline-brand'
             }`}
           >
             <span
@@ -49,7 +45,13 @@ export default function DemoUserBadge() {
               }`}
             />
           </button>
-          <span className="text-[12px] tracking-[0.2em]">{profile.initials}</span>
+          <span
+            className={`flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-semibold uppercase tracking-[0.2em] ${
+              isUltimate ? 'bg-[#e4d3bf] text-[#4f3826]' : 'bg-brand/15 text-brand-dark'
+            }`}
+          >
+            {profile.initials}
+          </span>
         </div>
         <div className="flex items-center gap-2 whitespace-nowrap">
           <span
@@ -79,17 +81,15 @@ export default function DemoUserBadge() {
         isUltimate ? 'border-[#d9cbb8] bg-[#fdf8f0] text-[#4a3a2d]' : 'border-slate-200 bg-white text-slate-900'
       }`}
     >
-      <div
-        className={`flex h-10 items-center justify-center gap-1 rounded-full px-2 text-sm font-semibold uppercase tracking-wide transition-colors ${
-          isUltimate ? 'bg-[#e4d3bf] text-[#4f3826]' : 'bg-brand/20 text-brand-dark'
-        }`}
-      >
+      <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={toggleSkin}
           aria-label={`Switch to ${isUltimate ? 'classic WalletHabit' : 'Ultimate Budget'} skin`}
-          className={`flex h-5 w-5 items-center justify-center rounded-full border p-0 transition ${
-            isUltimate ? 'border-[#cbb498] bg-[#f7efe4] hover:bg-[#efe1ce]' : 'border-brand/30 bg-white hover:bg-brand/10'
+          className={`flex h-5 w-5 items-center justify-center rounded-full p-0 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+            isUltimate
+              ? 'text-[#5c7751] hover:text-[#4f6745] focus-visible:outline-[#5c7751]'
+              : 'text-brand hover:text-brand-dark focus-visible:outline-brand'
           }`}
         >
           <span
@@ -99,7 +99,13 @@ export default function DemoUserBadge() {
             }`}
           />
         </button>
-        <span>{profile.initials}</span>
+        <span
+          className={`flex h-10 w-10 items-center justify-center rounded-full px-2 text-sm font-semibold uppercase tracking-wide transition-colors ${
+            isUltimate ? 'bg-[#e4d3bf] text-[#4f3826]' : 'bg-brand/20 text-brand-dark'
+          }`}
+        >
+          {profile.initials}
+        </span>
       </div>
       <div className="flex items-center gap-4 whitespace-nowrap">
         <span
