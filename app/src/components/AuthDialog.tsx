@@ -129,28 +129,29 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-slate-900/60" aria-hidden onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4 py-6">
+      <div className="fixed inset-0 bg-slate-900/60" aria-hidden onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
-        className="relative z-10 flex w-full max-w-3xl flex-col gap-6 overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-2xl"
+        className="relative z-10 my-6 w-full max-w-3xl rounded-3xl border border-slate-200 bg-white shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold text-slate-900">Access your WalletHabit account</h2>
-            <p className="text-sm text-slate-600">
-              Sign in to continue or create a freemium account to unlock the core modules instantly.
-            </p>
+        <div className="flex max-h-[calc(100vh-6rem)] flex-col gap-6 overflow-y-auto p-8 sm:max-h-[calc(100vh-4rem)]">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-900">Access your WalletHabit account</h2>
+              <p className="text-sm text-slate-600">
+                Sign in to continue or create a freemium account to unlock the core modules instantly.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
+            >
+              Close
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
-          >
-            Close
-          </button>
-        </div>
 
         {!isEnabled ? (
           <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-700">
@@ -282,6 +283,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
             )}
           </>
         )}
+        </div>
       </div>
     </div>
   )
