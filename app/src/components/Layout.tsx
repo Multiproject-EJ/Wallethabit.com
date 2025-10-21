@@ -25,9 +25,11 @@ const navItems: NavItem[] = [
   { type: 'internal', to: '/', label: 'Start', end: true },
   { type: 'external', href: 'https://www.ThriftPath.com', label: 'ThriftPath.com' },
   { type: 'internal', to: '/habits', label: 'Habits', accent: true },
+  { type: 'internal', to: '/mobile', label: 'Mobile' },
 ]
 
 type ModuleKey =
+  | 'mobile'
   | 'budget'
   | 'debts'
   | 'savings'
@@ -49,6 +51,11 @@ type ModuleInfo = {
 }
 
 const moduleCatalog: ModuleInfo[] = [
+  {
+    key: 'mobile',
+    label: 'Mobile ritual module',
+    description: 'App-like experience tuned for thumb-friendly habits and sharing.',
+  },
   {
     key: 'budget',
     label: 'Budget planner',
@@ -112,7 +119,7 @@ const moduleCatalog: ModuleInfo[] = [
   },
 ]
 
-const myModuleKeys = new Set<ModuleKey>(['savings'])
+const myModuleKeys = new Set<ModuleKey>(['savings', 'mobile'])
 
 export default function Layout() {
   const {
