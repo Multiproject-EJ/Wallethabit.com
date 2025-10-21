@@ -25,6 +25,7 @@ import SubscriptionTracker from './pages/SubscriptionTracker'
 import BillsTracker from './pages/BillsTracker'
 import Auth from './pages/Auth'
 import Account from './pages/Account'
+import MobileModule from './pages/MobileModule'
 import { useDemoData } from './lib/demoDataStore'
 import { useSupabaseApp } from './lib/supabaseDataStore'
 
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="assistant" element={<Assistant />} />
           <Route path="subscriptions" element={<SubscriptionTracker />} />
           <Route path="bills" element={<BillsTracker />} />
+          <Route path="mobile" element={<MobileModule />} />
           <Route
             path="community"
             element={
