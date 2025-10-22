@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import HabitDesigner from './HabitDesigner'
 
 type OnboardingMode = 'demo' | 'build' | null
 
@@ -586,6 +587,12 @@ const formatRelativeTimeFromNow = (isoDate: string | undefined) => {
 }
 
 export default function Onboarding() {
+  const [searchParams] = useSearchParams()
+
+  if (searchParams.get('mode') === 'habit-designer') {
+    return <HabitDesigner />
+  }
+
   const [{ state, stepIndex }, setStateWithStep] = useState(loadInitialState)
   const [isFinishing, setIsFinishing] = useState(false)
 
