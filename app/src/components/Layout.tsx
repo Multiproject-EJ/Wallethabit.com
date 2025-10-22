@@ -131,8 +131,11 @@ export default function Layout() {
   const isUltimate = skin === 'ultimate-budget'
 
   const [isModulesOpen, setModulesOpen] = useState(false)
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isMobileModulesOpen, setMobileModulesOpen] = useState(false)
   const modulesButtonRef = useRef<HTMLButtonElement | null>(null)
   const modulesPanelRef = useRef<HTMLDivElement | null>(null)
+  const mobileMenuId = 'mobile-navigation-panel'
 
   const moduleGroups = useMemo(() => {
     const myModules = moduleCatalog.filter((module) => myModuleKeys.has(module.key))
@@ -163,8 +166,29 @@ export default function Layout() {
   useEffect(() => {
     if (!isAuthenticated) {
       setModulesOpen(false)
+      setMobileMenuOpen(false)
+      setMobileModulesOpen(false)
     }
   }, [isAuthenticated])
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      setMobileModulesOpen(false)
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isMobileMenuOpen])
 
   useEffect(() => {
     if (!isModulesOpen) {
@@ -218,208 +242,424 @@ export default function Layout() {
         isUltimate ? 'bg-[#f4efe6] text-[#3f2a1e]' : 'bg-sand text-navy'
       }`}
     >
+
       <header
         className={`border-b backdrop-blur transition-colors ${
           isUltimate ? 'border-[#e0d1bd] bg-[#fdf8f0]/90' : 'border-sand-darker/60 bg-white/80'
         }`}
       >
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-4">
-          <NavLink
-            to="/"
-            end
-            className={`text-lg font-semibold tracking-tight transition-colors ${
-              isUltimate ? 'text-[#3f2a1e]' : 'text-navy'
-            }`}
-          >
-            Wallet
-            <span className={isUltimate ? 'text-[#5c7751]' : 'text-primary-light'}>Habit</span>
-          </NavLink>
-          <nav
-            className={`flex flex-1 flex-wrap items-center gap-1 text-sm font-medium transition-colors ${
-              isUltimate ? 'text-[#5b4a39]' : 'text-navy/80'
-            }`}
-          >
-            {navItems.map((item) => {
-              if (item.type === 'internal') {
-                const { to, label, end, accent } = item
-                return (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    end={end}
-                    className={({ isActive }) =>
-                      [
-                        'rounded-full px-3 py-2 transition-colors border border-transparent',
-                        accent && !isAuthenticated
-                          ? isActive
-                            ? accentActiveClass
-                            : accentIdleClass
-                          : isActive && !(to === '/' && !isAuthenticated)
-                          ? navActiveClass
-                          : navHoverClass,
-                      ].join(' ')
-                    }
-                  >
-                    {label}
-                  </NavLink>
-                )
-              }
-
-              const { href, label } = item
-              return (
-                <a
-                  key={href}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className={`rounded-full px-3 py-2 transition-colors border border-transparent ${navHoverClass} ${focusRingClass}`}
-                >
-                  {label}
-                </a>
-              )
-            })}
-            {isAuthenticated && (
-              <div
-                className="relative"
-                onMouseEnter={() => setModulesOpen(true)}
-                onMouseLeave={() => setModulesOpen(false)}
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-3 py-4">
+            <div className="flex flex-1 items-center gap-3">
+              <NavLink
+                to="/"
+                end
+                className={`flex-shrink-0 text-lg font-semibold tracking-tight transition-colors ${
+                  isUltimate ? 'text-[#3f2a1e]' : 'text-navy'
+                }`}
               >
-                <button
-                  ref={modulesButtonRef}
-                  type="button"
-                  id="modules-menu-button"
-                  aria-haspopup="true"
-                  aria-expanded={isModulesOpen}
-                  onClick={() => setModulesOpen((open) => !open)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      setModulesOpen(true)
-                    }
-                  }}
-                  className={[
-                    'flex items-center gap-2 rounded-full px-3 py-2 text-left transition-colors border border-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-                    isModulesOpen ? navActiveClass : navHoverClass,
-                    focusRingClass,
-                  ].join(' ')}
-                >
-                  Modules
-                  <span
-                    aria-hidden="true"
-                    className={`text-[0.65rem] font-semibold transition-transform ${
-                      isModulesOpen ? 'rotate-180' : 'rotate-0'
-                    }`}
+                Wallet
+                <span className={isUltimate ? 'text-[#5c7751]' : 'text-primary-light'}>Habit</span>
+              </NavLink>
+              <nav
+                className={`hidden flex-1 flex-wrap items-center gap-1 text-sm font-medium transition-colors sm:flex ${
+                  isUltimate ? 'text-[#5b4a39]' : 'text-navy/80'
+                }`}
+              >
+                {navItems.map((item) => {
+                  if (item.type === 'internal') {
+                    const { to, label, end, accent } = item
+                    return (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        end={end}
+                        className={({ isActive }) =>
+                          [
+                            'rounded-full px-3 py-2 transition-colors border border-transparent',
+                            accent && !isAuthenticated
+                              ? isActive
+                                ? accentActiveClass
+                                : accentIdleClass
+                              : isActive && !(to === '/' && !isAuthenticated)
+                              ? navActiveClass
+                              : navHoverClass,
+                          ].join(' ')
+                        }
+                      >
+                        {label}
+                      </NavLink>
+                    )
+                  }
+
+                  const { href, label } = item
+                  return (
+                    <a
+                      key={href}
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className={`rounded-full px-3 py-2 transition-colors border border-transparent ${navHoverClass} ${focusRingClass}`}
+                    >
+                      {label}
+                    </a>
+                  )
+                })}
+                {isAuthenticated && (
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setModulesOpen(true)}
+                    onMouseLeave={() => setModulesOpen(false)}
                   >
-                    ▼
-                  </span>
-                </button>
-                <div
-                  ref={modulesPanelRef}
-                  role="menu"
-                  aria-labelledby="modules-menu-button"
-                  className={[
-                    'absolute left-0 top-full z-30 mt-3 w-[min(28rem,calc(100vw-3rem))] rounded-3xl border p-6 transition-all duration-150 ease-out',
-                    isModulesOpen
-                      ? 'pointer-events-auto translate-y-0 opacity-100'
-                      : 'pointer-events-none -translate-y-1 opacity-0',
-                    isUltimate
-                      ? 'border-[#e0d1bd] bg-[#fef9f3] text-[#3f2a1e] shadow-[0_24px_60px_rgba(63,42,30,0.18)]'
-                      : 'border-sand-darker/50 bg-white text-navy shadow-[0_22px_60px_rgba(31,42,68,0.18)]',
-                  ].join(' ')}
-                >
-                  <div className="space-y-5">
-                    <section>
-                      <p
-                        className={`text-xs font-semibold uppercase tracking-[0.2em] ${
-                          isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
+                    <button
+                      ref={modulesButtonRef}
+                      type="button"
+                      id="modules-menu-button"
+                      aria-haspopup="true"
+                      aria-expanded={isModulesOpen}
+                      onClick={() => setModulesOpen((open) => !open)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          setModulesOpen(true)
+                        }
+                      }}
+                      className={[
+                        'flex items-center gap-2 rounded-full px-3 py-2 text-left transition-colors border border-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                        isModulesOpen ? navActiveClass : navHoverClass,
+                        focusRingClass,
+                      ].join(' ')}
+                    >
+                      Modules
+                      <span
+                        aria-hidden="true"
+                        className={`text-[0.65rem] font-semibold transition-transform ${
+                          isModulesOpen ? 'rotate-180' : 'rotate-0'
                         }`}
                       >
-                        My modules
-                      </p>
-                      <ul className="mt-3 space-y-2">
-                        {moduleGroups.myModules.map((module) => (
-                          <li key={module.key}>
-                            <div
-                              className={[
-                                'rounded-2xl px-4 py-3 transition-colors',
-                                isUltimate
-                                  ? 'bg-[#efe2cc] text-[#3f2a1e] shadow-sm'
-                                  : 'bg-primary/10 text-navy shadow-sm',
-                              ].join(' ')}
-                            >
-                              <div className="flex flex-col gap-1 sm:grid sm:grid-cols-[160px_1fr] sm:items-start sm:gap-3">
-                                <span className="text-sm font-semibold">{module.label}</span>
-                                <p
-                                  className={`text-sm leading-relaxed ${
-                                    isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
-                                  }`}
-                                >
-                                  {module.description}
-                                </p>
-                              </div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
+                        ▼
+                      </span>
+                    </button>
                     <div
-                      className={`h-px w-full ${
-                        isUltimate ? 'bg-[#e6d9c4]' : 'bg-sand-darker/40'
-                      }`}
-                    />
-                    <section>
-                      <p
-                        className={`text-xs font-semibold uppercase tracking-[0.2em] ${
-                          isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
-                        }`}
-                      >
-                        All modules
-                      </p>
-                      <ul className="mt-3 space-y-2">
-                        {moduleGroups.allModules.map((module) => (
-                          <li key={module.key}>
-                            <div
-                              className={[
-                                'rounded-2xl px-4 py-3 transition-colors',
-                                isUltimate
-                                  ? 'hover:bg-[#f3e7d4]'
-                                  : 'hover:bg-primary/5',
-                              ].join(' ')}
-                            >
-                              <div className="flex flex-col gap-1 sm:grid sm:grid-cols-[160px_1fr] sm:items-start sm:gap-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-semibold">{module.label}</span>
-                                  {module.premium && (
-                                    <span
-                                      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${
-                                        isUltimate
-                                          ? 'bg-[#efe2cc] text-[#6b4e36]'
-                                          : 'bg-primary/10 text-primary-dark'
+                      ref={modulesPanelRef}
+                      role="menu"
+                      aria-labelledby="modules-menu-button"
+                      className={[
+                        'absolute left-0 top-full z-30 mt-3 w-[min(28rem,calc(100vw-3rem))] rounded-3xl border p-6 transition-all duration-150 ease-out',
+                        isModulesOpen
+                          ? 'pointer-events-auto translate-y-0 opacity-100'
+                          : 'pointer-events-none -translate-y-1 opacity-0',
+                        isUltimate
+                          ? 'border-[#e0d1bd] bg-[#fef9f3] text-[#3f2a1e] shadow-[0_24px_60px_rgba(63,42,30,0.18)]'
+                          : 'border-sand-darker/50 bg-white text-navy shadow-[0_22px_60px_rgba(31,42,68,0.18)]',
+                      ].join(' ')}
+                    >
+                      <div className="space-y-5">
+                        <section>
+                          <p
+                            className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                              isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
+                            }`}
+                          >
+                            My modules
+                          </p>
+                          <ul className="mt-3 space-y-2">
+                            {moduleGroups.myModules.map((module) => (
+                              <li key={module.key}>
+                                <div
+                                  className={[
+                                    'rounded-2xl px-4 py-3 transition-colors',
+                                    isUltimate
+                                      ? 'bg-[#efe2cc] text-[#3f2a1e] shadow-sm'
+                                      : 'bg-primary/10 text-navy shadow-sm',
+                                  ].join(' ')}
+                                >
+                                  <div className="flex flex-col gap-1 sm:grid sm:grid-cols-[160px_1fr] sm:items-start sm:gap-3">
+                                    <span className="text-sm font-semibold">{module.label}</span>
+                                    <p
+                                      className={`text-sm leading-relaxed ${
+                                        isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
                                       }`}
                                     >
-                                      Premium
-                                    </span>
-                                  )}
+                                      {module.description}
+                                    </p>
+                                  </div>
                                 </div>
-                                <p
-                                  className={`text-sm leading-relaxed ${
-                                    isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
-                                  }`}
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                        <div
+                          className={`h-px w-full ${
+                            isUltimate ? 'bg-[#e6d9c4]' : 'bg-sand-darker/40'
+                          }`}
+                        />
+                        <section>
+                          <p
+                            className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                              isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
+                            }`}
+                          >
+                            All modules
+                          </p>
+                          <ul className="mt-3 space-y-2">
+                            {moduleGroups.allModules.map((module) => (
+                              <li key={module.key}>
+                                <div
+                                  className={[
+                                    'rounded-2xl px-4 py-3 transition-colors',
+                                    isUltimate
+                                      ? 'hover:bg-[#f3e7d4]'
+                                      : 'hover:bg-primary/5',
+                                  ].join(' ')}
                                 >
-                                  {module.description}
-                                </p>
-                              </div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
+                                  <div className="flex flex-col gap-1 sm:grid sm:grid-cols-[160px_1fr] sm:items-start sm:gap-3">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-semibold">{module.label}</span>
+                                      {module.premium && (
+                                        <span
+                                          className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${
+                                            isUltimate
+                                              ? 'bg-[#efe2cc] text-[#6b4e36]'
+                                              : 'bg-primary/10 text-primary-dark'
+                                          }`}
+                                        >
+                                          Premium
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p
+                                      className={`text-sm leading-relaxed ${
+                                        isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
+                                      }`}
+                                    >
+                                      {module.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+              </nav>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-controls={mobileMenuId}
+                aria-expanded={isMobileMenuOpen}
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                className={[
+                  'flex items-center gap-2 rounded-full border border-transparent px-3 py-2 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:hidden',
+                  isMobileMenuOpen ? navActiveClass : navHoverClass,
+                  focusRingClass,
+                ].join(' ')}
+              >
+                <span>{isMobileMenuOpen ? 'Close' : 'Menu'}</span>
+                <span aria-hidden="true" className="text-lg leading-none">
+                  {isMobileMenuOpen ? '✕' : '☰'}
+                </span>
+              </button>
+              <div className="flex-shrink-0">
+                <DemoUserBadge />
               </div>
-            )}
-          </nav>
-          <DemoUserBadge />
+            </div>
+          </div>
+          <div
+            id={mobileMenuId}
+            aria-hidden={!isMobileMenuOpen}
+            className={[
+              'sm:hidden overflow-hidden transition-[max-height,opacity] duration-200 ease-in-out',
+              isMobileMenuOpen
+                ? 'max-h-[80vh] opacity-100'
+                : 'pointer-events-none max-h-0 opacity-0',
+            ].join(' ')}
+          >
+            <div
+              className={[
+                'mt-2 rounded-3xl border px-4 py-4 shadow-sm',
+                isUltimate
+                  ? 'border-[#e0d1bd] bg-[#fef9f3] text-[#5b4a39]'
+                  : 'border-sand-darker/60 bg-white text-navy/80',
+              ].join(' ')}
+            >
+              <nav className="flex flex-col gap-2 text-base font-medium">
+                {navItems.map((item) => {
+                  if (item.type === 'internal') {
+                    const { to, label, end, accent } = item
+                    return (
+                      <NavLink
+                        key={`mobile-${to}`}
+                        to={to}
+                        end={end}
+                        onClick={() => {
+                          setMobileMenuOpen(false)
+                          setMobileModulesOpen(false)
+                        }}
+                        className={({ isActive }) =>
+                          [
+                            'block rounded-full px-4 py-2 text-base transition-colors border border-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                            accent && !isAuthenticated
+                              ? isActive
+                                ? accentActiveClass
+                                : accentIdleClass
+                              : isActive && !(to === '/' && !isAuthenticated)
+                              ? navActiveClass
+                              : navHoverClass,
+                            focusRingClass,
+                          ].join(' ')
+                        }
+                      >
+                        {label}
+                      </NavLink>
+                    )
+                  }
+
+                  const { href, label } = item
+                  return (
+                    <a
+                      key={`mobile-${href}`}
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      onClick={() => {
+                        setMobileMenuOpen(false)
+                        setMobileModulesOpen(false)
+                      }}
+                      className={`block rounded-full px-4 py-2 text-base transition-colors border border-transparent ${navHoverClass} ${focusRingClass}`}
+                    >
+                      {label}
+                    </a>
+                  )
+                })}
+                {isAuthenticated && (
+                  <div>
+                    <button
+                      type="button"
+                      aria-expanded={isMobileModulesOpen}
+                      onClick={() => setMobileModulesOpen((open) => !open)}
+                      className={[
+                        'flex w-full items-center justify-between gap-2 rounded-2xl border border-transparent px-4 py-3 text-left text-base font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+                        isMobileModulesOpen ? navActiveClass : navHoverClass,
+                        focusRingClass,
+                      ].join(' ')}
+                    >
+                      <span>Modules</span>
+                      <span
+                        aria-hidden="true"
+                        className={`text-xs font-semibold transition-transform ${
+                          isMobileModulesOpen ? 'rotate-180' : 'rotate-0'
+                        }`}
+                      >
+                        ▼
+                      </span>
+                    </button>
+                    <div
+                      className={[
+                        'overflow-hidden transition-[max-height,opacity] duration-200 ease-in-out',
+                        isMobileModulesOpen
+                          ? 'mt-3 max-h-[60vh] opacity-100'
+                          : 'max-h-0 opacity-0 pointer-events-none',
+                      ].join(' ')}
+                    >
+                      <div className="space-y-5 pb-1">
+                        <section>
+                          <p
+                            className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                              isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
+                            }`}
+                          >
+                            My modules
+                          </p>
+                          <ul className="mt-3 space-y-2">
+                            {moduleGroups.myModules.map((module) => (
+                              <li key={`mobile-my-${module.key}`}>
+                                <div
+                                  className={[
+                                    'rounded-2xl px-4 py-3 transition-colors',
+                                    isUltimate
+                                      ? 'bg-[#efe2cc] text-[#3f2a1e] shadow-sm'
+                                      : 'bg-primary/10 text-navy shadow-sm',
+                                  ].join(' ')}
+                                >
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-sm font-semibold">{module.label}</span>
+                                    <p
+                                      className={`text-sm leading-relaxed ${
+                                        isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
+                                      }`}
+                                    >
+                                      {module.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                        <div
+                          className={`h-px w-full ${
+                            isUltimate ? 'bg-[#e6d9c4]' : 'bg-sand-darker/40'
+                          }`}
+                        />
+                        <section>
+                          <p
+                            className={`text-xs font-semibold uppercase tracking-[0.2em] ${
+                              isUltimate ? 'text-[#7a6048]' : 'text-navy/60'
+                            }`}
+                          >
+                            All modules
+                          </p>
+                          <ul className="mt-3 space-y-2">
+                            {moduleGroups.allModules.map((module) => (
+                              <li key={`mobile-all-${module.key}`}>
+                                <div
+                                  className={[
+                                    'rounded-2xl px-4 py-3 transition-colors',
+                                    isUltimate
+                                      ? 'hover:bg-[#f3e7d4]'
+                                      : 'hover:bg-primary/5',
+                                  ].join(' ')}
+                                >
+                                  <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-semibold">{module.label}</span>
+                                      {module.premium && (
+                                        <span
+                                          className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${
+                                            isUltimate
+                                              ? 'bg-[#efe2cc] text-[#6b4e36]'
+                                              : 'bg-primary/10 text-primary-dark'
+                                          }`}
+                                        >
+                                          Premium
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p
+                                      className={`text-sm leading-relaxed ${
+                                        isUltimate ? 'text-[#5b4a39]' : 'text-navy/70'
+                                      }`}
+                                    >
+                                      {module.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </nav>
+            </div>
+          </div>
         </div>
       </header>
 
