@@ -53,6 +53,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="start" element={<Onboarding />} />
+          <Route path="onboarding" element={<Onboarding />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="auth" element={<Auth />} />
           <Route path="account" element={<Account />} />
