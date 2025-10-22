@@ -67,7 +67,7 @@ export default function DemoUserBadge() {
   if (!isSignedIn) {
     return (
       <div
-        className={`flex items-center gap-3 rounded-full border px-3 py-2 text-xs shadow-sm transition-colors ${
+        className={`flex w-full flex-wrap items-center gap-x-3 gap-y-2 rounded-full border px-3 py-2 text-xs shadow-sm transition-colors sm:w-auto sm:flex-nowrap sm:gap-3 ${
           isUltimate ? 'border-[#d9cbb8] bg-[#fdf8f0] text-[#4a3a2d]' : 'border-slate-200 bg-white/80 text-slate-800'
         }`}
       >
@@ -97,7 +97,7 @@ export default function DemoUserBadge() {
             {profile.initials}
           </span>
         </div>
-        <div className="flex items-center gap-2 whitespace-nowrap">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:gap-2 sm:whitespace-nowrap">
           <span
             className={`text-[13px] font-semibold ${
               isUltimate ? 'text-[#3b2d20]' : 'text-slate-900'
@@ -108,7 +108,7 @@ export default function DemoUserBadge() {
           <button
             type="button"
             onClick={handleOpenAuth}
-            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white transition ${
+            className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white transition ${
               isUltimate ? 'bg-[#5c7751] hover:bg-[#4f6745]' : 'bg-brand hover:bg-brand-dark'
             }`}
           >
@@ -122,7 +122,7 @@ export default function DemoUserBadge() {
 
   return (
     <div
-      className={`flex items-center gap-4 rounded-full border px-5 py-3 text-left text-sm shadow-md transition-colors ${
+      className={`flex w-full flex-wrap items-center gap-x-3 gap-y-2 rounded-full border px-5 py-3 text-left text-sm shadow-md transition-colors sm:w-auto sm:flex-nowrap sm:gap-4 ${
         isUltimate ? 'border-[#d9cbb8] bg-[#fdf8f0] text-[#4a3a2d]' : 'border-slate-200 bg-white text-slate-900'
       }`}
     >
@@ -152,15 +152,17 @@ export default function DemoUserBadge() {
           {profile.initials}
         </span>
       </div>
-      <div className="flex items-center gap-4 whitespace-nowrap">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:flex-nowrap sm:gap-4 sm:whitespace-nowrap">
         <span
-          className={`text-[14px] font-semibold ${isUltimate ? 'text-[#3b2d20]' : 'text-slate-900'}`}
+          className={`w-full text-[14px] font-semibold sm:w-auto ${
+            isUltimate ? 'text-[#3b2d20]' : 'text-slate-900'
+          }`}
         >
           {displayName}
         </span>
         <Link
           to={communityUrl}
-          className={`text-[13px] font-semibold transition ${
+          className={`flex-shrink-0 text-[13px] font-semibold transition ${
             isUltimate ? 'text-[#5c7751] hover:text-[#4f6745]' : 'text-brand hover:text-brand-dark'
           }`}
         >
@@ -169,7 +171,7 @@ export default function DemoUserBadge() {
         {supabaseSession ? (
           <>
             <span
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+              className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
                 isUltimate ? 'bg-[#e6d8c6] text-[#5c7751]' : 'bg-brand/10 text-brand'
               }`}
             >
@@ -177,7 +179,7 @@ export default function DemoUserBadge() {
             </span>
             <Link
               to="/account"
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
+              className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
                 isUltimate
                   ? 'border border-[#d9cbb8] text-[#5c7751] hover:border-[#c9b79f] hover:text-[#4f6745]'
                   : 'border border-brand/30 text-brand hover:border-brand hover:text-brand-dark'
@@ -189,7 +191,7 @@ export default function DemoUserBadge() {
         ) : (
           <Link
             to="/account"
-            className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
+            className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
               isUltimate
                 ? 'border border-[#d9cbb8] text-[#5c7751] hover:border-[#c9b79f] hover:text-[#4f6745]'
                 : 'border border-brand/30 text-brand hover:border-brand hover:text-brand-dark'
@@ -201,7 +203,7 @@ export default function DemoUserBadge() {
         <button
           type="button"
           onClick={handleSignOut}
-          className={`text-[12px] font-semibold transition ${
+          className={`flex-shrink-0 text-[12px] font-semibold transition ${
             isUltimate ? 'text-[#5c7751] hover:text-[#4f6745]' : 'text-brand hover:text-brand-dark'
           }`}
         >
