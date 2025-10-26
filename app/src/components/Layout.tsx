@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import DemoUserBadge from './DemoUserBadge'
@@ -10,6 +10,8 @@ type InternalNavItem = {
   label: string
   end?: boolean
   accent?: boolean
+  icon?: ReactNode
+  ariaLabel?: string
 }
 
 type ExternalNavItem = {
@@ -25,7 +27,28 @@ const navItems: NavItem[] = [
   { type: 'internal', to: '/', label: 'Start', end: true },
   { type: 'external', href: 'https://www.ThriftPath.com', label: 'ThriftPath.com' },
   { type: 'internal', to: '/habits', label: 'Habits', accent: true },
-  { type: 'internal', to: '/mobile', label: 'Mobile' },
+  {
+    type: 'internal',
+    to: '/mobile',
+    label: 'Mobile',
+    ariaLabel: 'Mobile module',
+    icon: (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x={7} y={3} width={10} height={18} rx={2.5} ry={2.5} />
+        <line x1={10} y1={17} x2={14} y2={17} />
+        <circle cx={12} cy={7} r={0.9} fill="currentColor" stroke="none" />
+      </svg>
+    ),
+  },
 ]
 
 type ModuleKey =
@@ -268,15 +291,17 @@ export default function Layout() {
               >
                 {navItems.map((item) => {
                   if (item.type === 'internal') {
-                    const { to, label, end, accent } = item
+                    const { to, label, end, accent, icon, ariaLabel } = item
                     return (
                       <NavLink
                         key={to}
                         to={to}
                         end={end}
+                        aria-label={ariaLabel ?? (icon ? label : undefined)}
                         className={({ isActive }) =>
                           [
                             'rounded-full px-3 py-2 transition-colors border border-transparent',
+                            icon ? 'flex items-center justify-center' : '',
                             accent && !isAuthenticated
                               ? isActive
                                 ? accentActiveClass
@@ -287,7 +312,14 @@ export default function Layout() {
                           ].join(' ')
                         }
                       >
-                        {label}
+                        {icon ? (
+                          <>
+                            <span className="sr-only">{label}</span>
+                            {icon}
+                          </>
+                        ) : (
+                          label
+                        )}
                       </NavLink>
                     )
                   }
