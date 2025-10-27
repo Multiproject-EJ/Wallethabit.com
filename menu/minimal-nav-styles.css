@@ -1,0 +1,23 @@
+.ffnav-btn,
+.ffnav-link {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.ffnav-btn:hover,
+.ffnav-link:hover {
+  opacity: 0.85;
+}
+
+.ffnav-btn.btn-finance {
+  background-color: #4f8ef7;
+  color: #fff;
+}
+
+.ffnav-item {
+  list-style: none;
+}
