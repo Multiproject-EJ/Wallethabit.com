@@ -1,0 +1,285 @@
+<!--
+  Create two square PNG icons under finance/icons/ using the data URIs below (or replace with your own artwork):
+  finance/icons/icon-192.png → data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAACGUlEQVR4nO3TMQHAIADAsDGDOMMuJ8jgaKKgT8dc+3wQ9b8OgJcMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYA0A5BmANIMQJoBSDMAaQYgzQCkGYC0Cx+kBFOm6zmHAAAAAElFTkSuQmCC
+  finance/icons/icon-512.png → data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAIYUlEQVR4nO3WMQHAIADAsDGDOMMuJ3MxjiYKenbMtc8DAKS8twMAgP8ZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBBgAAggwAAAQZAAAIMgAAEGQAACDIAABAkAEAgCADAABBHydGBtMPM7y0AAAAAElFTkSuQmCC
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FutureFunds">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <title>FutureFunds Finance</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="ffapp" data-route="dashboard">
+    <header class="ffapp-header">
+      <div class="ffapp-brand">FutureFunds</div>
+      <nav class="ffapp-tabs" aria-label="Finance sections">
+        <button type="button" class="ffapp-tab is-active" data-route="dashboard">Dashboard</button>
+        <button type="button" class="ffapp-tab" data-route="transactions">Transactions</button>
+        <button type="button" class="ffapp-tab" data-route="budget">Budget</button>
+        <button type="button" class="ffapp-tab" data-route="goals">Goals</button>
+        <button type="button" class="ffapp-tab" data-route="networth">Net Worth</button>
+        <button type="button" class="ffapp-tab" data-route="investments">Investments</button>
+        <button type="button" class="ffapp-tab" data-route="settings">Settings</button>
+      </nav>
+    </header>
+    <main class="ffapp-main" id="ffapp-view" aria-live="polite"></main>
+    <footer class="ffapp-footer">
+      <div class="ffapp-status" id="ffapp-status">Net worth: --</div>
+      <div class="ffapp-footer-actions">
+        <button type="button" class="ffapp-secondary" id="ffapp-import-csv">Import CSV</button>
+        <button type="button" class="ffapp-primary" id="ffapp-add-transaction">+ Add transaction</button>
+      </div>
+    </footer>
+    <input type="file" id="ffapp-csv-input" accept=".csv,text/csv" class="ffapp-hidden-input">
+    <div class="ffapp-modal" id="ffapp-csv-modal" aria-hidden="true">
+      <div class="ffapp-modal-backdrop" data-action="close-modal"></div>
+      <div class="ffapp-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="ffapp-csv-title" aria-describedby="ffapp-csv-description" tabindex="-1">
+        <header class="ffapp-modal-header">
+          <h2 id="ffapp-csv-title">Import transactions from CSV</h2>
+          <button type="button" class="ffapp-modal-close" data-action="close-modal" aria-label="Close import dialog">×</button>
+        </header>
+        <div class="ffapp-modal-scroll">
+          <p class="ffapp-modal-description" id="ffapp-csv-description">Map your columns, preview the first 10 rows, then import to add transactions.</p>
+          <form id="ffapp-csv-mapper" class="ffapp-modal-form">
+            <div class="ffapp-modal-grid">
+              <label class="ffapp-field">Date column
+                <select class="ffapp-input" data-map="date" required></select>
+              </label>
+              <label class="ffapp-field">Payee column
+                <select class="ffapp-input" data-map="payee"></select>
+              </label>
+              <label class="ffapp-field">Amount column
+                <select class="ffapp-input" data-map="amount" required></select>
+              </label>
+              <label class="ffapp-field">Type column
+                <select class="ffapp-input" data-map="type"></select>
+              </label>
+              <label class="ffapp-field">Category column
+                <select class="ffapp-input" data-map="category"></select>
+              </label>
+            </div>
+            <div class="ffapp-alert" data-role="csv-message" role="status" aria-live="polite"></div>
+            <div class="ffapp-modal-preview">
+              <div class="ffapp-tablewrap">
+                <table class="ffapp-table">
+                  <thead>
+                    <tr><th>Date</th><th>Payee</th><th>Category</th><th>Type</th><th>Amount</th></tr>
+                  </thead>
+                  <tbody data-role="csv-preview"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="ffapp-modal-footer">
+              <button type="button" class="ffapp-secondary" data-action="close-modal" data-role="csv-cancel">Cancel</button>
+              <button type="submit" class="ffapp-primary" data-action="csv-import" disabled>Import</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="tpl-dashboard">
+    <section class="ffapp-section">
+      <div class="ffapp-grid">
+        <article class="ffapp-card">
+          <h2>Income</h2>
+          <p class="ffapp-metric" data-metric="income">0</p>
+        </article>
+        <article class="ffapp-card">
+          <h2>Spending</h2>
+          <p class="ffapp-metric" data-metric="spending">0</p>
+        </article>
+        <article class="ffapp-card">
+          <h2>Remaining</h2>
+          <p class="ffapp-metric" data-metric="remaining">0</p>
+        </article>
+      </div>
+      <div class="ffapp-card">
+        <header class="ffapp-card-header">
+          <h2>Category snapshot</h2>
+          <select class="ffapp-input" data-filter="month"></select>
+        </header>
+        <ul class="ffapp-list" data-list="category-summary"></ul>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-transactions">
+    <section class="ffapp-section">
+      <form class="ffapp-card ffapp-form" id="ffapp-form-transaction">
+        <h2>Add transaction</h2>
+        <label class="ffapp-field">Date<input class="ffapp-input" type="date" name="date" required></label>
+        <label class="ffapp-field">Payee<input class="ffapp-input" type="text" name="payee" required></label>
+        <label class="ffapp-field">Amount<input class="ffapp-input" type="number" name="amount" step="0.01" required></label>
+        <label class="ffapp-field">Type
+          <select class="ffapp-input" name="type" required>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            <option value="transfer">Transfer</option>
+          </select>
+        </label>
+        <label class="ffapp-field">Category
+          <select class="ffapp-input" name="category" required></select>
+        </label>
+        <button type="submit" class="ffapp-primary">Save</button>
+      </form>
+      <div class="ffapp-card">
+        <header class="ffapp-card-header">
+          <h2>Transactions</h2>
+          <div class="ffapp-inline">
+            <select class="ffapp-input" data-filter="month"></select>
+            <input class="ffapp-input" type="search" data-filter="search" placeholder="Search">
+          </div>
+        </header>
+        <div class="ffapp-tablewrap">
+          <table class="ffapp-table">
+            <thead>
+              <tr><th>Date</th><th>Payee</th><th>Category</th><th>Type</th><th>Amount</th><th></th></tr>
+            </thead>
+            <tbody data-list="transactions"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-budget">
+    <section class="ffapp-section">
+      <form class="ffapp-card ffapp-form" id="ffapp-form-budget">
+        <h2>Set budget</h2>
+        <label class="ffapp-field">Category
+          <select class="ffapp-input" name="category" required></select>
+        </label>
+        <label class="ffapp-field">Monthly target<input class="ffapp-input" type="number" name="amount" step="0.01" min="0" required></label>
+        <button type="submit" class="ffapp-primary">Save</button>
+      </form>
+      <div class="ffapp-card">
+        <header class="ffapp-card-header">
+          <h2>Current month</h2>
+          <select class="ffapp-input" data-filter="month"></select>
+        </header>
+        <ul class="ffapp-list" data-list="budgets"></ul>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-goals">
+    <section class="ffapp-section">
+      <form class="ffapp-card ffapp-form" id="ffapp-form-goal">
+        <h2>Create goal</h2>
+        <label class="ffapp-field">Name<input class="ffapp-input" type="text" name="name" required></label>
+        <label class="ffapp-field">Target<input class="ffapp-input" type="number" name="target" step="0.01" min="0" required></label>
+        <label class="ffapp-field">Due date<input class="ffapp-input" type="date" name="due" required></label>
+        <button type="submit" class="ffapp-primary">Save</button>
+      </form>
+      <div class="ffapp-card">
+        <h2>Goals</h2>
+        <ul class="ffapp-list" data-list="goals"></ul>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-networth">
+    <section class="ffapp-section">
+      <div class="ffapp-split">
+        <form class="ffapp-card ffapp-form" id="ffapp-form-asset">
+          <h2>Add asset</h2>
+          <label class="ffapp-field">Name<input class="ffapp-input" type="text" name="name" required></label>
+          <label class="ffapp-field">Value<input class="ffapp-input" type="number" name="value" step="0.01" min="0" required></label>
+          <button type="submit" class="ffapp-primary">Save</button>
+        </form>
+        <form class="ffapp-card ffapp-form" id="ffapp-form-liability">
+          <h2>Add liability</h2>
+          <label class="ffapp-field">Name<input class="ffapp-input" type="text" name="name" required></label>
+          <label class="ffapp-field">Value<input class="ffapp-input" type="number" name="value" step="0.01" min="0" required></label>
+          <button type="submit" class="ffapp-primary">Save</button>
+        </form>
+      </div>
+      <div class="ffapp-grid">
+        <div class="ffapp-card">
+          <h2>Assets</h2>
+          <ul class="ffapp-list" data-list="assets"></ul>
+        </div>
+        <div class="ffapp-card">
+          <h2>Liabilities</h2>
+          <ul class="ffapp-list" data-list="liabilities"></ul>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-investments">
+    <section class="ffapp-section">
+      <form class="ffapp-card ffapp-form" id="ffapp-form-investment">
+        <h2>Add holding</h2>
+        <label class="ffapp-field">Ticker<input class="ffapp-input" type="text" name="ticker" required></label>
+        <label class="ffapp-field">Name<input class="ffapp-input" type="text" name="name" required></label>
+        <label class="ffapp-field">Units<input class="ffapp-input" type="number" name="units" step="0.01" min="0" required></label>
+        <label class="ffapp-field">Average cost<input class="ffapp-input" type="number" name="cost" step="0.01" min="0" required></label>
+        <button type="submit" class="ffapp-primary">Save</button>
+      </form>
+      <div class="ffapp-card">
+        <h2>Investments</h2>
+        <ul class="ffapp-list" data-list="investments"></ul>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-settings">
+    <section class="ffapp-section">
+      <div class="ffapp-card">
+        <h2>Preferences</h2>
+        <form id="ffapp-form-settings" class="ffapp-form">
+          <label class="ffapp-field">Currency
+            <select class="ffapp-input" name="currency">
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+              <option value="GBP">GBP</option>
+              <option value="JPY">JPY</option>
+              <option value="CHF">CHF</option>
+            </select>
+          </label>
+        </form>
+      </div>
+      <div class="ffapp-card">
+        <h2>Categories</h2>
+        <form id="ffapp-form-category" class="ffapp-form">
+          <label class="ffapp-field">New category<input class="ffapp-input" type="text" name="name" required></label>
+          <button type="submit" class="ffapp-primary">Add</button>
+        </form>
+        <ul class="ffapp-list" data-list="categories"></ul>
+      </div>
+      <div class="ffapp-card">
+        <h2>Data</h2>
+        <div class="ffapp-inline">
+          <button type="button" class="ffapp-secondary" id="ffapp-export">Export</button>
+          <label class="ffapp-secondary ffapp-file">
+            Import JSON<input type="file" id="ffapp-import" accept="application/json">
+          </label>
+          <button type="button" class="ffapp-danger" id="ffapp-wipe">Wipe data</button>
+        </div>
+        <textarea class="ffapp-input" id="ffapp-export-output" rows="4" readonly placeholder="Backup data will appear here"></textarea>
+      </div>
+    </section>
+  </template>
+
+  <script src="./db.js" defer></script>
+  <script src="./app.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
+</body>
+</html>
