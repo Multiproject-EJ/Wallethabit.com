@@ -33,8 +33,58 @@
     <main class="ffapp-main" id="ffapp-view" aria-live="polite"></main>
     <footer class="ffapp-footer">
       <div class="ffapp-status" id="ffapp-status">Net worth: --</div>
-      <button type="button" class="ffapp-primary" id="ffapp-add-transaction">+ Add transaction</button>
+      <div class="ffapp-footer-actions">
+        <button type="button" class="ffapp-secondary" id="ffapp-import-csv">Import CSV</button>
+        <button type="button" class="ffapp-primary" id="ffapp-add-transaction">+ Add transaction</button>
+      </div>
     </footer>
+    <input type="file" id="ffapp-csv-input" accept=".csv,text/csv" class="ffapp-hidden-input">
+    <div class="ffapp-modal" id="ffapp-csv-modal" aria-hidden="true">
+      <div class="ffapp-modal-backdrop" data-action="close-modal"></div>
+      <div class="ffapp-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="ffapp-csv-title" aria-describedby="ffapp-csv-description" tabindex="-1">
+        <header class="ffapp-modal-header">
+          <h2 id="ffapp-csv-title">Import transactions from CSV</h2>
+          <button type="button" class="ffapp-modal-close" data-action="close-modal" aria-label="Close import dialog">×</button>
+        </header>
+        <div class="ffapp-modal-scroll">
+          <p class="ffapp-modal-description" id="ffapp-csv-description">Map your columns, preview the first 10 rows, then import to add transactions.</p>
+          <form id="ffapp-csv-mapper" class="ffapp-modal-form">
+            <div class="ffapp-modal-grid">
+              <label class="ffapp-field">Date column
+                <select class="ffapp-input" data-map="date" required></select>
+              </label>
+              <label class="ffapp-field">Payee column
+                <select class="ffapp-input" data-map="payee"></select>
+              </label>
+              <label class="ffapp-field">Amount column
+                <select class="ffapp-input" data-map="amount" required></select>
+              </label>
+              <label class="ffapp-field">Type column
+                <select class="ffapp-input" data-map="type"></select>
+              </label>
+              <label class="ffapp-field">Category column
+                <select class="ffapp-input" data-map="category"></select>
+              </label>
+            </div>
+            <div class="ffapp-alert" data-role="csv-message" role="status" aria-live="polite"></div>
+            <div class="ffapp-modal-preview">
+              <div class="ffapp-tablewrap">
+                <table class="ffapp-table">
+                  <thead>
+                    <tr><th>Date</th><th>Payee</th><th>Category</th><th>Type</th><th>Amount</th></tr>
+                  </thead>
+                  <tbody data-role="csv-preview"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="ffapp-modal-footer">
+              <button type="button" class="ffapp-secondary" data-action="close-modal" data-role="csv-cancel">Cancel</button>
+              <button type="submit" class="ffapp-primary" data-action="csv-import" disabled>Import</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 
   <template id="tpl-dashboard">

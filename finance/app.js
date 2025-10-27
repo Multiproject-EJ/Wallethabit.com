@@ -3,6 +3,8 @@
 
   const DEFAULT_CATEGORIES = ['Rent', 'Groceries', 'Eating out', 'Transport', 'Utilities', 'Insurance', 'Health', 'Subscriptions', 'Fun', 'Misc'];
   const ROUTES = ['dashboard', 'transactions', 'budget', 'goals', 'networth', 'investments', 'settings'];
+  const CSV_MAP_KEY = 'ff_finance__csvmap_v1';
+  const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
   const state = {
     route: 'dashboard',
@@ -15,6 +17,16 @@
   let appEl;
   let mainEl;
   let statusEl;
+  const csvElements = {};
+  const csvState = {
+    rows: [],
+    headers: [],
+    delimiter: ',',
+    records: [],
+    skipped: 0
+  };
+  let csvModalOpen = false;
+  let csvPreviousFocus = null;
 
   document.addEventListener('DOMContentLoaded', init);
 
@@ -25,6 +37,7 @@
 
     setupNav();
     setupQuickAdd();
+    setupCSVImport();
     bootstrapSettings().then(() => {
       navigate(state.route);
     });
@@ -54,6 +67,110 @@
             payee.focus();
           }
         }
+      });
+    });
+  }
+
+  function setupCSVImport() {
+    csvElements.button = document.getElementById('ffapp-import-csv');
+    csvElements.fileInput = document.getElementById('ffapp-csv-input');
+    csvElements.modal = document.getElementById('ffapp-csv-modal');
+    csvElements.dialog = csvElements.modal ? csvElements.modal.querySelector('.ffapp-modal-dialog') : null;
+    csvElements.form = document.getElementById('ffapp-csv-mapper');
+    csvElements.previewBody = csvElements.modal ? csvElements.modal.querySelector('[data-role="csv-preview"]') : null;
+    csvElements.message = csvElements.modal ? csvElements.modal.querySelector('[data-role="csv-message"]') : null;
+    csvElements.importButton = csvElements.modal ? csvElements.modal.querySelector('[data-action="csv-import"]') : null;
+    csvElements.selects = csvElements.form ? Array.from(csvElements.form.querySelectorAll('select[data-map]')) : [];
+
+    if (!csvElements.button || !csvElements.fileInput || !csvElements.modal || !csvElements.dialog || !csvElements.form || !csvElements.previewBody || !csvElements.message || !csvElements.importButton) {
+      return;
+    }
+
+    csvElements.button.addEventListener('click', () => {
+      csvElements.fileInput.value = '';
+      csvElements.fileInput.click();
+    });
+
+    csvElements.fileInput.addEventListener('change', () => {
+      const file = csvElements.fileInput.files[0];
+      if (!file) {
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = parseCsv(String(reader.result || ''));
+          csvState.rows = parsed.rows;
+          csvState.headers = parsed.headers;
+          csvState.delimiter = parsed.delimiter;
+          updateCsvSelectOptions(parsed.headers);
+          applySavedCsvMapping(parsed.headers);
+          openCsvModal();
+          updateCsvPreview();
+        } catch (error) {
+          openCsvModal();
+          updateCsvSelectOptions([]);
+          showCsvMessage(`Import failed: ${error.message}`, true);
+          csvState.rows = [];
+          csvState.headers = [];
+          csvState.records = [];
+          csvState.skipped = 0;
+          clearCsvPreview();
+        }
+        csvElements.fileInput.value = '';
+      };
+      reader.onerror = () => {
+        openCsvModal();
+        updateCsvSelectOptions([]);
+        showCsvMessage('Unable to read the selected file.', true);
+        csvState.rows = [];
+        csvState.headers = [];
+        csvState.records = [];
+        csvState.skipped = 0;
+        clearCsvPreview();
+        csvElements.fileInput.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    csvElements.modal.addEventListener('click', (event) => {
+      const target = event.target;
+      if (target && target.dataset.action === 'close-modal') {
+        event.preventDefault();
+        closeCsvModal();
+      }
+    });
+
+    csvElements.form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const mapping = getCsvMapping();
+      if (!isCsvMappingValid(mapping)) {
+        updateCsvPreview();
+        return;
+      }
+      const result = transformCsvRows(mapping);
+      if (!result.records.length) {
+        showCsvMessage('No valid rows to import with the current mapping.', true);
+        csvElements.importButton.disabled = true;
+        return;
+      }
+      csvElements.importButton.disabled = true;
+      try {
+        const payload = result.records.map((record) => ({ ...record, id: uuid() }));
+        await FFDB.bulkPut('transactions', payload);
+        persistCsvMapping(mapping);
+        closeCsvModal();
+        await renderTransactionsTable();
+        await loadDashboardMetricsSilent();
+      } catch (error) {
+        showCsvMessage(`Import failed: ${error.message}`, true);
+        csvElements.importButton.disabled = false;
+      }
+    });
+
+    csvElements.selects.forEach((select) => {
+      select.addEventListener('change', () => {
+        updateCsvPreview();
       });
     });
   }
@@ -752,6 +869,587 @@
     const net = totalAssets - totalLiabilities;
     if (statusEl) {
       statusEl.textContent = `Net worth: ${money(net)}`;
+    }
+  }
+
+  function openCsvModal() {
+    if (!csvElements.modal || !csvElements.dialog) {
+      return;
+    }
+    csvElements.modal.setAttribute('aria-hidden', 'false');
+    if (!csvModalOpen) {
+      csvModalOpen = true;
+      csvPreviousFocus = document.activeElement;
+      csvElements.modal.addEventListener('keydown', handleCsvModalKeydown, true);
+    }
+    window.requestAnimationFrame(() => {
+      const focusable = getCsvFocusableElements();
+      if (focusable.length) {
+        focusable[0].focus();
+      } else {
+        csvElements.dialog.focus();
+      }
+    });
+  }
+
+  function closeCsvModal() {
+    if (!csvElements.modal) {
+      return;
+    }
+    csvElements.modal.setAttribute('aria-hidden', 'true');
+    if (csvModalOpen) {
+      csvElements.modal.removeEventListener('keydown', handleCsvModalKeydown, true);
+    }
+    csvModalOpen = false;
+    if (csvElements.form) {
+      csvElements.form.reset();
+    }
+    csvState.rows = [];
+    csvState.headers = [];
+    csvState.records = [];
+    csvState.skipped = 0;
+    updateCsvSelectOptions([]);
+    clearCsvPreview();
+    showCsvMessage('', false);
+    if (csvElements.fileInput) {
+      csvElements.fileInput.value = '';
+    }
+    if (csvPreviousFocus && typeof csvPreviousFocus.focus === 'function') {
+      csvPreviousFocus.focus();
+    }
+    csvPreviousFocus = null;
+  }
+
+  function updateCsvSelectOptions(headers) {
+    if (!Array.isArray(csvElements.selects)) {
+      return;
+    }
+    csvElements.selects.forEach((select) => {
+      const current = select.value;
+      select.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select column';
+      select.appendChild(placeholder);
+      headers.forEach((header) => {
+        const option = document.createElement('option');
+        option.value = header;
+        option.textContent = header;
+        select.appendChild(option);
+      });
+      if (headers.includes(current)) {
+        select.value = current;
+      } else {
+        select.value = '';
+      }
+    });
+  }
+
+  function applySavedCsvMapping(headers) {
+    const saved = loadCsvMapping();
+    const guessed = guessCsvMapping(headers);
+    csvElements.selects.forEach((select) => {
+      const field = select.dataset.map;
+      const preferred = (saved && saved[field]) || guessed[field] || '';
+      if (preferred && headers.includes(preferred)) {
+        select.value = preferred;
+      } else {
+        select.value = '';
+      }
+    });
+  }
+
+  function getCsvMapping() {
+    const mapping = {};
+    csvElements.selects.forEach((select) => {
+      mapping[select.dataset.map] = select.value;
+    });
+    return mapping;
+  }
+
+  function isCsvMappingValid(mapping) {
+    return Boolean(mapping.date && mapping.amount);
+  }
+
+  function updateCsvPreview() {
+    if (!csvElements.previewBody || !csvElements.importButton) {
+      return;
+    }
+    const mapping = getCsvMapping();
+    csvElements.importButton.disabled = true;
+    if (!csvState.headers.length) {
+      renderCsvPreviewMessage('Upload a CSV file to begin.');
+      showCsvMessage('Upload a CSV file to begin.', false);
+      return;
+    }
+    if (!isCsvMappingValid(mapping)) {
+      renderCsvPreviewMessage('Select the required columns to preview your data.');
+      showCsvMessage('Select the required columns to preview your data.', false);
+      return;
+    }
+    const result = transformCsvRows(mapping);
+    if (!result.records.length) {
+      renderCsvPreviewMessage('No valid rows detected for this mapping.');
+      showCsvMessage('No valid rows to import with the current mapping.', true);
+      return;
+    }
+    renderCsvPreviewRecords(result.records.slice(0, 10));
+    const summary = `Ready to import ${result.records.length} transaction${result.records.length === 1 ? '' : 's'}.${result.skipped ? ` ${result.skipped} row${result.skipped === 1 ? '' : 's'} skipped.` : ''}`;
+    showCsvMessage(summary, false, true);
+    csvElements.importButton.disabled = false;
+  }
+
+  function renderCsvPreviewRecords(records) {
+    if (!csvElements.previewBody) {
+      return;
+    }
+    csvElements.previewBody.innerHTML = '';
+    records.forEach((record) => {
+      const tr = document.createElement('tr');
+      const values = [
+        record.date,
+        record.payee,
+        record.category,
+        record.type,
+        money(record.type === 'expense' ? -record.amount : record.amount)
+      ];
+      values.forEach((value) => {
+        const td = document.createElement('td');
+        td.textContent = value;
+        tr.appendChild(td);
+      });
+      csvElements.previewBody.appendChild(tr);
+    });
+  }
+
+  function renderCsvPreviewMessage(message) {
+    if (!csvElements.previewBody) {
+      return;
+    }
+    csvElements.previewBody.innerHTML = '';
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 5;
+    td.appendChild(emptyState(message));
+    tr.appendChild(td);
+    csvElements.previewBody.appendChild(tr);
+  }
+
+  function clearCsvPreview() {
+    if (csvElements.previewBody) {
+      renderCsvPreviewMessage('No preview available yet.');
+    }
+    if (csvElements.importButton) {
+      csvElements.importButton.disabled = true;
+    }
+    csvState.records = [];
+    csvState.skipped = 0;
+  }
+
+  function showCsvMessage(text, isError = false, isSuccess = false) {
+    if (!csvElements.message) {
+      return;
+    }
+    csvElements.message.textContent = text || '';
+    csvElements.message.classList.remove('is-error', 'is-success');
+    if (isError) {
+      csvElements.message.classList.add('is-error');
+    } else if (isSuccess) {
+      csvElements.message.classList.add('is-success');
+    }
+  }
+
+  function getCsvFocusableElements() {
+    if (!csvElements.dialog) {
+      return [];
+    }
+    return Array.from(csvElements.dialog.querySelectorAll(FOCUSABLE_SELECTOR)).filter((element) => {
+      const visible = element.offsetWidth > 0 || element.offsetHeight > 0 || element.getClientRects().length > 0;
+      return !element.hasAttribute('disabled') && element.getAttribute('aria-hidden') !== 'true' && visible;
+    });
+  }
+
+  function handleCsvModalKeydown(event) {
+    if (!csvModalOpen) {
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeCsvModal();
+      return;
+    }
+    if (event.key !== 'Tab') {
+      return;
+    }
+    const focusable = getCsvFocusableElements();
+    if (!focusable.length) {
+      event.preventDefault();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey) {
+      if (document.activeElement === first || document.activeElement === csvElements.dialog) {
+        event.preventDefault();
+        last.focus();
+      }
+    } else if (document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function transformCsvRows(mapping) {
+    const indices = {};
+    Object.keys(mapping).forEach((key) => {
+      const header = mapping[key];
+      indices[key] = header ? csvState.headers.indexOf(header) : -1;
+    });
+    const datePreference = detectCsvDatePreference(csvState.rows, indices.date);
+    const records = [];
+    let skipped = 0;
+    csvState.rows.forEach((row) => {
+      const record = mapCsvRow(row, indices, datePreference);
+      if (record) {
+        records.push(record);
+      } else {
+        skipped += 1;
+      }
+    });
+    csvState.records = records;
+    csvState.skipped = skipped;
+    return { records, skipped };
+  }
+
+  function mapCsvRow(row, indices, preference) {
+    const dateValue = getValueFromRow(row, indices.date);
+    const normalizedDate = normalizeCsvDate(dateValue, preference);
+    if (!normalizedDate) {
+      return null;
+    }
+    const amountValue = getValueFromRow(row, indices.amount);
+    const numericAmount = parseCsvNumber(amountValue);
+    if (!Number.isFinite(numericAmount) || numericAmount === 0) {
+      return null;
+    }
+    const typeValue = getValueFromRow(row, indices.type);
+    const normalizedType = normalizeCsvType(typeValue, numericAmount);
+    if (!normalizedType) {
+      return null;
+    }
+    const payeeValue = getValueFromRow(row, indices.payee);
+    const categoryValue = getValueFromRow(row, indices.category);
+    return {
+      date: normalizedDate,
+      payee: payeeValue || 'Unknown',
+      category: categoryValue || 'Uncategorized',
+      type: normalizedType,
+      amount: Math.abs(numericAmount)
+    };
+  }
+
+  function getValueFromRow(row, index) {
+    if (typeof index !== 'number' || index < 0) {
+      return '';
+    }
+    const value = index < row.length ? row[index] : '';
+    return String(value || '').trim();
+  }
+
+  function detectCsvDatePreference(rows, dateIndex) {
+    if (typeof dateIndex !== 'number' || dateIndex < 0) {
+      return state.currency === 'USD' ? 'MM/DD' : 'DD/MM';
+    }
+    let ddmm = 0;
+    let mmdd = 0;
+    for (let i = 0; i < rows.length && i < 50; i += 1) {
+      const value = String(getValueFromRow(rows[i], dateIndex) || '').trim();
+      if (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        continue;
+      }
+      const normalized = value.replace(/\./g, '/').replace(/-/g, '/');
+      const parts = normalized.split('/');
+      if (parts.length !== 3) {
+        continue;
+      }
+      const first = parseInt(parts[0], 10);
+      const second = parseInt(parts[1], 10);
+      if (!Number.isFinite(first) || !Number.isFinite(second)) {
+        continue;
+      }
+      if (first > 12 && second <= 12) {
+        ddmm += 1;
+      } else if (second > 12 && first <= 12) {
+        mmdd += 1;
+      }
+    }
+    if (ddmm > mmdd) {
+      return 'DD/MM';
+    }
+    if (mmdd > ddmm) {
+      return 'MM/DD';
+    }
+    return state.currency === 'USD' ? 'MM/DD' : 'DD/MM';
+  }
+
+  function normalizeCsvDate(value, preference) {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      return null;
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return raw;
+    }
+    const normalized = raw.replace(/\./g, '/').replace(/-/g, '/');
+    const parts = normalized.split('/');
+    if (parts.length !== 3) {
+      return null;
+    }
+    const first = parseInt(parts[0], 10);
+    const second = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    if (!Number.isFinite(first) || !Number.isFinite(second) || !Number.isFinite(year)) {
+      return null;
+    }
+    if (year < 1000 || year > 9999) {
+      return null;
+    }
+    let day;
+    let month;
+    if (first > 12 && second <= 12) {
+      day = first;
+      month = second;
+    } else if (second > 12 && first <= 12) {
+      month = first;
+      day = second;
+    } else if ((preference || '').toUpperCase() === 'MM/DD') {
+      month = first;
+      day = second;
+    } else {
+      day = first;
+      month = second;
+    }
+    if (!isValidCalendarDate(year, month, day)) {
+      return null;
+    }
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  function isValidCalendarDate(year, month, day) {
+    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+      return false;
+    }
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      return false;
+    }
+    const test = new Date(year, month - 1, day);
+    return test.getFullYear() === year && test.getMonth() === month - 1 && test.getDate() === day;
+  }
+
+  function parseCsvNumber(value) {
+    if (value === null || value === undefined) {
+      return NaN;
+    }
+    let str = String(value).trim();
+    if (!str) {
+      return NaN;
+    }
+    let negative = false;
+    if (str.startsWith('(') && str.endsWith(')')) {
+      negative = true;
+      str = str.slice(1, -1);
+    }
+    str = str.replace(/\s+/g, '');
+    str = str.replace(/[^0-9,.-]/g, '');
+    if (!str) {
+      return NaN;
+    }
+    const commaCount = (str.match(/,/g) || []).length;
+    const dotCount = (str.match(/\./g) || []).length;
+    if (commaCount && dotCount) {
+      if (str.lastIndexOf('.') > str.lastIndexOf(',')) {
+        str = str.replace(/,/g, '');
+      } else {
+        str = str.replace(/\./g, '').replace(/,/g, '.');
+      }
+    } else if (commaCount && !dotCount) {
+      str = str.replace(/,/g, '.');
+    } else {
+      str = str.replace(/,/g, '');
+    }
+    let number = Number(str);
+    if (!Number.isFinite(number)) {
+      return NaN;
+    }
+    if (negative || str.includes('-')) {
+      number = Math.abs(number) * -1;
+    }
+    return number;
+  }
+
+  function normalizeCsvType(value, amountValue) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (raw) {
+      if (raw.includes('transfer') || raw.includes('transf') || raw === 'trf') {
+        return 'transfer';
+      }
+      if (raw.includes('expense') || raw.includes('debit') || raw.includes('withdraw')) {
+        return 'expense';
+      }
+      if (raw.includes('income') || raw.includes('credit') || raw.includes('deposit')) {
+        return 'income';
+      }
+    }
+    if (amountValue < 0) {
+      return 'expense';
+    }
+    if (amountValue > 0) {
+      return 'income';
+    }
+    return '';
+  }
+
+  function parseCsv(text) {
+    const normalizedText = String(text || '').replace(/\uFEFF/g, '');
+    const lines = normalizedText.split(/\r?\n/);
+    const sampleLine = lines.find((line) => line.trim().length);
+    if (!sampleLine) {
+      throw new Error('File is empty.');
+    }
+    const delimiter = detectCsvDelimiter(sampleLine);
+    const rows = [];
+    lines.forEach((line) => {
+      if (!line.trim()) {
+        return;
+      }
+      const parsedRow = parseCsvRow(line, delimiter);
+      if (parsedRow.some((cell) => cell.length)) {
+        rows.push(parsedRow);
+      }
+    });
+    if (!rows.length) {
+      throw new Error('No data rows found.');
+    }
+    const headerRow = rows.shift();
+    const headers = makeUniqueHeaders(headerRow);
+    return { headers, rows, delimiter };
+  }
+
+  function detectCsvDelimiter(sampleLine) {
+    const commaSplit = parseCsvRow(sampleLine, ',');
+    const semicolonSplit = parseCsvRow(sampleLine, ';');
+    if (semicolonSplit.length > commaSplit.length) {
+      return ';';
+    }
+    if (commaSplit.length > 1) {
+      return ',';
+    }
+    if (semicolonSplit.length > 1) {
+      return ';';
+    }
+    return ',';
+  }
+
+  function parseCsvRow(line, delimiter) {
+    const cells = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i += 1) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === delimiter && !inQuotes) {
+        cells.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    cells.push(current);
+    return cells.map((cell) => sanitizeCsvValue(cell));
+  }
+
+  function sanitizeCsvValue(value) {
+    const str = String(value || '').trim();
+    if (str.startsWith('"') && str.endsWith('"')) {
+      return str.slice(1, -1).replace(/""/g, '"').trim();
+    }
+    return str.replace(/""/g, '"').trim();
+  }
+
+  function makeUniqueHeaders(values) {
+    const headers = [];
+    const seen = {};
+    values.forEach((value, index) => {
+      let header = String(value || '').trim();
+      if (!header) {
+        header = `Column ${index + 1}`;
+      }
+      let unique = header;
+      let counter = 1;
+      while (seen[unique]) {
+        counter += 1;
+        unique = `${header} (${counter})`;
+      }
+      seen[unique] = true;
+      headers.push(unique);
+    });
+    return headers;
+  }
+
+  function guessCsvMapping(headers) {
+    const mapping = {};
+    headers.forEach((header) => {
+      const normalized = header.toLowerCase();
+      if (!mapping.date && normalized.includes('date')) {
+        mapping.date = header;
+        return;
+      }
+      if (!mapping.amount && (normalized.includes('amount') || normalized.includes('value') || normalized.includes('total'))) {
+        mapping.amount = header;
+        return;
+      }
+      if (!mapping.payee && (normalized.includes('payee') || normalized.includes('name') || normalized.includes('description') || normalized.includes('merchant'))) {
+        mapping.payee = header;
+        return;
+      }
+      if (!mapping.type && (normalized.includes('type') || normalized.includes('direction') || normalized.includes('status'))) {
+        mapping.type = header;
+        return;
+      }
+      if (!mapping.category && normalized.includes('category')) {
+        mapping.category = header;
+      }
+    });
+    return mapping;
+  }
+
+  function loadCsvMapping() {
+    try {
+      const stored = localStorage.getItem(CSV_MAP_KEY);
+      if (!stored) {
+        return {};
+      }
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+    } catch (error) {
+      return {};
+    }
+    return {};
+  }
+
+  function persistCsvMapping(mapping) {
+    try {
+      localStorage.setItem(CSV_MAP_KEY, JSON.stringify(mapping));
+    } catch (error) {
+      // Storage might be unavailable; ignore.
     }
   }
 

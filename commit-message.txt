@@ -1,1 +1,1 @@
-Add offline finance PWA and navigation link
+feat(csv): add finance CSV import workflow
