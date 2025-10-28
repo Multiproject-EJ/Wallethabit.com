@@ -23,8 +23,7 @@ type ExternalNavItem = {
 
 type NavItem = InternalNavItem | ExternalNavItem
 
-const navItems: NavItem[] = [
-  { type: 'internal', to: '/', label: 'Start', end: true },
+const baseNavItems: NavItem[] = [
   { type: 'external', href: '/app/', label: 'Launch app' },
   { type: 'internal', to: '/habits', label: 'Habits', accent: true },
   {
@@ -149,6 +148,14 @@ export default function Layout() {
     state: { profile },
     isAuthenticated,
   } = useDemoData()
+
+  const navItems = useMemo<NavItem[]>(() => {
+    const primaryNav: NavItem = isAuthenticated
+      ? { type: 'internal', to: '/dashboard', label: 'Dashboard', end: true }
+      : { type: 'internal', to: '/', label: 'Start', end: true }
+
+    return [primaryNav, ...baseNavItems]
+  }, [isAuthenticated])
 
   const skin = profile.skin ?? 'classic'
   const isUltimate = skin === 'ultimate-budget'
