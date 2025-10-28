@@ -9,6 +9,8 @@
   const ROLLOVER_LAST_PROCESSED_KEY = 'rolloverLastProcessed';
   const NET_WORTH_HISTORY_MONTHS = 12;
   const NET_WORTH_LAST_SNAPSHOT_KEY = 'nwLastSnapshotMonth';
+  const THEME_SETTING_KEY = 'themePreference';
+  const THEME_OPTIONS = ['light', 'dark', 'auto'];
 
   const state = {
     route: 'dashboard',
@@ -16,6 +18,7 @@
     currency: 'EUR',
     categories: [...DEFAULT_CATEGORIES],
     rolloverEnabled: true,
+    theme: 'auto',
     formatter: new Intl.NumberFormat('en', { style: 'currency', currency: 'EUR' })
   };
 
@@ -33,6 +36,7 @@
   let csvModalOpen = false;
   let csvPreviousFocus = null;
   let rolloverProcessingPromise = null;
+  let themeMediaQuery;
 
   document.addEventListener('DOMContentLoaded', init);
 
@@ -40,6 +44,20 @@
     appEl = document.querySelector('.ffapp');
     mainEl = document.getElementById('ffapp-view');
     statusEl = document.getElementById('ffapp-status');
+
+    if (window.matchMedia) {
+      themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      if (themeMediaQuery) {
+        const listener = handleSystemThemeChange;
+        if (typeof themeMediaQuery.addEventListener === 'function') {
+          themeMediaQuery.addEventListener('change', listener);
+        } else if (typeof themeMediaQuery.addListener === 'function') {
+          themeMediaQuery.addListener(listener);
+        }
+      }
+    }
+
+    applyTheme(state.theme);
 
     setupNav();
     setupQuickAdd();
@@ -181,11 +199,48 @@
     });
   }
 
+  function applyTheme(preference) {
+    if (!THEME_OPTIONS.includes(preference)) {
+      preference = 'auto';
+    }
+    state.theme = preference;
+    if (!appEl) {
+      return;
+    }
+    appEl.dataset.theme = preference;
+    updateResolvedTheme();
+  }
+
+  function resolveTheme(preference) {
+    if (preference === 'light' || preference === 'dark') {
+      return preference;
+    }
+    return themeMediaQuery && themeMediaQuery.matches ? 'dark' : 'light';
+  }
+
+  function updateResolvedTheme() {
+    if (!appEl) {
+      return;
+    }
+    const resolved = resolveTheme(state.theme);
+    appEl.dataset.resolvedTheme = resolved;
+    if (appEl.style) {
+      appEl.style.colorScheme = resolved;
+    }
+  }
+
+  function handleSystemThemeChange() {
+    if (state.theme === 'auto') {
+      updateResolvedTheme();
+    }
+  }
+
   async function bootstrapSettings() {
     await FFDB.open();
     const storedCategories = await FFDB.getSetting('categories');
     const storedCurrency = await FFDB.getSetting('currency');
     const storedRollover = await FFDB.getSetting(ROLLOVER_SETTING_KEY);
+    const storedTheme = await FFDB.getSetting(THEME_SETTING_KEY);
     if (Array.isArray(storedCategories) && storedCategories.length) {
       state.categories = storedCategories.slice();
     } else {
@@ -200,6 +255,12 @@
       state.rolloverEnabled = storedRollover;
     } else {
       await FFDB.setSetting(ROLLOVER_SETTING_KEY, state.rolloverEnabled);
+    }
+    if (typeof storedTheme === 'string' && THEME_OPTIONS.includes(storedTheme)) {
+      applyTheme(storedTheme);
+    } else {
+      await FFDB.setSetting(THEME_SETTING_KEY, state.theme);
+      applyTheme(state.theme);
     }
     refreshFormatter();
     await ensureRolloverProcessing();
@@ -909,6 +970,26 @@
   }
 
   async function loadSettings() {
+    const appearanceForm = document.getElementById('ffapp-form-appearance');
+    if (appearanceForm) {
+      const radios = Array.from(appearanceForm.querySelectorAll('input[name="theme"]'));
+      radios.forEach((radio) => {
+        radio.checked = radio.value === state.theme;
+      });
+      if (!appearanceForm.dataset.bound) {
+        appearanceForm.addEventListener('change', async (event) => {
+          const target = event.target;
+          if (!target || target.name !== 'theme') {
+            return;
+          }
+          const value = target.value;
+          const preference = THEME_OPTIONS.includes(value) ? value : 'auto';
+          applyTheme(preference);
+          await FFDB.setSetting(THEME_SETTING_KEY, state.theme);
+        });
+        appearanceForm.dataset.bound = 'true';
+      }
+    }
     const settingsForm = document.getElementById('ffapp-form-settings');
     const currencySelect = settingsForm.querySelector('select[name="currency"]');
     const rolloverToggle = settingsForm.querySelector('input[name="budgetRollover"]');
@@ -1013,12 +1094,18 @@
           const storedCategories = await FFDB.getSetting('categories');
           const storedCurrency = await FFDB.getSetting('currency');
           const storedRollover = await FFDB.getSetting(ROLLOVER_SETTING_KEY);
+          const storedTheme = await FFDB.getSetting(THEME_SETTING_KEY);
           state.categories = Array.isArray(storedCategories) ? storedCategories : [...DEFAULT_CATEGORIES];
           state.currency = typeof storedCurrency === 'string' ? storedCurrency : 'EUR';
           state.rolloverEnabled = typeof storedRollover === 'boolean' ? storedRollover : true;
+          state.theme = typeof storedTheme === 'string' && THEME_OPTIONS.includes(storedTheme) ? storedTheme : 'auto';
           if (typeof storedRollover !== 'boolean') {
             await FFDB.setSetting(ROLLOVER_SETTING_KEY, state.rolloverEnabled);
           }
+          if (typeof storedTheme !== 'string' || !THEME_OPTIONS.includes(storedTheme)) {
+            await FFDB.setSetting(THEME_SETTING_KEY, state.theme);
+          }
+          applyTheme(state.theme);
           refreshFormatter();
           const budgets = await FFDB.getAll('budgets');
           let earliestMonth = null;
@@ -1064,10 +1151,13 @@
         state.categories = [...DEFAULT_CATEGORIES];
         state.currency = 'EUR';
         state.rolloverEnabled = true;
+        state.theme = 'auto';
+        applyTheme(state.theme);
         refreshFormatter();
         await FFDB.setSetting('categories', state.categories);
         await FFDB.setSetting('currency', state.currency);
         await FFDB.setSetting(ROLLOVER_SETTING_KEY, state.rolloverEnabled);
+        await FFDB.setSetting(THEME_SETTING_KEY, state.theme);
         await FFDB.setSetting(ROLLOVER_LAST_PROCESSED_KEY, previousMonthValue(isoMonth(new Date())));
         await updateNetWorthStatus();
         refreshCategoryInputs();

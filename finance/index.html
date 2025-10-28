@@ -290,6 +290,28 @@
   <template id="tpl-settings">
     <section class="ffapp-section">
       <div class="ffapp-card">
+        <h2>Appearance</h2>
+        <form id="ffapp-form-appearance" class="ffapp-form" aria-label="Appearance settings">
+          <fieldset class="ffapp-fieldset">
+            <legend id="ffapp-theme-legend">Theme</legend>
+            <div class="ffapp-segmented" role="radiogroup" aria-labelledby="ffapp-theme-legend">
+              <label class="ffapp-segment">
+                <input type="radio" name="theme" value="light">
+                <span>Light</span>
+              </label>
+              <label class="ffapp-segment">
+                <input type="radio" name="theme" value="dark">
+                <span>Dark</span>
+              </label>
+              <label class="ffapp-segment">
+                <input type="radio" name="theme" value="auto">
+                <span>Auto</span>
+              </label>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+      <div class="ffapp-card">
         <h2>Preferences</h2>
         <form id="ffapp-form-settings" class="ffapp-form">
           <label class="ffapp-field">Currency
