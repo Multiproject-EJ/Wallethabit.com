@@ -26,6 +26,7 @@ import BillsTracker from './pages/BillsTracker'
 import Auth from './pages/Auth'
 import Account from './pages/Account'
 import MobileModule from './pages/MobileModule'
+import Affirmation from './pages/Affirmation'
 import { useDemoData } from './lib/demoDataStore'
 import { useSupabaseApp } from './lib/supabaseDataStore'
 
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="auth" element={<Auth />} />
           <Route path="account" element={<Account />} />
+          <Route path="affirmation" element={<Affirmation />} />
           <Route path="update" element={<UpdateHub />} />
           <Route path="budget" element={<Budget />} />
           <Route path="debt" element={<Debt />} />

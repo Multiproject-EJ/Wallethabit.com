@@ -127,6 +127,13 @@ export default function Account() {
                   <p className="text-sm text-slate-600">
                     Upgrade plans will unlock these premium experiences when Stripe checkout launches.
                   </p>
+                  <Link
+                    to="/affirmation"
+                    className="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-brand hover:bg-white hover:shadow-sm"
+                  >
+                    <p className="text-base font-semibold text-slate-900">Affirmations</p>
+                    <p className="mt-1 text-sm text-slate-600">Visit your daily affirmation space.</p>
+                  </Link>
                   {lockedModules.length === 0 ? (
                     <p className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
                       Everything is unlocked for this account.
