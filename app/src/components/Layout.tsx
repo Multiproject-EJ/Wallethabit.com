@@ -25,6 +25,7 @@ type NavItem = InternalNavItem | ExternalNavItem
 
 const navItems: NavItem[] = [
   { type: 'internal', to: '/', label: 'Start', end: true },
+  { type: 'external', href: '/app/', label: 'Launch app' },
   { type: 'external', href: 'https://www.ThriftPath.com', label: 'ThriftPath.com' },
   { type: 'internal', to: '/habits', label: 'Habits', accent: true },
   {
