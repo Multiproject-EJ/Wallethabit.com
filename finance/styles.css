@@ -149,6 +149,52 @@
   font-size: 0.95rem;
 }
 
+.ffapp-toggle {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ffapp-input-toggle {
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--ffapp-border);
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease, border 0.2s ease;
+}
+
+.ffapp-input-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ffapp-muted);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.ffapp-input-toggle:checked {
+  background: rgba(79, 142, 247, 0.35);
+  border-color: var(--ffapp-accent);
+}
+
+.ffapp-input-toggle:checked::after {
+  transform: translateX(18px);
+  background: var(--ffapp-accent);
+}
+
+.ffapp-input-toggle:focus-visible {
+  outline: 2px solid var(--ffapp-accent);
+  outline-offset: 2px;
+}
+
 .ffapp-input {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--ffapp-border);
@@ -183,6 +229,44 @@
 
 .ffapp-table tbody tr:hover {
   background: rgba(79, 142, 247, 0.1);
+}
+
+.ffapp-table-budget th:nth-child(2),
+.ffapp-table-budget th:nth-child(3),
+.ffapp-table-budget th:nth-child(4),
+.ffapp-table-budget th:nth-child(5),
+.ffapp-table-budget td:nth-child(2),
+.ffapp-table-budget td:nth-child(3),
+.ffapp-table-budget td:nth-child(4),
+.ffapp-table-budget td:nth-child(5) {
+  text-align: right;
+}
+
+.ffapp-budget-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid transparent;
+}
+
+.ffapp-budget-status.is-positive {
+  color: var(--ffapp-success);
+  border-color: rgba(83, 211, 124, 0.25);
+  background: rgba(83, 211, 124, 0.15);
+}
+
+.ffapp-budget-status.is-negative {
+  color: var(--ffapp-danger);
+  border-color: rgba(245, 92, 122, 0.25);
+  background: rgba(245, 92, 122, 0.15);
+}
+
+.ffapp-budget-status.is-neutral {
+  color: var(--ffapp-muted);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .ffapp-footer {
