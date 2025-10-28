@@ -1,1 +1,1 @@
-feat(budget): add envelope rollover across months
+feat(nw): add 12m net worth snapshots and sparkline

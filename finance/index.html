@@ -102,6 +102,12 @@
           <h2 data-role="remaining-label">Remaining</h2>
           <p class="ffapp-metric" data-metric="remaining">0</p>
         </article>
+        <article class="ffapp-card ffapp-card-chart">
+          <h2>Net Worth (12m)</h2>
+          <div class="ffapp-chart">
+            <canvas id="ffapp-networth-sparkline" aria-hidden="true"></canvas>
+          </div>
+        </article>
       </div>
       <div class="ffapp-card">
         <header class="ffapp-card-header">
@@ -283,6 +289,7 @@
           <label class="ffapp-secondary ffapp-file">
             Import JSON<input type="file" id="ffapp-import" accept="application/json">
           </label>
+          <button type="button" class="ffapp-secondary" id="ffapp-rebuild-networth">Rebuild net worth history</button>
           <button type="button" class="ffapp-danger" id="ffapp-wipe">Wipe data</button>
         </div>
         <textarea class="ffapp-input" id="ffapp-export-output" rows="4" readonly placeholder="Backup data will appear here"></textarea>

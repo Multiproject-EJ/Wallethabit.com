@@ -7,6 +7,8 @@
   const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
   const ROLLOVER_SETTING_KEY = 'budgetRolloverEnabled';
   const ROLLOVER_LAST_PROCESSED_KEY = 'rolloverLastProcessed';
+  const NET_WORTH_HISTORY_MONTHS = 12;
+  const NET_WORTH_LAST_SNAPSHOT_KEY = 'nwLastSnapshotMonth';
 
   const state = {
     route: 'dashboard',
@@ -325,6 +327,7 @@
       });
     }
     await updateNetWorthStatus();
+    await renderNetWorthSparkline();
   }
 
   async function loadTransactions() {
@@ -850,6 +853,7 @@
     const importInput = document.getElementById('ffapp-import');
     const wipeBtn = document.getElementById('ffapp-wipe');
     const output = document.getElementById('ffapp-export-output');
+    const rebuildBtn = document.getElementById('ffapp-rebuild-networth');
 
     if (!exportBtn.dataset.bound) {
       exportBtn.addEventListener('click', async () => {
@@ -900,6 +904,20 @@
         }
       });
       importInput.dataset.bound = 'true';
+    }
+
+    if (rebuildBtn && !rebuildBtn.dataset.bound) {
+      rebuildBtn.addEventListener('click', async () => {
+        rebuildBtn.disabled = true;
+        try {
+          await rebuildNetWorthHistory();
+        } catch (error) {
+          console.error(error);
+        } finally {
+          rebuildBtn.disabled = false;
+        }
+      });
+      rebuildBtn.dataset.bound = 'true';
     }
 
     if (!wipeBtn.dataset.bound) {
@@ -967,16 +985,256 @@
   }
 
   async function updateNetWorthStatus() {
+    const { netWorth } = await computeNetWorthTotals();
+    await ensureCurrentMonthNetWorthSnapshot(netWorth);
+    if (statusEl) {
+      statusEl.textContent = `Net worth: ${money(netWorth)}`;
+    }
+  }
+
+  async function renderNetWorthSparkline() {
+    if (!mainEl) return;
+    const canvas = mainEl.querySelector('#ffapp-networth-sparkline');
+    if (!canvas) return;
+    const snapshots = await FFDB.getAll('nw_snapshots');
+    const sorted = snapshots
+      .filter((snapshot) => snapshot && typeof snapshot.ym === 'string')
+      .sort((a, b) => compareMonth(a.ym, b.ym));
+    const recent = sorted.slice(-NET_WORTH_HISTORY_MONTHS);
+    drawNetWorthSparkline(canvas, recent);
+  }
+
+  async function computeNetWorthTotals() {
     const [assets, liabilities] = await Promise.all([
       FFDB.getAll('assets'),
       FFDB.getAll('liabilities')
     ]);
     const totalAssets = sum(assets.map((asset) => Number(asset.value) || 0));
     const totalLiabilities = sum(liabilities.map((item) => Number(item.value) || 0));
-    const net = totalAssets - totalLiabilities;
-    if (statusEl) {
-      statusEl.textContent = `Net worth: ${money(net)}`;
+    const netWorth = totalAssets - totalLiabilities;
+    return {
+      totalAssets: roundCurrency(totalAssets),
+      totalLiabilities: roundCurrency(totalLiabilities),
+      netWorth: roundCurrency(netWorth)
+    };
+  }
+
+  async function ensureCurrentMonthNetWorthSnapshot(netWorth) {
+    const ym = isoMonth(new Date());
+    const rounded = roundCurrency(netWorth);
+    const [lastRecorded, snapshots] = await Promise.all([
+      FFDB.getSetting(NET_WORTH_LAST_SNAPSHOT_KEY),
+      FFDB.getAll('nw_snapshots')
+    ]);
+    const existing = snapshots.find((snapshot) => snapshot && snapshot.ym === ym);
+    if (existing) {
+      if (roundCurrency(existing.netWorth) !== rounded) {
+        await FFDB.put('nw_snapshots', { ...existing, netWorth: rounded });
+      }
+      if (lastRecorded !== ym) {
+        await FFDB.setSetting(NET_WORTH_LAST_SNAPSHOT_KEY, ym);
+      }
+      return;
     }
+    await FFDB.put('nw_snapshots', { id: uuid(), ym, netWorth: rounded });
+    if (lastRecorded !== ym) {
+      await FFDB.setSetting(NET_WORTH_LAST_SNAPSHOT_KEY, ym);
+    }
+    await pruneNetWorthSnapshots();
+  }
+
+  async function pruneNetWorthSnapshots(limit = NET_WORTH_HISTORY_MONTHS) {
+    if (!Number.isFinite(limit) || limit <= 0) {
+      return;
+    }
+    const snapshots = await FFDB.getAll('nw_snapshots');
+    if (!snapshots.length || snapshots.length <= limit) {
+      return;
+    }
+    const sorted = snapshots
+      .filter((snapshot) => snapshot && typeof snapshot.ym === 'string')
+      .sort((a, b) => compareMonth(a.ym, b.ym));
+    const toRemove = sorted.slice(0, Math.max(0, sorted.length - limit));
+    await Promise.all(toRemove.map((snapshot) => FFDB.del('nw_snapshots', snapshot.id)));
+  }
+
+  async function rebuildNetWorthHistory() {
+    const { netWorth } = await computeNetWorthTotals();
+    const months = getRecentMonths(NET_WORTH_HISTORY_MONTHS);
+    const snapshots = await FFDB.getAll('nw_snapshots');
+    const rounded = roundCurrency(netWorth);
+    const operations = [];
+
+    months.forEach((ym) => {
+      const existing = snapshots.find((snapshot) => snapshot && snapshot.ym === ym);
+      if (existing) {
+        if (roundCurrency(existing.netWorth) !== rounded) {
+          operations.push(FFDB.put('nw_snapshots', { ...existing, netWorth: rounded }));
+        }
+      } else {
+        operations.push(FFDB.put('nw_snapshots', { id: uuid(), ym, netWorth: rounded }));
+      }
+    });
+
+    snapshots.forEach((snapshot) => {
+      if (snapshot && !months.includes(snapshot.ym)) {
+        operations.push(FFDB.del('nw_snapshots', snapshot.id));
+      }
+    });
+
+    await Promise.all(operations);
+    if (months.length) {
+      await FFDB.setSetting(NET_WORTH_LAST_SNAPSHOT_KEY, months[months.length - 1]);
+    }
+    await ensureCurrentMonthNetWorthSnapshot(rounded);
+    if (statusEl) {
+      statusEl.textContent = `Net worth: ${money(rounded)}`;
+    }
+    if (state.route === 'dashboard') {
+      await renderNetWorthSparkline();
+    }
+  }
+
+  function drawNetWorthSparkline(canvas, snapshots) {
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = Math.max(rect.width, 160);
+    const displayHeight = Math.max(rect.height, 80);
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+    if (typeof context.setTransform === 'function') {
+      context.setTransform(1, 0, 0, 1, 0, 0);
+    }
+    context.scale(dpr, dpr);
+    context.clearRect(0, 0, displayWidth, displayHeight);
+
+    const accent = getAppColor('--ffapp-accent', '#4f8ef7');
+    const muted = getAppColor('--ffapp-muted', '#9aa1b3');
+    const surface = getAppColor('--ffapp-surface', 'rgba(30, 32, 38, 0.9)');
+    const text = getAppColor('--ffapp-text', '#f3f5f9');
+    const font = `12px ${getAppFontFamily()}`;
+
+    context.font = font;
+    context.textBaseline = 'middle';
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
+
+    if (!snapshots.length) {
+      context.fillStyle = muted;
+      context.fillText('No data yet', 12, displayHeight / 2);
+      return;
+    }
+
+    const values = snapshots.map((snapshot) => Number(snapshot.netWorth) || 0);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    const paddingX = 12;
+    const paddingY = 12;
+    const chartWidth = Math.max(displayWidth - paddingX * 2, 1);
+    const chartHeight = Math.max(displayHeight - paddingY * 2, 1);
+    const stepX = snapshots.length > 1 ? chartWidth / (snapshots.length - 1) : 0;
+
+    const points = snapshots.map((snapshot, index) => {
+      const value = Number(snapshot.netWorth) || 0;
+      const ratio = range === 0 ? 0.5 : (value - min) / range;
+      const x = paddingX + (snapshots.length === 1 ? chartWidth / 2 : stepX * index);
+      const y = paddingY + chartHeight - ratio * chartHeight;
+      return { x, y, value };
+    });
+
+    context.strokeStyle = accent;
+    context.lineWidth = 2;
+    context.beginPath();
+    points.forEach((point, index) => {
+      if (index === 0) {
+        context.moveTo(point.x, point.y);
+      } else {
+        context.lineTo(point.x, point.y);
+      }
+    });
+    context.stroke();
+
+    context.fillStyle = accent;
+    points.forEach((point) => {
+      context.beginPath();
+      context.arc(point.x, point.y, 3, 0, Math.PI * 2);
+      context.fill();
+    });
+
+    const last = points[points.length - 1];
+    const label = money(last.value);
+    const textMetrics = context.measureText(label);
+    const labelPaddingX = 6;
+    const labelPaddingY = 4;
+    const labelWidth = textMetrics.width + labelPaddingX * 2;
+    const labelHeight = 20;
+    let labelX = last.x + 8;
+    if (labelX + labelWidth > displayWidth - 4) {
+      labelX = displayWidth - labelWidth - 4;
+    }
+    if (labelX < paddingX) {
+      labelX = paddingX;
+    }
+    let labelCenterY = last.y;
+    if (labelCenterY - labelHeight / 2 < 4) {
+      labelCenterY = 4 + labelHeight / 2;
+    } else if (labelCenterY + labelHeight / 2 > displayHeight - 4) {
+      labelCenterY = displayHeight - 4 - labelHeight / 2;
+    }
+
+    drawRoundedRectPath(context, labelX, labelCenterY - labelHeight / 2, labelWidth, labelHeight, 6);
+    context.fillStyle = surface;
+    context.fill();
+    context.strokeStyle = accent;
+    context.lineWidth = 1;
+    context.stroke();
+
+    context.fillStyle = text;
+    context.fillText(label, labelX + labelPaddingX, labelCenterY);
+  }
+
+  function drawRoundedRectPath(context, x, y, width, height, radius) {
+    const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+    context.beginPath();
+    context.moveTo(x + r, y);
+    context.lineTo(x + width - r, y);
+    context.quadraticCurveTo(x + width, y, x + width, y + r);
+    context.lineTo(x + width, y + height - r);
+    context.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    context.lineTo(x + r, y + height);
+    context.quadraticCurveTo(x, y + height, x, y + height - r);
+    context.lineTo(x, y + r);
+    context.quadraticCurveTo(x, y, x + r, y);
+    context.closePath();
+  }
+
+  function getRecentMonths(limit) {
+    const months = [];
+    if (!Number.isFinite(limit) || limit <= 0) {
+      return months;
+    }
+    const now = new Date();
+    for (let i = limit - 1; i >= 0; i -= 1) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(isoMonth(date));
+    }
+    return months;
+  }
+
+  function getAppColor(variable, fallback) {
+    if (!appEl) return fallback;
+    const styles = getComputedStyle(appEl);
+    const value = styles.getPropertyValue(variable) || styles[variable];
+    return value ? value.trim() : fallback;
+  }
+
+  function getAppFontFamily() {
+    if (!appEl) return 'system-ui, sans-serif';
+    const styles = getComputedStyle(appEl);
+    return styles.fontFamily || 'system-ui, sans-serif';
   }
 
   function openCsvModal() {
