@@ -1,22 +1,99 @@
 .ffapp {
-  --ffapp-bg: #121418;
-  --ffapp-surface: #1e2026;
-  --ffapp-border: #2d3139;
-  --ffapp-text: #f3f5f9;
-  --ffapp-muted: #9aa1b3;
-  --ffapp-accent: #4f8ef7;
+  --ffapp-bg: #0f141e;
+  --ffapp-panel: #181d2a;
+  --ffapp-ink: #f4f6fb;
+  --ffapp-muted: #9ba3b7;
+  --ffapp-line: #262d3c;
+  --ffapp-brand: #4f8ef7;
   --ffapp-danger: #f55c7a;
-  --ffapp-success: #53d37c;
-  color: var(--ffapp-text);
-  background: var(--ffapp-bg);
+  --ffapp-success: #4bc487;
+  --bg: var(--site-bg, var(--ffapp-bg));
+  --panel: var(--site-panel, var(--ffapp-panel));
+  --ink: var(--site-ink, var(--ffapp-ink));
+  --muted: var(--ffapp-muted);
+  --line: var(--ffapp-line);
+  --brand: var(--site-accent, var(--ffapp-brand));
+  --danger: var(--ffapp-danger);
+  color: var(--ink);
+  background: var(--bg);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.ffapp *, .ffapp *::before, .ffapp *::after {
+.ffapp *,
+.ffapp *::before,
+.ffapp *::after {
   box-sizing: border-box;
+}
+
+.ffapp[data-theme="dark"],
+.ffapp:not([data-theme]) {
+  --ffapp-bg: #0f141e;
+  --ffapp-panel: #181d2a;
+  --ffapp-ink: #f4f6fb;
+  --ffapp-muted: #9ba3b7;
+  --ffapp-line: #262d3c;
+  --ffapp-brand: #4f8ef7;
+  --ffapp-danger: #f55c7a;
+  --ffapp-success: #4bc487;
+}
+
+.ffapp[data-theme="light"] {
+  --ffapp-bg: #f6f8ff;
+  --ffapp-panel: #ffffff;
+  --ffapp-ink: #1a2134;
+  --ffapp-muted: #6b7385;
+  --ffapp-line: #d8dfec;
+  --ffapp-brand: #2d6ae3;
+  --ffapp-danger: #c73956;
+  --ffapp-success: #1f9e72;
+}
+
+.ffapp[data-theme="auto"] {
+  --ffapp-bg: #0f141e;
+  --ffapp-panel: #181d2a;
+  --ffapp-ink: #f4f6fb;
+  --ffapp-muted: #9ba3b7;
+  --ffapp-line: #262d3c;
+  --ffapp-brand: #4f8ef7;
+  --ffapp-danger: #f55c7a;
+  --ffapp-success: #4bc487;
+}
+
+@media (prefers-color-scheme: light) {
+  .ffapp[data-theme="auto"] {
+    --ffapp-bg: #f6f8ff;
+    --ffapp-panel: #ffffff;
+    --ffapp-ink: #1a2134;
+    --ffapp-muted: #6b7385;
+    --ffapp-line: #d8dfec;
+    --ffapp-brand: #2d6ae3;
+    --ffapp-danger: #c73956;
+    --ffapp-success: #1f9e72;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .ffapp[data-theme="auto"] {
+    --ffapp-bg: #0f141e;
+    --ffapp-panel: #181d2a;
+    --ffapp-ink: #f4f6fb;
+    --ffapp-muted: #9ba3b7;
+    --ffapp-line: #262d3c;
+    --ffapp-brand: #4f8ef7;
+    --ffapp-danger: #f55c7a;
+    --ffapp-success: #4bc487;
+  }
+}
+
+.ffapp[data-resolved-theme="light"] {
+  color-scheme: light;
+}
+
+.ffapp[data-resolved-theme="dark"] {
+  color-scheme: dark;
 }
 
 .ffapp-header {
@@ -24,12 +101,13 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: rgba(18, 20, 24, 0.92);
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid var(--ffapp-border);
+  border-bottom: 1px solid var(--line);
 }
 
 .ffapp-brand {
@@ -46,27 +124,29 @@
 
 .ffapp-tab {
   background: transparent;
-  border: 1px solid var(--ffapp-border);
+  border: 1px solid var(--line);
   border-radius: 12px;
   color: inherit;
   padding: 12px;
   min-height: 44px;
   cursor: pointer;
-  transition: border 0.2s ease, background 0.2s ease;
+  transition: border 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .ffapp-tab:hover {
-  border-color: var(--ffapp-accent);
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .ffapp-tab:focus-visible {
-  outline: 2px solid var(--ffapp-accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
 .ffapp-tab.is-active {
-  border-color: var(--ffapp-accent);
-  background: rgba(79, 142, 247, 0.14);
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  color: var(--ink);
 }
 
 .ffapp-main {
@@ -74,6 +154,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 
 .ffapp-section {
@@ -89,14 +170,14 @@
 }
 
 .ffapp-card {
-  background: var(--ffapp-surface);
-  border: 1px solid var(--ffapp-border);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 16px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--bg) 65%, transparent);
 }
 
 .ffapp-card-chart {
@@ -132,8 +213,9 @@
   gap: 12px;
   padding: 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--ffapp-border);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  border: 1px solid var(--line);
 }
 
 .ffapp-chart {
@@ -155,6 +237,8 @@
 }
 
 .ffapp-form {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
@@ -163,6 +247,20 @@
   flex-direction: column;
   gap: 6px;
   font-size: 0.95rem;
+}
+
+.ffapp-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ffapp-fieldset legend {
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .ffapp-toggle {
@@ -177,8 +275,8 @@
   width: 44px;
   height: 24px;
   border-radius: 999px;
-  border: 1px solid var(--ffapp-border);
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 40%, var(--bg));
   position: relative;
   cursor: pointer;
   transition: background 0.2s ease, border 0.2s ease;
@@ -192,37 +290,42 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--ffapp-muted);
+  background: var(--muted);
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .ffapp-input-toggle:checked {
-  background: rgba(79, 142, 247, 0.35);
-  border-color: var(--ffapp-accent);
+  background: color-mix(in srgb, var(--brand) 35%, transparent);
+  border-color: var(--brand);
 }
 
 .ffapp-input-toggle:checked::after {
   transform: translateX(18px);
-  background: var(--ffapp-accent);
+  background: var(--brand);
 }
 
 .ffapp-input-toggle:focus-visible {
-  outline: 2px solid var(--ffapp-accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
 .ffapp-input {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--ffapp-border);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  color: var(--ffapp-text);
+  color: var(--ink);
   padding: 10px 12px;
   min-height: 44px;
   width: 100%;
 }
 
+.ffapp-input::placeholder {
+  color: var(--muted);
+}
+
 .ffapp-input:focus-visible {
-  outline: 2px solid var(--ffapp-accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -239,7 +342,7 @@
 .ffapp-table td {
   padding: 10px;
   text-align: left;
-  border-bottom: 1px solid var(--ffapp-border);
+  border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
 
@@ -253,7 +356,8 @@
 }
 
 .ffapp-table-investments .ffapp-input-price {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
   border-radius: 8px;
   padding: 6px 8px;
   min-height: 36px;
@@ -262,7 +366,8 @@
 }
 
 .ffapp-investment-summary-row {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
 }
 
 .ffapp-investment-summary-row td {
@@ -273,7 +378,7 @@
 .ffapp-table-empty {
   padding: 24px 10px;
   text-align: center;
-  color: var(--ffapp-muted);
+  color: var(--muted);
 }
 
 .ffapp-pnl-positive {
@@ -281,15 +386,15 @@
 }
 
 .ffapp-pnl-negative {
-  color: var(--ffapp-danger);
+  color: var(--danger);
 }
 
 .ffapp-pnl-neutral {
-  color: var(--ffapp-muted);
+  color: var(--muted);
 }
 
 .ffapp-table tbody tr:hover {
-  background: rgba(79, 142, 247, 0.1);
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
 }
 
 .ffapp-table-budget th:nth-child(2),
@@ -309,25 +414,30 @@
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.85rem;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
   border: 1px solid transparent;
 }
 
 .ffapp-budget-status.is-positive {
   color: var(--ffapp-success);
-  border-color: rgba(83, 211, 124, 0.25);
-  background: rgba(83, 211, 124, 0.15);
+  border-color: color-mix(in srgb, var(--ffapp-success) 25%, transparent);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--ffapp-success) 15%, transparent);
 }
 
 .ffapp-budget-status.is-negative {
-  color: var(--ffapp-danger);
-  border-color: rgba(245, 92, 122, 0.25);
-  background: rgba(245, 92, 122, 0.15);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
 }
 
 .ffapp-budget-status.is-neutral {
-  color: var(--ffapp-muted);
-  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  border-color: color-mix(in srgb, var(--muted) 25%, transparent);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
 }
 
 .ffapp-footer {
@@ -337,14 +447,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-top: 1px solid var(--ffapp-border);
-  background: rgba(18, 20, 24, 0.92);
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
   backdrop-filter: blur(12px);
 }
 
 .ffapp-status {
   font-size: 0.95rem;
-  color: var(--ffapp-muted);
+  color: var(--muted);
 }
 
 .ffapp-footer-actions {
@@ -367,11 +478,11 @@
   min-height: 44px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, border 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, border 0.2s ease, transform 0.2s ease, color 0.2s ease;
 }
 
 .ffapp-primary {
-  background: var(--ffapp-accent);
+  background: var(--brand);
   color: #fff;
 }
 
@@ -381,33 +492,34 @@
 
 .ffapp-secondary {
   background: transparent;
-  color: var(--ffapp-text);
-  border-color: var(--ffapp-border);
+  color: var(--ink);
+  border-color: var(--line);
 }
 
 .ffapp-secondary:hover {
-  border-color: var(--ffapp-accent);
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .ffapp-danger {
   background: transparent;
-  color: var(--ffapp-danger);
-  border-color: var(--ffapp-danger);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .ffapp-danger:hover {
-  background: rgba(245, 92, 122, 0.12);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
 
 .ffapp-list button {
   background: transparent;
-  color: var(--ffapp-muted);
-  border-color: var(--ffapp-border);
+  color: var(--muted);
+  border-color: var(--line);
 }
 
 .ffapp-list button:hover {
-  border-color: var(--ffapp-accent);
-  color: var(--ffapp-accent);
+  border-color: var(--brand);
+  color: var(--brand);
 }
 
 .ffapp-split {
@@ -437,46 +549,88 @@
   padding: 4px 8px;
   border-radius: 999px;
   font-size: 0.85rem;
-  background: rgba(79, 142, 247, 0.16);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
 }
 
-.ffapp-empty {
-  text-align: center;
-  color: var(--ffapp-muted);
-  padding: 16px;
+.ffapp-segmented {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  width: fit-content;
+}
+
+.ffapp-segment {
+  position: relative;
+  display: flex;
+}
+
+.ffapp-segment input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ffapp-segment span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 10px;
+  min-width: 72px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ffapp-segment input[type="radio"]:checked + span {
+  background: var(--brand);
+  color: #fff;
+}
+
+.ffapp-segment input[type="radio"]:focus-visible + span {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 .ffapp-modal {
   position: fixed;
   inset: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 24px;
   z-index: 30;
 }
 
-.ffapp-modal[aria-hidden="true"] {
-  display: none;
+.ffapp-modal[aria-hidden="false"] {
+  display: flex;
 }
 
 .ffapp-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(10, 12, 18, 0.7);
+  background: var(--bg);
+  background: color-mix(in srgb, #000 40%, var(--bg));
   backdrop-filter: blur(6px);
 }
 
 .ffapp-modal-dialog {
   position: relative;
-  background: var(--ffapp-surface);
-  border: 1px solid var(--ffapp-border);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 20px;
   width: min(720px, 100%);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 24px 48px color-mix(in srgb, var(--bg) 60%, transparent);
 }
 
 .ffapp-modal-header {
@@ -485,12 +639,12 @@
   justify-content: space-between;
   gap: 12px;
   padding: 24px 24px 16px;
-  border-bottom: 1px solid var(--ffapp-border);
+  border-bottom: 1px solid var(--line);
 }
 
 .ffapp-modal-description {
   margin: 0 0 16px;
-  color: var(--ffapp-muted);
+  color: var(--muted);
 }
 
 .ffapp-modal-scroll {
@@ -517,11 +671,11 @@
 .ffapp-alert {
   min-height: 24px;
   font-size: 0.9rem;
-  color: var(--ffapp-muted);
+  color: var(--muted);
 }
 
 .ffapp-alert.is-error {
-  color: var(--ffapp-danger);
+  color: var(--danger);
 }
 
 .ffapp-alert.is-success {
@@ -529,10 +683,11 @@
 }
 
 .ffapp-modal-preview {
-  border: 1px solid var(--ffapp-border);
+  border: 1px solid var(--line);
   border-radius: 16px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 85%, transparent);
 }
 
 .ffapp-modal-footer {
@@ -546,21 +701,22 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  border: 1px solid var(--ffapp-border);
+  border: 1px solid var(--line);
   background: transparent;
-  color: var(--ffapp-muted);
+  color: var(--muted);
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
+  transition: border 0.2s ease, color 0.2s ease;
 }
 
 .ffapp-modal-close:hover {
-  color: var(--ffapp-text);
-  border-color: var(--ffapp-accent);
+  color: var(--ink);
+  border-color: var(--brand);
 }
 
 .ffapp-modal-close:focus-visible {
-  outline: 2px solid var(--ffapp-accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 

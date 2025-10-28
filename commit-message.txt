@@ -1,1 +1,1 @@
-feat(inv): manual prices, portfolio MV and P&L summary
+feat(theme): add light/dark/auto with brand tokens
