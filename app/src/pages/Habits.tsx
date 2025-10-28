@@ -12,6 +12,48 @@ type HabitIdea = {
   steps: string[]
 }
 
+type ThriftPathHighlight = {
+  title: string
+  focus: string
+  description: string
+  takeaway: string
+  linkLabel: string
+  link: string
+}
+
+const thriftPathHighlights: ThriftPathHighlight[] = [
+  {
+    title: 'No-spend warmup sprint',
+    focus: 'Momentum builder',
+    description:
+      'Pair a 5-day no-spend focus with micro-celebrations so the first week feels motivating instead of restrictive.',
+    takeaway:
+      'ThriftPath recommends naming the cash you protect and posting a nightly win recap to keep the sprint social.',
+    linkLabel: 'See how ThriftPath runs the sprint',
+    link: 'https://www.ThriftPath.com',
+  },
+  {
+    title: 'Micro-matching savings streak',
+    focus: 'Automation',
+    description:
+      'Match every transfer toward debt or savings with a $5 boost—tiny amounts add up when the streak stays alive.',
+    takeaway:
+      'Use your Habit Dashboard to log the streak and ThriftPath’s calendar template to plan the next match in advance.',
+    linkLabel: 'Download the ThriftPath tracker',
+    link: 'https://www.ThriftPath.com',
+  },
+  {
+    title: 'Friday reflection prompt pack',
+    focus: 'Accountability',
+    description:
+      'Three reflection prompts guide a quick weekly retro so you close every week knowing the smartest next move.',
+    takeaway:
+      'Stack it with WalletHabit’s Friday standup ritual and borrow ThriftPath’s questions to keep insights flowing.',
+    linkLabel: 'Grab the prompt pack on ThriftPath',
+    link: 'https://www.ThriftPath.com',
+  },
+]
+
 const habitIdeas: HabitIdea[] = [
   {
     name: 'Create a bills-only account',
@@ -229,6 +271,72 @@ export default function Habits() {
               Launch the Habit Designer
             </a>
           </div>
+        </div>
+      </section>
+
+      <section className="space-y-10 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm sm:p-10">
+        <div className="flex flex-col gap-4 text-center sm:text-left">
+          <span className="inline-flex items-center justify-center gap-2 self-center rounded-full bg-slate-100 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 sm:self-start">
+            ThriftPath spotlight
+          </span>
+          <div className="flex flex-col gap-3 text-center sm:max-w-3xl sm:text-left">
+            <h2 className="text-2xl font-semibold text-navy sm:text-3xl">Best of ThriftPath habits & hacks</h2>
+            <p className="text-sm text-navy/70 sm:text-base">
+              We pulled the most-loved ThriftPath playbooks into WalletHabit so you can try their crowd-tested rituals without leaving your dashboard. Borrow the moves, remix them, and keep the wins visible inside your Habit Dashboard.
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-3 sm:flex-row">
+            <a
+              href="https://www.ThriftPath.com"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500"
+            >
+              Visit ThriftPath.com
+            </a>
+            <span className="text-xs text-navy/60">Community favorites refreshed weekly.</span>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {thriftPathHighlights.map((highlight) => (
+            <article
+              key={highlight.title}
+              className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-emerald-50 p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md"
+            >
+              <div className="flex items-center justify-between">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                  {highlight.focus}
+                </span>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-navy">{highlight.title}</h3>
+                <p className="text-sm text-navy/80">{highlight.description}</p>
+                <p className="text-sm text-navy/60">{highlight.takeaway}</p>
+              </div>
+              <a
+                href={highlight.link}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 transition hover:text-emerald-600"
+              >
+                {highlight.linkLabel}
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 15L15 5" />
+                  <path d="M7 5h8v8" />
+                </svg>
+              </a>
+            </article>
+          ))}
         </div>
       </section>
 
