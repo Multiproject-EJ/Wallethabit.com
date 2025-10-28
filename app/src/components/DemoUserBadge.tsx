@@ -186,10 +186,19 @@ export default function DemoUserBadge() {
     )
   }
 
+  const expandableDesktopItemClass =
+    'hidden sm:group-hover:flex sm:group-focus-within:flex sm:transition sm:duration-150 sm:ease-out'
+
+  const accountLinkClass = `flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
+    isUltimate
+      ? 'border border-[#d9cbb8] text-[#5c7751] hover:border-[#c9b79f] hover:text-[#4f6745]'
+      : 'border border-brand/30 text-brand hover:border-brand hover:text-brand-dark'
+  }`
+
   return (
     <div ref={badgeRef} className="relative">
       <div
-        className={`hidden w-full flex-wrap items-center gap-x-3 gap-y-2 rounded-full border px-5 py-3 text-left text-sm shadow-md transition-colors sm:flex sm:w-auto sm:flex-nowrap sm:gap-4 ${
+        className={`group hidden w-full flex-wrap items-center gap-x-3 gap-y-2 rounded-full border px-5 py-3 text-left text-sm shadow-md transition-colors sm:flex sm:w-auto sm:flex-nowrap sm:gap-4 ${
           isUltimate ? 'border-[#d9cbb8] bg-[#fdf8f0] text-[#4a3a2d]' : 'border-slate-200 bg-white text-slate-900'
         }`}
       >
@@ -221,7 +230,7 @@ export default function DemoUserBadge() {
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:flex-nowrap sm:gap-4 sm:whitespace-nowrap">
           <span
-            className={`w-full text-[14px] font-semibold sm:w-auto ${
+            className={`${expandableDesktopItemClass} w-full text-[14px] font-semibold sm:w-auto sm:items-center ${
               isUltimate ? 'text-[#3b2d20]' : 'text-slate-900'
             }`}
           >
@@ -235,42 +244,22 @@ export default function DemoUserBadge() {
           >
             Community FAQ
           </Link>
-          {supabaseSession ? (
-            <>
-              <span
-                className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                  isUltimate ? 'bg-[#e6d8c6] text-[#5c7751]' : 'bg-brand/10 text-brand'
-                }`}
-              >
-                {planTier}
-              </span>
-              <Link
-                to="/account"
-                className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
-                  isUltimate
-                    ? 'border border-[#d9cbb8] text-[#5c7751] hover:border-[#c9b79f] hover:text-[#4f6745]'
-                    : 'border border-brand/30 text-brand hover:border-brand hover:text-brand-dark'
-                }`}
-              >
-                Account
-              </Link>
-            </>
-          ) : (
-            <Link
-              to="/account"
-              className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide transition ${
-                isUltimate
-                  ? 'border border-[#d9cbb8] text-[#5c7751] hover:border-[#c9b79f] hover:text-[#4f6745]'
-                  : 'border border-brand/30 text-brand hover:border-brand hover:text-brand-dark'
+          {supabaseSession && (
+            <span
+              className={`${expandableDesktopItemClass} flex-shrink-0 items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                isUltimate ? 'bg-[#e6d8c6] text-[#5c7751]' : 'bg-brand/10 text-brand'
               }`}
             >
-              Account
-            </Link>
+              {planTier}
+            </span>
           )}
+          <Link to="/account" className={accountLinkClass}>
+            Account
+          </Link>
           <button
             type="button"
             onClick={handleSignOut}
-            className={`flex-shrink-0 text-[12px] font-semibold transition ${
+            className={`${expandableDesktopItemClass} flex-shrink-0 text-[12px] font-semibold transition ${
               isUltimate ? 'text-[#5c7751] hover:text-[#4f6745]' : 'text-brand hover:text-brand-dark'
             }`}
           >
