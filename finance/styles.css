@@ -243,6 +243,51 @@
   white-space: nowrap;
 }
 
+.ffapp-cell-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ffapp-table-investments thead th {
+  font-weight: 600;
+}
+
+.ffapp-table-investments .ffapp-input-price {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 6px 8px;
+  min-height: 36px;
+  color: inherit;
+  text-align: right;
+}
+
+.ffapp-investment-summary-row {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ffapp-investment-summary-row td {
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.ffapp-table-empty {
+  padding: 24px 10px;
+  text-align: center;
+  color: var(--ffapp-muted);
+}
+
+.ffapp-pnl-positive {
+  color: var(--ffapp-success);
+}
+
+.ffapp-pnl-negative {
+  color: var(--ffapp-danger);
+}
+
+.ffapp-pnl-neutral {
+  color: var(--ffapp-muted);
+}
+
 .ffapp-table tbody tr:hover {
   background: rgba(79, 142, 247, 0.1);
 }

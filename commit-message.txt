@@ -1,1 +1,1 @@
-feat(nw): add 12m net worth snapshots and sparkline
+feat(inv): manual prices, portfolio MV and P&L summary

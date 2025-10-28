@@ -720,55 +720,192 @@
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
-        await FFDB.put('investments', {
+        const priceValue = formData.get('price');
+        const payload = {
           id: uuid(),
           ticker: formData.get('ticker'),
           name: formData.get('name'),
           units: Number(formData.get('units')),
           cost: Number(formData.get('cost'))
-        });
+        };
+        if (priceValue !== null && priceValue !== '') {
+          const parsedPrice = Number(priceValue);
+          if (Number.isFinite(parsedPrice) && parsedPrice >= 0) {
+            payload.price = parsedPrice;
+          }
+        }
+        await FFDB.put('investments', payload);
         form.reset();
         await renderInvestments();
       });
       form.dataset.bound = 'true';
     }
 
+    const resetButton = document.getElementById('ffapp-investment-reset-prices');
+    if (resetButton && !resetButton.dataset.bound) {
+      resetButton.addEventListener('click', async () => {
+        const holdings = await FFDB.getAll('investments');
+        const updates = holdings.filter((holding) => holding.price !== null && holding.price !== undefined && holding.price !== '');
+        if (!updates.length) {
+          await renderInvestments();
+          return;
+        }
+        await Promise.all(updates.map((holding) => FFDB.put('investments', { ...holding, price: null })));
+        await renderInvestments();
+      });
+      resetButton.dataset.bound = 'true';
+    }
+
     await renderInvestments();
   }
 
   async function renderInvestments() {
-    const list = mainEl.querySelector('[data-list="investments"]');
-    if (!list) return;
+    const tableBody = mainEl.querySelector('[data-list="investments"]');
+    const summarySection = mainEl.querySelector('[data-role="investment-summary"]');
+    if (!tableBody || !summarySection) return;
+    const summaryCost = summarySection.querySelector('[data-summary="cost"]');
+    const summaryMarketValue = summarySection.querySelector('[data-summary="marketValue"]');
+    const summaryUnrealized = summarySection.querySelector('[data-summary="unrealized"]');
+    const summaryUnrealizedPct = summarySection.querySelector('[data-summary="unrealizedPct"]');
+
     const holdings = await FFDB.getAll('investments');
-    list.innerHTML = '';
+    tableBody.innerHTML = '';
+
+    let totalCost = 0;
+    let totalMarketValue = 0;
+    let totalUnrealized = 0;
+    let totalCostWithPrice = 0;
+    let pricedHoldings = 0;
+
     if (!holdings.length) {
-      list.appendChild(emptyState('No investments recorded.'));
-      return;
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 9;
+      cell.className = 'ffapp-table-empty';
+      cell.textContent = 'No investments recorded.';
+      row.appendChild(cell);
+      tableBody.appendChild(row);
     }
+
     holdings.forEach((holding) => {
-      const totalCost = (Number(holding.units) || 0) * (Number(holding.cost) || 0);
-      const li = document.createElement('li');
-      const info = document.createElement('div');
-      info.style.display = 'flex';
-      info.style.flexDirection = 'column';
-      info.style.gap = '4px';
-      const title = document.createElement('strong');
-      title.textContent = `${holding.ticker} · ${holding.name}`;
-      const detail = document.createElement('span');
-      detail.textContent = `${Number(holding.units) || 0} units @ ${money(Number(holding.cost) || 0)} · Total ${money(totalCost)}`;
-      info.appendChild(title);
-      info.appendChild(detail);
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.textContent = 'Delete';
-      del.addEventListener('click', async () => {
+      const units = Number(holding.units) || 0;
+      const cost = Number(holding.cost) || 0;
+      const rawPrice = holding.price;
+      const parsedPrice = rawPrice === null || rawPrice === undefined || rawPrice === '' ? null : Number(rawPrice);
+      const price = Number.isFinite(parsedPrice) && parsedPrice >= 0 ? parsedPrice : null;
+      const totalCostHolding = units * cost;
+      totalCost += totalCostHolding;
+
+      let marketValue = null;
+      let unrealized = null;
+      let pnlPercent = null;
+      if (price !== null) {
+        marketValue = units * price;
+        unrealized = marketValue - totalCostHolding;
+        if (cost > 0) {
+          pnlPercent = ((price - cost) / cost) * 100;
+        }
+        totalMarketValue += marketValue;
+        totalUnrealized += unrealized;
+        totalCostWithPrice += totalCostHolding;
+        pricedHoldings += 1;
+      }
+
+      const row = document.createElement('tr');
+
+      const tickerCell = document.createElement('td');
+      tickerCell.textContent = holding.ticker || '—';
+      row.appendChild(tickerCell);
+
+      const nameCell = document.createElement('td');
+      nameCell.textContent = holding.name || '—';
+      row.appendChild(nameCell);
+
+      const unitsCell = document.createElement('td');
+      unitsCell.className = 'ffapp-cell-number';
+      unitsCell.textContent = formatUnits(units);
+      row.appendChild(unitsCell);
+
+      const costCell = document.createElement('td');
+      costCell.className = 'ffapp-cell-number';
+      costCell.textContent = money(cost);
+      row.appendChild(costCell);
+
+      const priceCell = document.createElement('td');
+      priceCell.className = 'ffapp-cell-number';
+      const priceInput = document.createElement('input');
+      priceInput.type = 'number';
+      priceInput.step = '0.01';
+      priceInput.min = '0';
+      priceInput.inputMode = 'decimal';
+      priceInput.className = 'ffapp-input ffapp-input-price';
+      priceInput.value = price !== null ? String(price) : '';
+      priceInput.placeholder = '—';
+      priceInput.setAttribute('aria-label', `Price for ${holding.ticker || holding.name || 'holding'}`);
+      priceInput.addEventListener('change', async () => {
+        const raw = priceInput.value.trim();
+        const nextPrice = raw === '' ? null : Number(raw);
+        if (nextPrice !== null && (!Number.isFinite(nextPrice) || nextPrice < 0)) {
+          priceInput.value = price !== null ? String(price) : '';
+          return;
+        }
+        const normalizedPrice = nextPrice === null ? null : Number(nextPrice);
+        if (price === normalizedPrice) {
+          priceInput.value = price !== null ? String(price) : '';
+          return;
+        }
+        await FFDB.put('investments', { ...holding, price: normalizedPrice });
+        await renderInvestments();
+      });
+      priceCell.appendChild(priceInput);
+      row.appendChild(priceCell);
+
+      const marketValueCell = document.createElement('td');
+      marketValueCell.className = 'ffapp-cell-number';
+      marketValueCell.textContent = marketValue === null ? '—' : money(marketValue);
+      row.appendChild(marketValueCell);
+
+      const unrealizedCell = document.createElement('td');
+      unrealizedCell.className = 'ffapp-cell-number';
+      unrealizedCell.textContent = unrealized === null ? '—' : money(unrealized);
+      setPnlClass(unrealizedCell, unrealized);
+      row.appendChild(unrealizedCell);
+
+      const pnlCell = document.createElement('td');
+      pnlCell.className = 'ffapp-cell-number';
+      pnlCell.textContent = formatPercent(pnlPercent);
+      setPnlClass(pnlCell, pnlPercent);
+      row.appendChild(pnlCell);
+
+      const actionCell = document.createElement('td');
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', async () => {
         await FFDB.del('investments', holding.id);
         await renderInvestments();
       });
-      li.appendChild(info);
-      li.appendChild(del);
-      list.appendChild(li);
+      actionCell.appendChild(deleteButton);
+      row.appendChild(actionCell);
+
+      tableBody.appendChild(row);
     });
+
+    if (summaryCost) {
+      summaryCost.textContent = money(totalCost);
+    }
+    if (summaryMarketValue) {
+      summaryMarketValue.textContent = pricedHoldings ? money(totalMarketValue) : '—';
+    }
+    if (summaryUnrealized) {
+      summaryUnrealized.textContent = pricedHoldings ? money(totalUnrealized) : '—';
+      setPnlClass(summaryUnrealized, pricedHoldings ? totalUnrealized : null);
+    }
+    if (summaryUnrealizedPct) {
+      const totalPct = totalCostWithPrice > 0 ? (totalUnrealized / totalCostWithPrice) * 100 : null;
+      summaryUnrealizedPct.textContent = formatPercent(totalPct);
+      setPnlClass(summaryUnrealizedPct, totalPct);
+    }
   }
 
   async function loadSettings() {
@@ -2004,6 +2141,35 @@
 
   function money(value) {
     return state.formatter.format(Number(value) || 0);
+  }
+
+  function formatUnits(value) {
+    return (Number(value) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 });
+  }
+
+  function formatPercent(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return '—';
+    }
+    const normalized = Math.abs(value) < 0.005 ? 0 : value;
+    const sign = normalized > 0 ? '+' : '';
+    return `${sign}${normalized.toFixed(2)}%`;
+  }
+
+  function setPnlClass(element, value) {
+    if (!element) return;
+    element.classList.remove('ffapp-pnl-positive', 'ffapp-pnl-negative', 'ffapp-pnl-neutral');
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      element.classList.add('ffapp-pnl-neutral');
+      return;
+    }
+    if (value > 0) {
+      element.classList.add('ffapp-pnl-positive');
+    } else if (value < 0) {
+      element.classList.add('ffapp-pnl-negative');
+    } else {
+      element.classList.add('ffapp-pnl-neutral');
+    }
   }
 
   function sum(values) {
