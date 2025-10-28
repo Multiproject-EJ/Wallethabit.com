@@ -5,12 +5,15 @@
   const ROUTES = ['dashboard', 'transactions', 'budget', 'goals', 'networth', 'investments', 'settings'];
   const CSV_MAP_KEY = 'ff_finance__csvmap_v1';
   const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const ROLLOVER_SETTING_KEY = 'budgetRolloverEnabled';
+  const ROLLOVER_LAST_PROCESSED_KEY = 'rolloverLastProcessed';
 
   const state = {
     route: 'dashboard',
     month: isoMonth(new Date()),
     currency: 'EUR',
     categories: [...DEFAULT_CATEGORIES],
+    rolloverEnabled: true,
     formatter: new Intl.NumberFormat('en', { style: 'currency', currency: 'EUR' })
   };
 
@@ -27,6 +30,7 @@
   };
   let csvModalOpen = false;
   let csvPreviousFocus = null;
+  let rolloverProcessingPromise = null;
 
   document.addEventListener('DOMContentLoaded', init);
 
@@ -179,6 +183,7 @@
     await FFDB.open();
     const storedCategories = await FFDB.getSetting('categories');
     const storedCurrency = await FFDB.getSetting('currency');
+    const storedRollover = await FFDB.getSetting(ROLLOVER_SETTING_KEY);
     if (Array.isArray(storedCategories) && storedCategories.length) {
       state.categories = storedCategories.slice();
     } else {
@@ -189,7 +194,13 @@
     } else {
       await FFDB.setSetting('currency', state.currency);
     }
+    if (typeof storedRollover === 'boolean') {
+      state.rolloverEnabled = storedRollover;
+    } else {
+      await FFDB.setSetting(ROLLOVER_SETTING_KEY, state.rolloverEnabled);
+    }
     refreshFormatter();
+    await ensureRolloverProcessing();
     await updateNetWorthStatus();
   }
 
@@ -247,17 +258,55 @@
       selectMonth.dataset.bound = 'true';
     }
 
+    await ensureRolloverProcessing();
+
     const transactions = await FFDB.getAll('transactions');
     const current = transactions.filter((tx) => isoMonth(tx.date) === state.month);
     const income = sum(current.filter((tx) => tx.type === 'income').map((tx) => Number(tx.amount) || 0));
-    const spending = sum(current.filter((tx) => tx.type === 'expense').map((tx) => Number(tx.amount) || 0));
+    const expenses = current.filter((tx) => tx.type === 'expense');
+    const spending = sum(expenses.map((tx) => Number(tx.amount) || 0));
     const remaining = income - spending;
+    let available = remaining;
+
+    if (state.rolloverEnabled) {
+      const [budgets, rollovers] = await Promise.all([
+        FFDB.getAll('budgets'),
+        FFDB.getAll('rollovers')
+      ]);
+      const monthBudgets = budgets.filter((budget) => budget.month === state.month);
+      if (monthBudgets.length) {
+        const expenseTotals = mapSum(expenses, (tx) => tx.category || 'Uncategorized', (tx) => Number(tx.amount) || 0);
+        const rolloverMap = rollovers
+          .filter((entry) => entry.ym === state.month)
+          .reduce((acc, entry) => {
+            acc[entry.category] = Number(entry.amount) || 0;
+            return acc;
+          }, {});
+        let totalBudget = 0;
+        let totalRollover = 0;
+        let totalSpentAgainstBudget = 0;
+        monthBudgets.forEach((budget) => {
+          const budgetAmount = Number(budget.amount) || 0;
+          totalBudget += budgetAmount;
+          const spent = expenseTotals[budget.category] || 0;
+          totalSpentAgainstBudget += spent;
+          const rolloverIn = rolloverMap[budget.category] || 0;
+          totalRollover += rolloverIn;
+        });
+        available = roundCurrency(totalBudget + totalRollover - totalSpentAgainstBudget);
+      }
+    }
+
+    const labelEl = mainEl.querySelector('[data-role="remaining-label"]');
+    if (labelEl) {
+      labelEl.textContent = state.rolloverEnabled ? 'Available' : 'Remaining';
+    }
 
     mainEl.querySelector('[data-metric="income"]').textContent = money(income);
     mainEl.querySelector('[data-metric="spending"]').textContent = money(spending);
-    mainEl.querySelector('[data-metric="remaining"]').textContent = money(remaining);
+    mainEl.querySelector('[data-metric="remaining"]').textContent = money(state.rolloverEnabled ? available : remaining);
 
-    const categories = groupBy(current.filter((tx) => tx.type === 'expense'), (tx) => tx.category || 'Uncategorized');
+    const categories = groupBy(expenses, (tx) => tx.category || 'Uncategorized');
     const list = mainEl.querySelector('[data-list="category-summary"]');
     list.innerHTML = '';
     if (Object.keys(categories).length === 0) {
@@ -299,6 +348,7 @@
           type: formData.get('type'),
           category: formData.get('category')
         };
+        const recordMonth = isoMonth(record.date);
         await FFDB.put('transactions', record);
         form.reset();
         if (form.date) {
@@ -306,6 +356,8 @@
         }
         await renderTransactionsTable();
         await loadDashboardMetricsSilent();
+        await recomputeRolloversFrom(recordMonth);
+        await renderBudgetList();
       });
       form.dataset.bound = 'true';
     }
@@ -362,22 +414,26 @@
 
     filtered.forEach((tx) => {
       const tr = document.createElement('tr');
+      const txMonth = isoMonth(tx.date);
       tr.innerHTML = `
         <td>${escapeHTML(tx.date)}</td>
         <td>${escapeHTML(tx.payee || '')}</td>
         <td>${escapeHTML(tx.category || '')}</td>
         <td><span data-chip>${escapeHTML(tx.type)}</span></td>
         <td>${money(Number(tx.amount) || 0)}</td>
-        <td><button type="button" data-action="delete" data-id="${escapeHTML(tx.id)}">Delete</button></td>
+        <td><button type="button" data-action="delete" data-id="${escapeHTML(tx.id)}" data-month="${escapeHTML(txMonth)}">Delete</button></td>
       `;
       tbody.appendChild(tr);
     });
 
     tbody.querySelectorAll('[data-action="delete"]').forEach((btn) => {
       btn.addEventListener('click', async () => {
+        const monthValue = btn.dataset.month || '';
         await FFDB.del('transactions', btn.dataset.id);
         await renderTransactionsTable();
         await loadDashboardMetricsSilent();
+        await recomputeRolloversFrom(monthValue);
+        await renderBudgetList();
       });
     });
   }
@@ -402,7 +458,9 @@
         };
         await FFDB.put('budgets', record);
         form.reset();
+        await recomputeRolloversFrom(record.month);
         await renderBudgetList();
+        await loadDashboardMetricsSilent();
       });
       form.dataset.bound = 'true';
     }
@@ -410,67 +468,80 @@
     const selectMonth = mainEl.querySelector('[data-filter="month"]');
     fillMonthOptions(selectMonth, state.month);
     if (selectMonth && !selectMonth.dataset.bound) {
-      selectMonth.addEventListener('change', () => {
+      selectMonth.addEventListener('change', async () => {
         state.month = selectMonth.value;
-        renderBudgetList();
+        await renderBudgetList();
       });
       selectMonth.dataset.bound = 'true';
     }
 
+    await ensureRolloverProcessing();
     await renderBudgetList();
   }
 
   async function renderBudgetList() {
-    const list = mainEl.querySelector('[data-list="budgets"]');
-    if (!list) return;
+    const tbody = mainEl.querySelector('[data-list="budgets"]');
+    if (!tbody) return;
     const selectMonth = mainEl.querySelector('[data-filter="month"]');
     const monthValue = selectMonth ? selectMonth.value : state.month;
 
-    const [budgets, transactions] = await Promise.all([
+    const [budgets, transactions, rollovers] = await Promise.all([
       FFDB.getAll('budgets'),
-      FFDB.getAll('transactions')
+      FFDB.getAll('transactions'),
+      FFDB.getAll('rollovers')
     ]);
-    const monthBudgets = budgets.filter((b) => b.month === monthValue);
-    const monthTransactions = transactions.filter((tx) => isoMonth(tx.date) === monthValue && tx.type === 'expense');
-    const totals = mapSum(monthTransactions, (tx) => tx.category || 'Uncategorized', (tx) => Number(tx.amount) || 0);
+    const monthBudgets = budgets.filter((budget) => budget.month === monthValue);
+    const monthExpenses = transactions.filter((tx) => tx.type === 'expense' && isoMonth(tx.date) === monthValue);
+    const expenseTotals = mapSum(monthExpenses, (tx) => tx.category || 'Uncategorized', (tx) => Number(tx.amount) || 0);
+    const rolloverMap = rollovers
+      .filter((entry) => entry.ym === monthValue)
+      .reduce((acc, entry) => {
+        acc[entry.category] = Number(entry.amount) || 0;
+        return acc;
+      }, {});
 
-    list.innerHTML = '';
+    tbody.innerHTML = '';
     if (!monthBudgets.length) {
-      list.appendChild(emptyState('No budgets set for this month.'));
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 7;
+      td.appendChild(emptyState('No budgets set for this month.'));
+      tr.appendChild(td);
+      tbody.appendChild(tr);
       return;
     }
 
-    monthBudgets.forEach((budget) => {
-      const actual = totals[budget.category] || 0;
-      const remaining = budget.amount - actual;
-      const li = document.createElement('li');
-      const wrap = document.createElement('div');
-      wrap.style.display = 'flex';
-      wrap.style.flexDirection = 'column';
-      wrap.style.gap = '4px';
-      const title = document.createElement('strong');
-      title.textContent = budget.category;
-      const detail = document.createElement('span');
-      detail.textContent = `${money(actual)} / ${money(budget.amount)}`;
-      const rem = document.createElement('span');
-      rem.style.color = remaining >= 0 ? 'var(--ffapp-success)' : 'var(--ffapp-danger)';
-      rem.textContent = `${remaining >= 0 ? 'Remaining' : 'Over by'} ${money(Math.abs(remaining))}`;
-      wrap.appendChild(title);
-      wrap.appendChild(detail);
-      wrap.appendChild(rem);
-      const deleteBtn = document.createElement('button');
-      deleteBtn.type = 'button';
-      deleteBtn.dataset.action = 'delete';
-      deleteBtn.dataset.id = budget.id;
-      deleteBtn.textContent = 'Delete';
-      li.appendChild(wrap);
-      li.appendChild(deleteBtn);
-      list.appendChild(li);
-      deleteBtn.addEventListener('click', async () => {
-        await FFDB.del('budgets', budget.id);
-        await renderBudgetList();
+    monthBudgets
+      .slice()
+      .sort((a, b) => a.category.localeCompare(b.category))
+      .forEach((budget) => {
+        const budgetAmount = Number(budget.amount) || 0;
+        const spent = expenseTotals[budget.category] || 0;
+        const rolloverIn = rolloverMap[budget.category] || 0;
+        const displayRollover = state.rolloverEnabled ? rolloverIn : 0;
+        const available = roundCurrency(budgetAmount + displayRollover - spent);
+        const status = budgetStatusFor(available);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHTML(budget.category)}</td>
+          <td class="is-number">${money(budgetAmount)}</td>
+          <td class="is-number">${money(spent)}</td>
+          <td class="is-number">${money(displayRollover)}</td>
+          <td class="is-number">${money(available)}</td>
+          <td><span class="ffapp-budget-status ${status.className}">${status.label}</span></td>
+          <td><button type="button" data-action="delete" data-id="${escapeHTML(budget.id)}" data-month="${escapeHTML(budget.month)}">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+        const deleteBtn = tr.querySelector('[data-action="delete"]');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', async () => {
+            await FFDB.del('budgets', budget.id);
+            await recomputeRolloversFrom(budget.month);
+            await renderBudgetList();
+            await loadDashboardMetricsSilent();
+          });
+        }
       });
-    });
   }
 
   async function loadGoals() {
@@ -698,8 +769,9 @@
   }
 
   async function loadSettings() {
-    const currencyForm = document.getElementById('ffapp-form-settings');
-    const currencySelect = currencyForm.querySelector('select[name="currency"]');
+    const settingsForm = document.getElementById('ffapp-form-settings');
+    const currencySelect = settingsForm.querySelector('select[name="currency"]');
+    const rolloverToggle = settingsForm.querySelector('input[name="budgetRollover"]');
     currencySelect.value = state.currency;
     if (!currencySelect.dataset.bound) {
       currencySelect.addEventListener('change', async () => {
@@ -708,8 +780,21 @@
         await FFDB.setSetting('currency', state.currency);
         await updateNetWorthStatus();
         await loadDashboardMetricsSilent();
+        await renderBudgetList();
       });
       currencySelect.dataset.bound = 'true';
+    }
+    if (rolloverToggle) {
+      rolloverToggle.checked = state.rolloverEnabled;
+      if (!rolloverToggle.dataset.bound) {
+        rolloverToggle.addEventListener('change', async () => {
+          state.rolloverEnabled = rolloverToggle.checked;
+          await FFDB.setSetting(ROLLOVER_SETTING_KEY, state.rolloverEnabled);
+          await loadDashboardMetricsSilent();
+          await renderBudgetList();
+        });
+        rolloverToggle.dataset.bound = 'true';
+      }
     }
 
     const categoryForm = document.getElementById('ffapp-form-category');
@@ -786,12 +871,29 @@
           await FFDB.importAll(payload);
           const storedCategories = await FFDB.getSetting('categories');
           const storedCurrency = await FFDB.getSetting('currency');
+          const storedRollover = await FFDB.getSetting(ROLLOVER_SETTING_KEY);
           state.categories = Array.isArray(storedCategories) ? storedCategories : [...DEFAULT_CATEGORIES];
           state.currency = typeof storedCurrency === 'string' ? storedCurrency : 'EUR';
+          state.rolloverEnabled = typeof storedRollover === 'boolean' ? storedRollover : true;
+          if (typeof storedRollover !== 'boolean') {
+            await FFDB.setSetting(ROLLOVER_SETTING_KEY, state.rolloverEnabled);
+          }
           refreshFormatter();
+          const budgets = await FFDB.getAll('budgets');
+          let earliestMonth = null;
+          budgets.forEach((budget) => {
+            if (budget && typeof budget.month === 'string') {
+              if (!earliestMonth || compareMonth(budget.month, earliestMonth) < 0) {
+                earliestMonth = budget.month;
+              }
+            }
+          });
           importInput.value = '';
           await updateNetWorthStatus();
           refreshCategoryInputs();
+          await recomputeRolloversFrom(earliestMonth || previousMonthValue(isoMonth(new Date())));
+          await renderBudgetList();
+          await loadDashboardMetricsSilent();
           navigate('dashboard');
         } catch (error) {
           output.value = `Import failed: ${error.message}`;
@@ -806,11 +908,16 @@
         await FFDB.clearAll();
         state.categories = [...DEFAULT_CATEGORIES];
         state.currency = 'EUR';
+        state.rolloverEnabled = true;
         refreshFormatter();
         await FFDB.setSetting('categories', state.categories);
         await FFDB.setSetting('currency', state.currency);
+        await FFDB.setSetting(ROLLOVER_SETTING_KEY, state.rolloverEnabled);
+        await FFDB.setSetting(ROLLOVER_LAST_PROCESSED_KEY, previousMonthValue(isoMonth(new Date())));
         await updateNetWorthStatus();
         refreshCategoryInputs();
+        await renderBudgetList();
+        await loadDashboardMetricsSilent();
         navigate('dashboard');
       });
       wipeBtn.dataset.bound = 'true';
@@ -1453,6 +1560,183 @@
     }
   }
 
+  async function recomputeRolloversFrom(startMonth) {
+    const currentMonth = isoMonth(new Date());
+    const previous = previousMonthValue(currentMonth);
+    if (!previous) {
+      return;
+    }
+    if (!startMonth || compareMonth(startMonth, previous) > 0) {
+      await FFDB.setSetting(ROLLOVER_LAST_PROCESSED_KEY, previous);
+      return;
+    }
+    const months = [];
+    let pointer = startMonth;
+    while (compareMonth(pointer, previous) <= 0) {
+      months.push(pointer);
+      const next = addMonthsToYearMonth(pointer, 1);
+      if (!next || next === pointer) {
+        break;
+      }
+      pointer = next;
+    }
+    for (const month of months) {
+      await computeRolloverForMonth(month);
+    }
+    if (months.length) {
+      await FFDB.setSetting(ROLLOVER_LAST_PROCESSED_KEY, months[months.length - 1]);
+    }
+  }
+
+  async function ensureRolloverProcessing() {
+    if (rolloverProcessingPromise) {
+      return rolloverProcessingPromise;
+    }
+    rolloverProcessingPromise = (async () => {
+      const currentMonth = isoMonth(new Date());
+      const previous = previousMonthValue(currentMonth);
+      if (!previous) {
+        return;
+      }
+      const lastProcessed = await FFDB.getSetting(ROLLOVER_LAST_PROCESSED_KEY);
+      let startMonth;
+      if (typeof lastProcessed === 'string' && lastProcessed) {
+        if (compareMonth(lastProcessed, previous) >= 0) {
+          return;
+        }
+        startMonth = addMonthsToYearMonth(lastProcessed, 1);
+      } else {
+        startMonth = previous;
+      }
+      if (!startMonth) {
+        return;
+      }
+      const months = [];
+      let pointer = startMonth;
+      while (compareMonth(pointer, previous) <= 0) {
+        months.push(pointer);
+        const next = addMonthsToYearMonth(pointer, 1);
+        if (!next || next === pointer) {
+          break;
+        }
+        pointer = next;
+      }
+      for (const month of months) {
+        await computeRolloverForMonth(month);
+      }
+      if (months.length) {
+        await FFDB.setSetting(ROLLOVER_LAST_PROCESSED_KEY, months[months.length - 1]);
+      }
+    })().finally(() => {
+      rolloverProcessingPromise = null;
+    });
+    return rolloverProcessingPromise;
+  }
+
+  async function computeRolloverForMonth(month) {
+    if (!month) {
+      return;
+    }
+    const next = addMonthsToYearMonth(month, 1);
+    if (!next) {
+      return;
+    }
+    const [budgets, transactions, rollovers] = await Promise.all([
+      FFDB.getAll('budgets'),
+      FFDB.getAll('transactions'),
+      FFDB.getAll('rollovers')
+    ]);
+    const monthBudgets = budgets.filter((budget) => budget.month === month);
+    const monthExpenses = transactions.filter((tx) => tx.type === 'expense' && isoMonth(tx.date) === month);
+    const expenseTotals = mapSum(monthExpenses, (tx) => tx.category || 'Uncategorized', (tx) => Number(tx.amount) || 0);
+    const rolloverMap = rollovers
+      .filter((entry) => entry.ym === month)
+      .reduce((acc, entry) => {
+        acc[entry.category] = Number(entry.amount) || 0;
+        return acc;
+      }, {});
+    const desired = new Map();
+    monthBudgets.forEach((budget) => {
+      const budgetAmount = Number(budget.amount) || 0;
+      const spent = expenseTotals[budget.category] || 0;
+      const rolloverIn = rolloverMap[budget.category] || 0;
+      const available = roundCurrency(budgetAmount + rolloverIn - spent);
+      const carry = roundCurrency(Math.max(0, available));
+      if (carry > 0) {
+        desired.set(budget.category, carry);
+      }
+    });
+    const nextRecords = rollovers.filter((entry) => entry.ym === next);
+    const operations = [];
+    desired.forEach((amount, category) => {
+      operations.push(FFDB.put('rollovers', {
+        id: `${next}-${category}`,
+        ym: next,
+        category,
+        amount
+      }));
+    });
+    nextRecords.forEach((entry) => {
+      if (!desired.has(entry.category)) {
+        operations.push(FFDB.del('rollovers', entry.id));
+      }
+    });
+    await Promise.all(operations);
+  }
+
+  function budgetStatusFor(value) {
+    if (value > 0) {
+      return { label: 'Under budget', className: 'is-positive' };
+    }
+    if (value < 0) {
+      return { label: 'Over budget', className: 'is-negative' };
+    }
+    return { label: 'On budget', className: 'is-neutral' };
+  }
+
+  function roundCurrency(value) {
+    const numeric = Number(value) || 0;
+    const rounded = Math.round(numeric * 100) / 100;
+    return Object.is(rounded, -0) ? 0 : rounded;
+  }
+
+  function parseYearMonth(value) {
+    if (typeof value !== 'string') return null;
+    const parts = value.split('-');
+    if (parts.length !== 2) return null;
+    const year = Number(parts[0]);
+    const month = Number(parts[1]);
+    if (!Number.isFinite(year) || !Number.isFinite(month)) return null;
+    return { year, month };
+  }
+
+  function addMonthsToYearMonth(value, offset) {
+    const parsed = parseYearMonth(value);
+    if (!parsed || !Number.isFinite(offset)) {
+      return '';
+    }
+    const date = new Date(parsed.year, parsed.month - 1 + offset, 1);
+    return isoMonth(date);
+  }
+
+  function previousMonthValue(value) {
+    return addMonthsToYearMonth(value, -1);
+  }
+
+  function compareMonth(a, b) {
+    const parsedA = parseYearMonth(a);
+    const parsedB = parseYearMonth(b);
+    if (!parsedA || !parsedB) {
+      return 0;
+    }
+    if (parsedA.year === parsedB.year) {
+      if (parsedA.month === parsedB.month) {
+        return 0;
+      }
+      return parsedA.month > parsedB.month ? 1 : -1;
+    }
+    return parsedA.year > parsedB.year ? 1 : -1;
+  }
   function emptyState(message) {
     const div = document.createElement('div');
     div.className = 'ffapp-empty';

@@ -99,7 +99,7 @@
           <p class="ffapp-metric" data-metric="spending">0</p>
         </article>
         <article class="ffapp-card">
-          <h2>Remaining</h2>
+          <h2 data-role="remaining-label">Remaining</h2>
           <p class="ffapp-metric" data-metric="remaining">0</p>
         </article>
       </div>
@@ -167,7 +167,22 @@
           <h2>Current month</h2>
           <select class="ffapp-input" data-filter="month"></select>
         </header>
-        <ul class="ffapp-list" data-list="budgets"></ul>
+        <div class="ffapp-tablewrap">
+          <table class="ffapp-table ffapp-table-budget">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Monthly Budget</th>
+                <th>Spent (this month)</th>
+                <th>Rollover In</th>
+                <th>Available</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody data-list="budgets"></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </template>
@@ -247,6 +262,9 @@
               <option value="JPY">JPY</option>
               <option value="CHF">CHF</option>
             </select>
+          </label>
+          <label class="ffapp-field ffapp-toggle">Enable budget rollover
+            <input type="checkbox" name="budgetRollover" class="ffapp-input-toggle">
           </label>
         </form>
       </div>

@@ -1,7 +1,7 @@
 (function () {
   const DB_NAME = 'futurefunds_finance';
-  const DB_VERSION = 1;
-  const STORE_NAMES = ['transactions', 'budgets', 'goals', 'assets', 'liabilities', 'investments', 'settings'];
+  const DB_VERSION = 2;
+  const STORE_NAMES = ['transactions', 'budgets', 'goals', 'assets', 'liabilities', 'investments', 'settings', 'rollovers'];
   let dbPromise;
 
   function open() {
@@ -30,6 +30,9 @@
           }
           if (!database.objectStoreNames.contains('settings')) {
             database.createObjectStore('settings', { keyPath: 'key' });
+          }
+          if (!database.objectStoreNames.contains('rollovers')) {
+            database.createObjectStore('rollovers', { keyPath: 'id' });
           }
         };
         request.onsuccess = () => resolve(request.result);
