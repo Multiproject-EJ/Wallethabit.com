@@ -52,6 +52,15 @@
       }
     });
 
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        var openPanel = document.querySelector('.affapp-overlay.is-open');
+        if (openPanel) {
+          closePanel(openPanel.getAttribute('data-panel'));
+        }
+      }
+    });
+
     highlightRoute('create');
   }
 
@@ -70,58 +79,161 @@
     }
   }
 
+  function openPanel(name) {
+    if (!name) {
+      return;
+    }
+    var panel = document.querySelector('.affapp-overlay[data-panel="' + name + '"]');
+    if (!panel) {
+      return;
+    }
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+    var focusTarget = panel.querySelector('[data-autofocus]') || panel.querySelector('input, textarea, select, button');
+    if (focusTarget && typeof focusTarget.focus === 'function') {
+      window.requestAnimationFrame(function () {
+        focusTarget.focus();
+      });
+    }
+  }
+
+  function closePanel(name) {
+    if (!name) {
+      return;
+    }
+    var panel = document.querySelector('.affapp-overlay[data-panel="' + name + '"]');
+    if (!panel) {
+      return;
+    }
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+  }
+
+  function bindPanels(root) {
+    if (!root) {
+      return;
+    }
+    var overlays = root.querySelectorAll('.affapp-overlay');
+    overlays.forEach(function (panel) {
+      if (!panel.hasAttribute('aria-hidden')) {
+        panel.setAttribute('aria-hidden', 'true');
+      }
+      panel.addEventListener('click', function (event) {
+        if (event.target === panel) {
+          closePanel(panel.getAttribute('data-panel'));
+        }
+      });
+    });
+    root.querySelectorAll('[data-panel-open]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        openPanel(button.getAttribute('data-panel-open'));
+      });
+    });
+    root.querySelectorAll('[data-panel-close]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        closePanel(button.getAttribute('data-panel-close'));
+      });
+    });
+  }
+
   function renderCreate(state) {
     var templates = AFF.templates ? AFF.templates.getAll() : {};
     var why = AFF.templates ? AFF.templates.getWhy() : [];
     var selected = state.createCategory || 'finance';
     var preview = state.createPreview || buildPreviewText(selected, state.createDraft || {}, templates);
     var draft = state.createDraft || { title: '', text: '' };
+    var activeList = state.affirmations.filter(function (item) { return item.is_active !== false; });
+    var latest = activeList[0];
 
     mainEl.innerHTML = '' +
-      '<section class="affapp-section affapp-columns">' +
-      '  <div>' +
-      '    <h1>Craft your daily affirmation</h1>' +
-      '    <p class="affapp-subtle">Choose a focus, tailor the language, and see the message update in real time.</p>' +
-      '    <form id="affapp-create-form" class="affapp-fieldset" novalidate>' +
-      '      <div class="affapp-field">' +
-      '        <span class="affapp-label">Focus area</span>' +
-      '        <div class="affapp-pill-group" role="radiogroup">' + renderCategoryPills(templates, selected) + '</div>' +
+      '<section class="affapp-stage">' +
+      '  <article class="affapp-stage-card">' +
+      '    <header>' +
+      '      <div>' +
+      '        <span class="affapp-chip">' + activeList.length + ' active</span>' +
+      '        <h1>Design your next affirmation</h1>' +
       '      </div>' +
-      '      <label class="affapp-field">' +
-      '        <span class="affapp-label">Affirmation title</span>' +
-      '        <input class="affapp-input" name="title" value="' + escapeHtml(draft.title || '') + '" required maxlength="80" placeholder="Money wins today">' +
-      '      </label>' +
-      '      <label class="affapp-field">' +
-      '        <span class="affapp-label">Affirmation text</span>' +
-      '        <textarea class="affapp-textarea" name="text" required maxlength="250" placeholder="I celebrate how I..."></textarea>' +
-      '      </label>' +
-      '      <div class="affapp-inline">' +
-      '        <button type="submit" class="affapp-primary">Save affirmation</button>' +
-      '        <button type="button" class="affapp-secondary" data-action="affapp-use-template">Use template</button>' +
-      '      </div>' +
-      '    </form>' +
-      '  </div>' +
-      '  <aside>' +
+      '      <span class="affapp-subtle">Focus · ' + escapeHtml(capitalize(selected)) + '</span>' +
+      '    </header>' +
+      '    <p>Keep the canvas calm. Open only what you need as you move from inspiration to copy.</p>' +
       '    <div class="affapp-preview" id="affapp-live-preview">' + escapeHtml(preview || '') + '</div>' +
-      '    <div class="affapp-card" style="margin-top:1.25rem;">' +
-      '      <header>' +
-      '        <h2>Why this works</h2>' +
-      '        <p class="affapp-subtle">Keep these principles in mind as you write.</p>' +
-      '      </header>' +
-      '      <ul class="affapp-list" id="affapp-why">' + why.map(function (line) { return '<li class="affapp-list-item">' + escapeHtml(line) + '</li>'; }).join('') + '</ul>' +
+      (latest ? '    <span class="affapp-subtle">Last saved · ' + escapeHtml(latest.title || 'Affirmation') + '</span>' : '') +
+      '    <div class="affapp-stage-actions">' +
+      '      <button type="button" class="affapp-primary" data-panel-open="compose">Compose affirmation</button>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="focus">Switch focus</button>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="library">Saved library</button>' +
+      '      <button type="button" class="affapp-tertiary" data-panel-open="why">Why this works</button>' +
+      '    </div>' +
+      '  </article>' +
+      '  <aside class="affapp-stage-meta">' +
+      '    <div class="affapp-stage-panel">' +
+      '      <h2>Today</h2>' +
+      '      <div class="affapp-stage-stat"><span class="affapp-stat-value">' + activeList.length + '</span><span class="affapp-stat-label">Active now</span></div>' +
+      '      <div class="affapp-stage-stat"><span class="affapp-stat-value">' + state.affirmations.length + '</span><span class="affapp-stat-label">Saved total</span></div>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="library">Manage library</button>' +
       '    </div>' +
       '  </aside>' +
       '</section>' +
-      '<section class="affapp-section">' +
-      '  <header class="affapp-inline" style="justify-content: space-between;">' +
-      '    <div>' +
-      '      <h2>Your affirmations</h2>' +
-      '      <p class="affapp-subtle">Toggle active statements to control what appears in practice mode.</p>' +
+      '<div class="affapp-overlay" data-panel="compose" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-compose-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-compose-title">Compose affirmation</h2>' +
+           renderCloseButton('compose') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <form id="affapp-create-form" class="affapp-fieldset" novalidate>' +
+      '        <label class="affapp-field">' +
+      '          <span class="affapp-label">Affirmation title</span>' +
+      '          <input class="affapp-input" name="title" value="' + escapeHtml(draft.title || '') + '" required maxlength="80" placeholder="Money wins today" data-autofocus>' +
+      '        </label>' +
+      '        <label class="affapp-field">' +
+      '          <span class="affapp-label">Affirmation text</span>' +
+      '          <textarea class="affapp-textarea" name="text" required maxlength="250" placeholder="I celebrate how I..."></textarea>' +
+      '        </label>' +
+      '        <div class="affapp-inline">' +
+      '          <button type="submit" class="affapp-primary">Save affirmation</button>' +
+      '          <button type="button" class="affapp-secondary" data-action="affapp-use-template">Use template</button>' +
+      '        </div>' +
+      '      </form>' +
       '    </div>' +
-      '    <span class="affapp-chip">' + state.affirmations.length + ' saved</span>' +
-      '  </header>' +
-      renderAffirmationList(state.affirmations) +
-      '</section>';
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="focus" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-focus-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-focus-title">Choose a focus</h2>' +
+           renderCloseButton('focus') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <p class="affapp-subtle">Pick the area you want to nourish today. The preview updates instantly.</p>' +
+      '      <div class="affapp-pill-group" role="radiogroup">' + renderCategoryPills(templates, selected) + '</div>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="library" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-library-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-library-title">Affirmation library</h2>' +
+           renderCloseButton('library') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+             renderAffirmationList(state.affirmations, { collapsible: true, expandFirst: true }) +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="why" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-why-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-why-title">Why this works</h2>' +
+           renderCloseButton('why') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <ul class="affapp-list" id="affapp-why">' + why.map(function (line) { return '<li class="affapp-list-item">' + escapeHtml(line) + '</li>'; }).join('') + '</ul>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>';
+
+    bindPanels(mainEl);
 
     var form = document.getElementById('affapp-create-form');
     if (form) {
@@ -205,27 +317,51 @@
     var selectedId = state.practiceSelection || (active[0] ? active[0].id : null);
     var selected = active.find(function (item) { return item.id === selectedId; }) || active[0];
     var mode = state.practiceMode || state.settings.default_mode || 'read';
+    var streakLabel = state.streak && state.streak.lastPracticeDate ? 'Last practice ' + formatRelative(state.streak.lastPracticeDate) : 'No sessions logged yet.';
+    var heroSummary = selected ? 'Stay with this language for today or choose another focus.' : 'Activate an affirmation to begin a session.';
+    var streakCount = state.streak ? state.streak.streak : 0;
 
     mainEl.innerHTML = '' +
-      '<section class="affapp-section affapp-columns">' +
-      '  <div>' +
-      '    <h1>Daily practice</h1>' +
-      '    <p class="affapp-subtle">Choose a mode, log your session, and keep the streak alive.</p>' +
-      renderPracticeAffirmations(active, selected) +
-      '  </div>' +
-      '  <aside>' +
-      '    <div class="affapp-card">' +
-      '      <h2>Mode</h2>' +
-      '      <div class="affapp-mode-grid" role="radiogroup">' +
-      renderModeOptions(mode) +
+      '<section class="affapp-stage">' +
+      '  <article class="affapp-stage-card">' +
+      '    <header>' +
+      '      <div>' +
+      '        <span class="affapp-chip">Mode · ' + escapeHtml(capitalize(mode)) + '</span>' +
+      '        <h1>' + (selected ? escapeHtml(selected.title || 'Affirmation') : 'No active affirmation') + '</h1>' +
       '      </div>' +
+      (selected ? '      <button type="button" class="affapp-tertiary" data-action="affapp-tts" data-id="' + selected.id + '">Listen</button>' : '') +
+      '    </header>' +
+      '    <p>' + escapeHtml(heroSummary) + '</p>' +
+      (selected ? '    <div class="affapp-preview">' + escapeHtml(selected.text || '') + '</div>' : '') +
+      '    <div class="affapp-stage-actions">' +
+      (selected
+        ? '      <button type="button" class="affapp-primary" data-panel-open="practice-log">Log session</button>'
+        : '      <button type="button" class="affapp-primary" data-panel-open="practice-choose">Activate affirmation</button>') +
+      '      <button type="button" class="affapp-secondary" data-panel-open="practice-choose">Switch affirmation</button>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="practice-mode">Change mode</button>' +
+      '      <button type="button" class="affapp-tertiary" data-panel-open="practice-notes">Recent notes</button>' +
       '    </div>' +
-      '    <div class="affapp-card">' +
-      '      <h2>Log today</h2>' +
+      '  </article>' +
+      '  <aside class="affapp-stage-meta">' +
+      '    <div class="affapp-stage-panel">' +
+      '      <h2>Progress</h2>' +
+      '      <div class="affapp-stage-stat"><span class="affapp-stat-value">' + streakCount + '</span><span class="affapp-stat-label">Day streak</span></div>' +
+      '      <p class="affapp-subtle">' + escapeHtml(streakLabel) + '</p>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="practice-notes">View log</button>' +
+      '    </div>' +
+      '  </aside>' +
+      '</section>' +
+      '<div class="affapp-overlay" data-panel="practice-log" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-log-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-log-title">Log today</h2>' +
+           renderCloseButton('practice-log') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
       '      <form id="affapp-practice-form" class="affapp-fieldset">' +
       '        <label class="affapp-field">' +
       '          <span class="affapp-label">Mood before</span>' +
-      '          <select class="affapp-select" name="mood_before">' + renderMoodOptions() + '</select>' +
+      '          <select class="affapp-select" name="mood_before" data-autofocus>' + renderMoodOptions() + '</select>' +
       '        </label>' +
       '        <label class="affapp-field">' +
       '          <span class="affapp-label">Mood after</span>' +
@@ -238,21 +374,43 @@
       '        <button type="submit" class="affapp-primary">Log session</button>' +
       '      </form>' +
       '    </div>' +
-      '    <div class="affapp-card">' +
-      '      <div class="affapp-metric-row">' +
-      '        <div>' +
-      '          <h2>Current streak</h2>' +
-      '          <p class="affapp-subtle">' + (state.streak && state.streak.lastPracticeDate ? 'Last practice ' + formatRelative(state.streak.lastPracticeDate) : 'No sessions yet.') + '</p>' +
-      '        </div>' +
-      '        <span class="affapp-chip">' + (state.streak ? state.streak.streak : 0) + ' days</span>' +
-      '      </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="practice-choose" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-choose-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-choose-title">Active affirmations</h2>' +
+           renderCloseButton('practice-choose') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+             renderPracticeAffirmations(active, selected, { expandFirst: true }) +
       '    </div>' +
-      '  </aside>' +
-      '</section>' +
-      '<section class="affapp-section">' +
-      '  <h2>Recent notes</h2>' +
-      renderRecentSessions(state.sessions, active) +
-      '</section>';
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="practice-mode" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-mode-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-mode-title">Practice modes</h2>' +
+           renderCloseButton('practice-mode') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <div class="affapp-mode-grid" role="radiogroup">' + renderModeOptions(mode) + '</div>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="practice-notes" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-notes-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-notes-title">Recent sessions</h2>' +
+           renderCloseButton('practice-notes') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+             renderRecentSessions(state.sessions.slice(0, 12), active) +
+      '    </div>' +
+      '  </div>' +
+      '</div>';
+
+    bindPanels(mainEl);
 
     var practiceList = mainEl.querySelectorAll('[data-action="affapp-select-affirmation"]');
     practiceList.forEach(function (button) {
@@ -332,35 +490,70 @@
     });
 
     mainEl.innerHTML = '' +
-      '<section class="affapp-section affapp-columns">' +
-      '  <div>' +
-      '    <h1>History</h1>' +
-      '    <p class="affapp-subtle">Spot streaks and refine statements as you grow.</p>' +
-      '    <div class="affapp-card">' +
-      '      <header class="affapp-inline" style="justify-content: space-between;">' +
-      '        <div>' +
-      '          <h2>' + monthName(month) + ' ' + year + '</h2>' +
-      '          <p class="affapp-subtle">' + monthSessions.length + ' practice entries this month</p>' +
-      '        </div>' +
-      '        <div class="affapp-inline">' +
-      '          <button type="button" class="affapp-secondary" data-action="affapp-prev-month" aria-label="Previous month">◀</button>' +
-      '          <button type="button" class="affapp-secondary" data-action="affapp-next-month" aria-label="Next month">▶</button>' +
-      '        </div>' +
-      '      </header>' +
-      renderHeatmap(year, month, monthSessions) +
+      '<section class="affapp-stage">' +
+      '  <article class="affapp-stage-card">' +
+      '    <header>' +
+      '      <div>' +
+      '        <span class="affapp-chip">' + monthName(month) + ' ' + year + '</span>' +
+      '        <h1>Track your rhythm</h1>' +
+      '      </div>' +
+      '      <span class="affapp-subtle">' + monthSessions.length + ' sessions</span>' +
+      '    </header>' +
+      '    <p>Open the calendar or log when you want detail. Otherwise, stay present with today.</p>' +
+      '    <div class="affapp-stage-actions">' +
+      '      <button type="button" class="affapp-primary" data-panel-open="history-calendar">View calendar</button>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="history-edit">Edit affirmations</button>' +
+      '      <button type="button" class="affapp-tertiary" data-panel-open="history-sessions">Session notes</button>' +
       '    </div>' +
-      '  </div>' +
-      '  <aside>' +
-      '    <div class="affapp-card">' +
-      '      <h2>Edit affirmations</h2>' +
-      renderAffirmationEditor(state.affirmations) +
+      '  </article>' +
+      '  <aside class="affapp-stage-meta">' +
+      '    <div class="affapp-stage-panel">' +
+      '      <h2>Highlights</h2>' +
+      '      <div class="affapp-stage-stat"><span class="affapp-stat-value">' + state.affirmations.length + '</span><span class="affapp-stat-label">Affirmations saved</span></div>' +
+      '      <div class="affapp-stage-stat"><span class="affapp-stat-value">' + state.affirmations.filter(function (item) { return item.is_active !== false; }).length + '</span><span class="affapp-stat-label">Active now</span></div>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="history-calendar">Open calendar</button>' +
       '    </div>' +
       '  </aside>' +
       '</section>' +
-      '<section class="affapp-section">' +
-      '  <h2>Recent sessions</h2>' +
-      renderRecentSessions(state.sessions.slice(0, 12), state.affirmations) +
-      '</section>';
+      '<div class="affapp-overlay" data-panel="history-calendar" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-calendar-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-calendar-title">Monthly calendar</h2>' +
+           renderCloseButton('history-calendar') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <div class="affapp-inline" style="justify-content: space-between;">' +
+      '        <button type="button" class="affapp-secondary" data-action="affapp-prev-month">Previous</button>' +
+      '        <button type="button" class="affapp-secondary" data-action="affapp-next-month">Next</button>' +
+      '      </div>' +
+      '      <div class="affapp-hero-calendar">' + renderHeatmap(year, month, monthSessions) + '</div>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="history-edit" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-edit-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-edit-title">Edit affirmations</h2>' +
+           renderCloseButton('history-edit') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+             renderAffirmationEditor(state.affirmations) +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="history-sessions" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-sessions-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-sessions-title">Recent sessions</h2>' +
+           renderCloseButton('history-sessions') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+             renderRecentSessions(state.sessions.slice(0, 12), state.affirmations) +
+      '    </div>' +
+      '  </div>' +
+      '</div>';
+
+    bindPanels(mainEl);
 
     var prev = mainEl.querySelector('[data-action="affapp-prev-month"]');
     if (prev) {
@@ -384,9 +577,9 @@
       form.addEventListener('submit', function (event) {
         event.preventDefault();
         var id = form.getAttribute('data-id');
-        var text = String(new window.FormData(form).get('text') || '').trim();
-        if (id && text && AFF.actions && typeof AFF.actions.updateAffirmation === 'function') {
-          AFF.actions.updateAffirmation(id, { text: text });
+        var textValue = String(new window.FormData(form).get('text') || '').trim();
+        if (id && textValue && AFF.actions && typeof AFF.actions.updateAffirmation === 'function') {
+          AFF.actions.updateAffirmation(id, { text: textValue });
         }
       });
     });
@@ -407,58 +600,91 @@
     var settings = state.settings || { reminder_time: '07:30', reminder_days: [1, 2, 3, 4, 5], default_mode: 'read', audio_speed: 1 };
     var queue = state.queueStatus || { pending: 0 };
     var isSignedIn = Boolean(state.user);
+    var reminderTime = settings.reminder_time || '07:30';
 
     mainEl.innerHTML = '' +
-      '<section class="affapp-section affapp-columns">' +
-      '  <div>' +
-      '    <h1>Settings</h1>' +
-      '    <p class="affapp-subtle">Tune reminders, modes, and sync preferences.</p>' +
-      '    <form id="affapp-settings-form" class="affapp-fieldset" novalidate>' +
-      '      <label class="affapp-field">' +
-      '        <span class="affapp-label">Reminder time</span>' +
-      '        <input class="affapp-input" type="time" name="reminder_time" value="' + escapeHtml(settings.reminder_time || '07:30') + '">' +
-      '      </label>' +
-      '      <div class="affapp-field">' +
-      '        <span class="affapp-label">Reminder days</span>' +
-      '        <div class="affapp-checkbox-group">' + renderReminderDays(settings.reminder_days || []) + '</div>' +
+      '<section class="affapp-stage">' +
+      '  <article class="affapp-stage-card">' +
+      '    <header>' +
+      '      <div>' +
+      '        <span class="affapp-chip">Settings</span>' +
+      '        <h1>Make it feel like yours</h1>' +
       '      </div>' +
-      '      <label class="affapp-field">' +
-      '        <span class="affapp-label">Default mode</span>' +
-      '        <select class="affapp-select" name="default_mode">' + renderModeSelect(settings.default_mode || 'read') + '</select>' +
-      '      </label>' +
-      '      <label class="affapp-field">' +
-      '        <span class="affapp-label">Audio speed</span>' +
-      '        <input class="affapp-input" type="number" step="0.1" min="0.5" max="2" name="audio_speed" value="' + escapeHtml(String(settings.audio_speed || 1)) + '">' +
-      '      </label>' +
-      '      <button type="submit" class="affapp-primary">Save settings</button>' +
-      '    </form>' +
-      '  </div>' +
-      '  <aside>' +
-      '    <div class="affapp-card">' +
-      '      <h2>Account</h2>' +
-      '      <p class="affapp-subtle">' + (isSignedIn ? 'Signed in as ' + escapeHtml(state.user.email || 'member') : 'You are using guest mode. Sign in to sync across devices.') + '</p>' +
-      '      <div class="affapp-inline">' +
-      (isSignedIn
-        ? '<button type="button" class="affapp-secondary" data-action="affapp-sign-out">Sign out</button>'
-        : '<button type="button" class="affapp-secondary" data-action="affapp-sign-in">Email magic link</button>') +
-      '      </div>' +
+      '      <span class="affapp-subtle">' + (queue.pending ? queue.pending + ' actions to sync' : 'All changes synced') + '</span>' +
+      '    </header>' +
+      '    <p>' + (isSignedIn ? 'Signed in as ' + escapeHtml(state.user.email || 'member') + '.' : 'You are in guest mode. Sign in to keep progress everywhere.') + '</p>' +
+      '    <div class="affapp-stage-actions">' +
+      '      <button type="button" class="affapp-primary" data-panel-open="settings-preferences">Adjust reminders</button>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="settings-account">Account</button>' +
+      '      <button type="button" class="affapp-tertiary" data-panel-open="settings-device">Device tools</button>' +
       '    </div>' +
-      '    <div class="affapp-card">' +
-      '      <h2>Install</h2>' +
-      '      <p class="affapp-subtle">Keep the practice close. Install it as a standalone experience.</p>' +
-      '      <button type="button" class="affapp-secondary" data-action="affapp-install" ' + (installAvailable ? '' : 'disabled') + '>Install app</button>' +
-      '    </div>' +
-      '    <div class="affapp-card">' +
-      '      <h2>Sync status</h2>' +
-      '      <p class="affapp-subtle">' + queue.pending + ' actions waiting for connection.</p>' +
-      '      <button type="button" class="affapp-secondary" data-action="affapp-sync-now">Sync now</button>' +
-      '    </div>' +
-      '    <div class="affapp-card">' +
-      '      <h2>Accessibility</h2>' +
-      '      <button type="button" class="affapp-secondary" data-action="affapp-toggle-contrast">' + (state.highContrast ? 'Disable high contrast' : 'Enable high contrast') + '</button>' +
+      '  </article>' +
+      '  <aside class="affapp-stage-meta">' +
+      '    <div class="affapp-stage-panel">' +
+      '      <h2>Snapshot</h2>' +
+      '      <div class="affapp-stage-stat"><span class="affapp-stat-value">' + escapeHtml(reminderTime) + '</span><span class="affapp-stat-label">Reminder time</span></div>' +
+      '      <div class="affapp-stage-stat"><span class="affapp-stat-value">' + escapeHtml(capitalize(settings.default_mode || 'read')) + '</span><span class="affapp-stat-label">Default mode</span></div>' +
+      '      <button type="button" class="affapp-secondary" data-panel-open="settings-preferences">Edit defaults</button>' +
       '    </div>' +
       '  </aside>' +
-      '</section>';
+      '</section>' +
+      '<div class="affapp-overlay" data-panel="settings-preferences" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-preferences-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-preferences-title">Daily reminders</h2>' +
+           renderCloseButton('settings-preferences') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <form id="affapp-settings-form" class="affapp-fieldset" novalidate>' +
+      '        <label class="affapp-field">' +
+      '          <span class="affapp-label">Reminder time</span>' +
+      '          <input class="affapp-input" type="time" name="reminder_time" value="' + escapeHtml(reminderTime) + '" data-autofocus>' +
+      '        </label>' +
+      '        <div class="affapp-field">' +
+      '          <span class="affapp-label">Reminder days</span>' +
+      '          <div class="affapp-checkbox-group">' + renderReminderDays(settings.reminder_days || []) + '</div>' +
+      '        </div>' +
+      '        <label class="affapp-field">' +
+      '          <span class="affapp-label">Default mode</span>' +
+      '          <select class="affapp-select" name="default_mode">' + renderModeSelect(settings.default_mode || 'read') + '</select>' +
+      '        </label>' +
+      '        <label class="affapp-field">' +
+      '          <span class="affapp-label">Audio speed</span>' +
+      '          <input class="affapp-input" type="number" step="0.1" min="0.5" max="2" name="audio_speed" value="' + escapeHtml(String(settings.audio_speed || 1)) + '">' +
+      '        </label>' +
+      '        <button type="submit" class="affapp-primary">Save settings</button>' +
+      '      </form>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="settings-account" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-account-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-account-title">Account</h2>' +
+           renderCloseButton('settings-account') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <p class="affapp-subtle">' + (isSignedIn ? 'Signed in as ' + escapeHtml(state.user.email || 'member') + '.' : 'Use a magic link to sync affirmations across devices.') + '</p>' +
+      '      <button type="button" class="affapp-secondary" data-action="' + (isSignedIn ? 'affapp-sign-out' : 'affapp-sign-in') + '">' + (isSignedIn ? 'Sign out' : 'Email magic link') + '</button>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>' +
+      '<div class="affapp-overlay" data-panel="settings-device" aria-hidden="true">' +
+      '  <div class="affapp-drawer" role="dialog" aria-modal="true" aria-labelledby="affapp-device-title">' +
+      '    <header class="affapp-drawer-header">' +
+      '      <h2 id="affapp-device-title">Device tools</h2>' +
+           renderCloseButton('settings-device') +
+      '    </header>' +
+      '    <div class="affapp-drawer-content">' +
+      '      <p class="affapp-subtle">Keep the practice close on this device.</p>' +
+      '      <button type="button" class="affapp-secondary" data-action="affapp-install">Install app</button>' +
+      '      <button type="button" class="affapp-secondary" data-action="affapp-sync-now">Sync now</button>' +
+      '      <button type="button" class="affapp-tertiary" data-action="affapp-toggle-contrast">' + (state.highContrast ? 'Disable high contrast' : 'Enable high contrast') + '</button>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>';
+
+    bindPanels(mainEl);
 
     var settingsForm = document.getElementById('affapp-settings-form');
     if (settingsForm) {
@@ -481,37 +707,36 @@
       });
     }
 
-    var signInBtn = mainEl.querySelector('[data-action="affapp-sign-in"]');
-    if (signInBtn) {
-      signInBtn.addEventListener('click', function () {
-        var email = window.prompt('Enter your email for a magic link');
-        if (email && AFF.actions && typeof AFF.actions.requestMagicLink === 'function') {
-          AFF.actions.requestMagicLink(email);
+    var signInButton = mainEl.querySelector('[data-action="affapp-sign-in"]');
+    if (signInButton) {
+      signInButton.addEventListener('click', function () {
+        if (AFF.actions && typeof AFF.actions.signIn === 'function') {
+          AFF.actions.signIn();
         }
       });
     }
 
-    var signOutBtn = mainEl.querySelector('[data-action="affapp-sign-out"]');
-    if (signOutBtn) {
-      signOutBtn.addEventListener('click', function () {
+    var signOutButton = mainEl.querySelector('[data-action="affapp-sign-out"]');
+    if (signOutButton) {
+      signOutButton.addEventListener('click', function () {
         if (AFF.actions && typeof AFF.actions.signOut === 'function') {
           AFF.actions.signOut();
         }
       });
     }
 
-    var syncNowBtn = mainEl.querySelector('[data-action="affapp-sync-now"]');
-    if (syncNowBtn) {
-      syncNowBtn.addEventListener('click', function () {
+    var syncButton = mainEl.querySelector('[data-action="affapp-sync-now"]');
+    if (syncButton) {
+      syncButton.addEventListener('click', function () {
         if (AFF.actions && typeof AFF.actions.syncNow === 'function') {
           AFF.actions.syncNow();
         }
       });
     }
 
-    var contrastBtn = mainEl.querySelector('[data-action="affapp-toggle-contrast"]');
-    if (contrastBtn) {
-      contrastBtn.addEventListener('click', function () {
+    var contrastButton = mainEl.querySelector('[data-action="affapp-toggle-contrast"]');
+    if (contrastButton) {
+      contrastButton.addEventListener('click', function () {
         if (AFF.actions && typeof AFF.actions.toggleContrast === 'function') {
           AFF.actions.toggleContrast();
         }
@@ -587,6 +812,12 @@
     }).join('');
   }
 
+  function renderCloseButton(panel) {
+    return '<button type="button" class="affapp-icon-button" data-panel-close="' + panel + '" aria-label="Close panel">' +
+      '<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.22 5.22a.75.75 0 0 1 1.06 0L10 8.94l3.72-3.72a.75.75 0 0 1 1.06 1.06L11.06 10l3.72 3.72a.75.75 0 0 1-1.06 1.06L10 11.06l-3.72 3.72a.75.75 0 1 1-1.06-1.06L8.94 10 5.22 6.28a.75.75 0 0 1 0-1.06z"/></svg>' +
+      '</button>';
+  }
+
   function buildPreviewText(category, draft, templates) {
     var template = templates[category];
     if (draft && draft.text) {
@@ -607,42 +838,64 @@
       .replace('{identity}', 'a grounded creator');
   }
 
-  function renderAffirmationList(affirmations) {
+  function renderAffirmationList(affirmations, options) {
+    options = options || {};
     if (!affirmations.length) {
       return '<div class="affapp-empty">No affirmations yet. Create your first one to unlock practice mode.</div>';
     }
-    return '<div class="affapp-card-list">' + affirmations.map(function (item) {
-      return '<article class="affapp-card" data-active="' + (item.is_active !== false) + '">' +
+    return '<div class="affapp-card-list">' + affirmations.map(function (item, index) {
+      var isActive = item.is_active !== false;
+      var detailsOpen = options.expandFirst && index === 0 ? ' open' : '';
+      var snippet = buildSnippet(item.text || '');
+      var body = options.collapsible === false
+        ? '<p>' + escapeHtml(item.text || '') + '</p>'
+        : '<details class="affapp-card-collapse"' + detailsOpen + '>' +
+          '  <summary><span>' + escapeHtml(snippet) + '</span></summary>' +
+          '  <p>' + escapeHtml(item.text || '') + '</p>' +
+          '</details>';
+      return '<article class="affapp-card" data-active="' + isActive + '">' +
         '<header class="affapp-inline" style="justify-content: space-between; align-items: flex-start;">' +
         '  <div>' +
         '    <h3>' + escapeHtml(item.title || 'Untitled affirmation') + '</h3>' +
         '    <span class="affapp-tag">' + escapeHtml(capitalize(item.category || 'custom')) + '</span>' +
         '  </div>' +
-        '  <button type="button" class="affapp-secondary" data-action="affapp-toggle-affirmation" data-id="' + item.id + '" data-active="' + (item.is_active !== false) + '">' + (item.is_active !== false ? 'Active' : 'Activate') + '</button>' +
+        '  <button type="button" class="affapp-secondary" data-action="affapp-toggle-affirmation" data-id="' + item.id + '" data-active="' + isActive + '">' + (isActive ? 'Active' : 'Activate') + '</button>' +
         '</header>' +
-        '<p>' + escapeHtml(item.text || '') + '</p>' +
+        body +
         '</article>';
     }).join('') + '</div>';
   }
 
-  function renderPracticeAffirmations(active, selected) {
+  function renderPracticeAffirmations(active, selected, options) {
+    options = options || {};
     if (!active.length) {
       return '<div class="affapp-empty">No active affirmations. Activate one from the Create tab.</div>';
     }
-    return '<div class="affapp-card-list">' + active.map(function (item) {
+    return '<div class="affapp-card-list">' + active.map(function (item, index) {
       var isSelected = selected && item.id === selected.id;
-      return '<article class="affapp-card" data-active="' + isSelected + '">' +
-        '<header class="affapp-inline" style="justify-content: space-between;">' +
+      var detailsOpen = options.expandFirst && index === 0 ? ' open' : '';
+      var snippet = buildSnippet(item.text || '');
+      var body = options.collapsible === false
+        ? '<p>' + escapeHtml(item.text || '') + '</p>' +
+          '<div class="affapp-inline">' +
+          '  <button type="button" class="affapp-tertiary" data-action="affapp-tts" data-id="' + item.id + '">Listen</button>' +
+          '</div>'
+        : '<details class="affapp-card-collapse"' + detailsOpen + '>' +
+          '  <summary><span>' + escapeHtml(snippet) + '</span></summary>' +
+          '  <p>' + escapeHtml(item.text || '') + '</p>' +
+          '  <div class="affapp-inline">' +
+          '    <button type="button" class="affapp-tertiary" data-action="affapp-tts" data-id="' + item.id + '">Listen</button>' +
+          '  </div>' +
+          '</details>';
+      return '<article class="affapp-card" data-selected="' + isSelected + '">' +
+        '<header class="affapp-inline" style="justify-content: space-between; align-items: flex-start;">' +
         '  <div>' +
         '    <h2>' + escapeHtml(item.title || 'Affirmation') + '</h2>' +
         '    <span class="affapp-tag">' + escapeHtml(capitalize(item.category || 'custom')) + '</span>' +
         '  </div>' +
         '  <button type="button" class="affapp-secondary" data-action="affapp-select-affirmation" data-id="' + item.id + '">' + (isSelected ? 'Selected' : 'Practice') + '</button>' +
         '</header>' +
-        '<p>' + escapeHtml(item.text || '') + '</p>' +
-        '<div class="affapp-inline">' +
-        '  <button type="button" class="affapp-tertiary" data-action="affapp-tts" data-id="' + item.id + '">Listen</button>' +
-        '</div>' +
+        body +
         '</article>';
     }).join('') + '</div>';
   }
@@ -752,6 +1005,20 @@
     return modes.map(function (mode) {
       return '<option value="' + mode + '" ' + (mode === value ? 'selected' : '') + '>' + capitalize(mode) + '</option>';
     }).join('');
+  }
+
+  function buildSnippet(text) {
+    text = String(text || '').trim();
+    if (!text) {
+      return 'Read affirmation';
+    }
+    if (text.length > 80) {
+      text = text.slice(0, 77).trim();
+      if (!/[.!?…]$/.test(text)) {
+        text += '…';
+      }
+    }
+    return text;
   }
 
   function escapeHtml(value) {
