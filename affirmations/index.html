@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Affirmation studio for WalletHabit — craft, practice, and track daily affirmations with offline support.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="apple-touch-icon" href="./assets/icon-192.svg">
+  <link rel="stylesheet" href="./css/styles.css">
+  <title>WalletHabit Affirmations</title>
+  <script>
+    window.__AFF_CFG__ = {
+      SUPABASE_URL: window.env?.SUPABASE_URL || 'https://biiwvbndpkufyxvhxyxh.supabase.co',
+      SUPABASE_ANON_KEY: window.env?.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpaXd2Ym5kcGt1Znl4dmh4eXhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2NjcwNzAsImV4cCI6MjA3NjI0MzA3MH0.O1SH2ujUz30xW72Jdz6SiBnmhy9tq7x7SwtnXc1fWDk'
+    };
+  </script>
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
+    window.AFFDB = window.AFFDB || {};
+    window.AFFDB.__supabaseCreateClient = createClient;
+  </script>
+</head>
+<body class="affapp-body">
+  <noscript class="affapp-noscript">JavaScript is required to use WalletHabit Affirmations.</noscript>
+  <div class="affapp-shell" data-route="create">
+    <header class="affapp-header">
+      <div class="affapp-brand">
+        <span class="affapp-brand-mark" aria-hidden="true">🌱</span>
+        <span class="affapp-brand-text">WalletHabit Affirmations</span>
+      </div>
+      <nav class="affapp-tabs" aria-label="Affirmations sections">
+        <a class="affapp-tab is-active" href="#/create" data-route="create">Create</a>
+        <a class="affapp-tab" href="#/practice" data-route="practice">Practice</a>
+        <a class="affapp-tab" href="#/history" data-route="history">History</a>
+        <a class="affapp-tab" href="#/settings" data-route="settings">Settings</a>
+      </nav>
+      <div class="affapp-statusbar" role="status" aria-live="polite" id="affapp-status"></div>
+    </header>
+    <main id="affapp-main" class="affapp-main" aria-live="polite"></main>
+    <footer class="affapp-footer">
+      <div class="affapp-footer-left">
+        <span id="affapp-auth-state" class="affapp-chip">Guest mode</span>
+        <span id="affapp-sync-state" class="affapp-chip">Offline ready</span>
+      </div>
+      <button type="button" class="affapp-secondary" id="affapp-sync-now">Sync now</button>
+    </footer>
+  </div>
+  <script src="./js/supabase-client.js" defer></script>
+  <script src="./js/storage.js" defer></script>
+  <script src="./js/templates.js" defer></script>
+  <script src="./js/db.js" defer></script>
+  <script src="./js/ui.js" defer></script>
+  <script src="./js/pwa.js" defer></script>
+  <script src="./js/app.js" defer></script>
+</body>
+</html>
