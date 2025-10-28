@@ -246,11 +246,43 @@
         <label class="ffapp-field">Name<input class="ffapp-input" type="text" name="name" required></label>
         <label class="ffapp-field">Units<input class="ffapp-input" type="number" name="units" step="0.01" min="0" required></label>
         <label class="ffapp-field">Average cost<input class="ffapp-input" type="number" name="cost" step="0.01" min="0" required></label>
+        <label class="ffapp-field">Price (optional)<input class="ffapp-input" type="number" name="price" step="0.01" min="0"></label>
         <button type="submit" class="ffapp-primary">Save</button>
       </form>
       <div class="ffapp-card">
-        <h2>Investments</h2>
-        <ul class="ffapp-list" data-list="investments"></ul>
+        <div class="ffapp-card-header">
+          <h2>Investments</h2>
+          <button type="button" class="ffapp-secondary" id="ffapp-investment-reset-prices">Reset prices</button>
+        </div>
+        <div class="ffapp-tablewrap">
+          <table class="ffapp-table ffapp-table-investments">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Name</th>
+                <th class="ffapp-cell-number">Units</th>
+                <th class="ffapp-cell-number">Avg Cost</th>
+                <th class="ffapp-cell-number">Price</th>
+                <th class="ffapp-cell-number">Market Value</th>
+                <th class="ffapp-cell-number">Unrealized P&amp;L</th>
+                <th class="ffapp-cell-number">P&amp;L %</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody data-role="investment-summary">
+              <tr class="ffapp-investment-summary-row">
+                <td colspan="3">Portfolio</td>
+                <td class="ffapp-cell-number" data-summary="cost">€0.00</td>
+                <td class="ffapp-cell-number">—</td>
+                <td class="ffapp-cell-number" data-summary="marketValue">€0.00</td>
+                <td class="ffapp-cell-number" data-summary="unrealized">€0.00</td>
+                <td class="ffapp-cell-number" data-summary="unrealizedPct">—</td>
+                <td></td>
+              </tr>
+            </tbody>
+            <tbody data-list="investments"></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </template>
