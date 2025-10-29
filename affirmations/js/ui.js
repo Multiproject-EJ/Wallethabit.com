@@ -11,6 +11,16 @@
   var installBtn;
   var toastEl;
   var navTabs;
+  var themeBtn;
+  var themeIcon;
+  var themeLabel;
+
+  var themeOrder = ['sand', 'dark', 'bliss'];
+  var themeMeta = {
+    sand: { label: 'Sand', icon: '🏖️', accent: '#f6f4f1' },
+    dark: { label: 'Midnight', icon: '🌙', accent: '#0b1120' },
+    bliss: { label: 'Bliss', icon: '🌈', accent: '#fbcfe8' }
+  };
 
   var installAvailable = false;
 
@@ -23,7 +33,8 @@
     toast: toast,
     setInstallAvailable: setInstallAvailable,
     highlightRoute: highlightRoute,
-    showConfetti: showConfetti
+    showConfetti: showConfetti,
+    applyTheme: applyTheme
   };
 
   function init(app) {
@@ -33,6 +44,16 @@
     syncEl = document.getElementById('affapp-sync-state');
     syncBtn = document.getElementById('affapp-sync-now');
     navTabs = Array.prototype.slice.call(document.querySelectorAll('.affapp-tab'));
+    themeBtn = document.getElementById('affapp-theme-toggle');
+    if (themeBtn) {
+      themeIcon = themeBtn.querySelector('.affapp-theme-icon');
+      themeLabel = themeBtn.querySelector('.affapp-theme-label');
+      themeBtn.addEventListener('click', function () {
+        if (app && app.actions && typeof app.actions.cycleTheme === 'function') {
+          app.actions.cycleTheme();
+        }
+      });
+    }
 
     if (syncBtn) {
       syncBtn.addEventListener('click', function () {
@@ -62,6 +83,7 @@
     });
 
     highlightRoute('create');
+    applyTheme(document.documentElement.getAttribute('data-affapp-theme') || 'sand');
   }
 
   function render(state) {
@@ -134,6 +156,43 @@
         closePanel(button.getAttribute('data-panel-close'));
       });
     });
+  }
+
+  function applyTheme(theme) {
+    var activeTheme = themeOrder.indexOf(theme) === -1 ? 'sand' : theme;
+    document.documentElement.setAttribute('data-affapp-theme', activeTheme);
+    if (document.body) {
+      document.body.setAttribute('data-affapp-theme', activeTheme);
+    }
+    updateThemeToggle(activeTheme);
+    updateThemeColorMeta(activeTheme);
+  }
+
+  function updateThemeToggle(theme) {
+    if (!themeBtn) {
+      return;
+    }
+    var meta = themeMeta[theme] || themeMeta.sand;
+    var nextTheme = themeOrder[(themeOrder.indexOf(theme) + 1) % themeOrder.length];
+    var nextMeta = themeMeta[nextTheme] || themeMeta.sand;
+    themeBtn.setAttribute('data-theme', theme);
+    themeBtn.setAttribute('aria-label', 'Switch theme (current: ' + meta.label + ')');
+    themeBtn.setAttribute('title', 'Next: ' + nextMeta.label + ' theme');
+    if (themeIcon) {
+      themeIcon.textContent = meta.icon;
+    }
+    if (themeLabel) {
+      themeLabel.textContent = meta.label;
+    }
+  }
+
+  function updateThemeColorMeta(theme) {
+    var metaTag = document.querySelector('meta[name="theme-color"]');
+    if (!metaTag) {
+      return;
+    }
+    var meta = themeMeta[theme] || themeMeta.sand;
+    metaTag.setAttribute('content', meta.accent);
   }
 
   function renderCreate(state) {

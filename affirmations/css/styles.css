@@ -2,17 +2,138 @@
   color-scheme: light;
   --affapp-bg: #f6f4f1;
   --affapp-surface: #ffffff;
+  --affapp-surface-soft: #fbfaf7;
+  --affapp-panel-bg: rgba(255, 255, 255, 0.65);
+  --affapp-collapse-bg: #fbfaf7;
+  --affapp-collapse-open-bg: #f7f4ef;
   --affapp-border: #e4dfd6;
   --affapp-text: #2e251c;
   --affapp-muted: #7e7469;
   --affapp-accent: #2d6a4f;
   --affapp-accent-soft: #d8efe4;
+  --affapp-accent-strong: #24543d;
+  --affapp-accent-shadow: 0 16px 32px rgba(45, 106, 79, 0.25);
+  --affapp-on-accent: #f4fff7;
+  --affapp-outline: rgba(45, 106, 79, 0.25);
+  --affapp-outline-strong: rgba(45, 106, 79, 0.4);
+  --affapp-chip-bg: rgba(45, 106, 79, 0.1);
+  --affapp-tag-bg: rgba(45, 106, 79, 0.12);
+  --affapp-empty-bg: rgba(255, 255, 255, 0.6);
+  --affapp-field-bg: #ffffff;
+  --affapp-card-bg: #ffffff;
+  --affapp-card-shadow: 0 12px 24px rgba(35, 30, 20, 0.05);
+  --affapp-list-shadow: 0 10px 20px rgba(35, 30, 20, 0.05);
+  --affapp-icon-hover: rgba(45, 106, 79, 0.08);
+  --affapp-heatmap-base: rgba(45, 106, 79, 0.08);
+  --affapp-heatmap-zero: rgba(125, 118, 110, 0.08);
+  --affapp-heatmap-mid: rgba(45, 106, 79, 0.2);
+  --affapp-heatmap-strong: rgba(45, 106, 79, 0.35);
+  --affapp-heatmap-on-strong: #f6fff9;
+  --affapp-confetti-gradient: linear-gradient(180deg, #2d6a4f, #95d5b2);
+  --affapp-alert-bg: #fff3cd;
+  --affapp-alert-text: #8a6d3b;
+  --affapp-alert-border: #f1e2b7;
+  --affapp-toast-bg: rgba(255, 255, 255, 0.95);
+  --affapp-overlay-backdrop: rgba(31, 24, 17, 0.28);
+  --affapp-drawer-bg: #ffffff;
+  --affapp-drawer-border: var(--affapp-border);
   --affapp-radius-large: 28px;
   --affapp-radius-medium: 18px;
   --affapp-radius-small: 12px;
   --affapp-shadow: 0 18px 40px rgba(35, 30, 20, 0.06);
   --affapp-shadow-strong: 0 28px 60px rgba(35, 30, 20, 0.12);
   --affapp-transition: 160ms ease;
+}
+
+:root[data-affapp-theme="sand"] {
+  color-scheme: light;
+  --affapp-bg: #f6f4f1;
+}
+
+:root[data-affapp-theme="dark"] {
+  color-scheme: dark;
+  --affapp-bg: radial-gradient(circle at 20% 20%, #111b2e 0%, #050814 100%);
+  --affapp-surface: #101a2a;
+  --affapp-surface-soft: rgba(17, 24, 39, 0.82);
+  --affapp-panel-bg: rgba(8, 17, 31, 0.8);
+  --affapp-collapse-bg: rgba(15, 23, 42, 0.65);
+  --affapp-collapse-open-bg: rgba(30, 41, 59, 0.75);
+  --affapp-border: rgba(148, 163, 184, 0.28);
+  --affapp-text: #e2e8f0;
+  --affapp-muted: #94a3b8;
+  --affapp-accent: #38bdf8;
+  --affapp-accent-soft: rgba(56, 189, 248, 0.18);
+  --affapp-accent-strong: #0ea5e9;
+  --affapp-accent-shadow: 0 22px 44px rgba(14, 165, 233, 0.28);
+  --affapp-on-accent: #f0f9ff;
+  --affapp-outline: rgba(56, 189, 248, 0.35);
+  --affapp-outline-strong: rgba(56, 189, 248, 0.55);
+  --affapp-chip-bg: rgba(56, 189, 248, 0.12);
+  --affapp-tag-bg: rgba(56, 189, 248, 0.18);
+  --affapp-empty-bg: rgba(8, 17, 31, 0.8);
+  --affapp-field-bg: #0f172a;
+  --affapp-card-bg: rgba(15, 23, 42, 0.9);
+  --affapp-card-shadow: 0 32px 64px rgba(2, 6, 23, 0.45);
+  --affapp-list-shadow: 0 28px 56px rgba(2, 6, 23, 0.38);
+  --affapp-icon-hover: rgba(148, 163, 184, 0.12);
+  --affapp-heatmap-base: rgba(56, 189, 248, 0.16);
+  --affapp-heatmap-zero: rgba(148, 163, 184, 0.18);
+  --affapp-heatmap-mid: rgba(56, 189, 248, 0.28);
+  --affapp-heatmap-strong: rgba(56, 189, 248, 0.42);
+  --affapp-heatmap-on-strong: #0b1120;
+  --affapp-confetti-gradient: linear-gradient(180deg, #38bdf8, #818cf8);
+  --affapp-alert-bg: rgba(15, 23, 42, 0.85);
+  --affapp-alert-text: #e2e8f0;
+  --affapp-alert-border: rgba(56, 189, 248, 0.3);
+  --affapp-toast-bg: rgba(15, 23, 42, 0.96);
+  --affapp-overlay-backdrop: rgba(2, 6, 23, 0.72);
+  --affapp-drawer-bg: rgba(15, 23, 42, 0.95);
+  --affapp-drawer-border: rgba(56, 189, 248, 0.18);
+  --affapp-shadow: 0 28px 80px rgba(2, 6, 23, 0.6);
+  --affapp-shadow-strong: 0 40px 96px rgba(2, 6, 23, 0.7);
+}
+
+:root[data-affapp-theme="bliss"] {
+  color-scheme: light;
+  --affapp-bg: linear-gradient(180deg, #fdf2f8 0%, #e0f2fe 100%);
+  --affapp-surface: rgba(255, 255, 255, 0.92);
+  --affapp-surface-soft: rgba(255, 255, 255, 0.85);
+  --affapp-panel-bg: rgba(255, 255, 255, 0.75);
+  --affapp-collapse-bg: rgba(255, 255, 255, 0.78);
+  --affapp-collapse-open-bg: rgba(255, 255, 255, 0.9);
+  --affapp-border: rgba(244, 114, 182, 0.35);
+  --affapp-text: #2b1c33;
+  --affapp-muted: #6b7280;
+  --affapp-accent: #ec4899;
+  --affapp-accent-soft: rgba(236, 72, 153, 0.18);
+  --affapp-accent-strong: #db2777;
+  --affapp-accent-shadow: 0 22px 44px rgba(236, 72, 153, 0.32);
+  --affapp-on-accent: #fff5fb;
+  --affapp-outline: rgba(59, 130, 246, 0.28);
+  --affapp-outline-strong: rgba(236, 72, 153, 0.45);
+  --affapp-chip-bg: rgba(236, 72, 153, 0.15);
+  --affapp-tag-bg: rgba(168, 85, 247, 0.18);
+  --affapp-empty-bg: rgba(255, 255, 255, 0.65);
+  --affapp-field-bg: rgba(255, 255, 255, 0.95);
+  --affapp-card-bg: rgba(255, 255, 255, 0.92);
+  --affapp-card-shadow: 0 22px 48px rgba(236, 72, 153, 0.18);
+  --affapp-list-shadow: 0 18px 36px rgba(37, 99, 235, 0.16);
+  --affapp-icon-hover: rgba(14, 165, 233, 0.15);
+  --affapp-heatmap-base: rgba(236, 72, 153, 0.2);
+  --affapp-heatmap-zero: rgba(14, 165, 233, 0.18);
+  --affapp-heatmap-mid: rgba(59, 130, 246, 0.3);
+  --affapp-heatmap-strong: rgba(236, 72, 153, 0.45);
+  --affapp-heatmap-on-strong: #fff1f9;
+  --affapp-confetti-gradient: linear-gradient(180deg, #ec4899, #a855f7);
+  --affapp-alert-bg: rgba(255, 255, 255, 0.85);
+  --affapp-alert-text: #9d174d;
+  --affapp-alert-border: rgba(236, 72, 153, 0.35);
+  --affapp-toast-bg: rgba(255, 255, 255, 0.9);
+  --affapp-overlay-backdrop: rgba(124, 58, 237, 0.35);
+  --affapp-drawer-bg: rgba(255, 255, 255, 0.94);
+  --affapp-drawer-border: rgba(236, 72, 153, 0.35);
+  --affapp-shadow: 0 26px 60px rgba(30, 64, 175, 0.25);
+  --affapp-shadow-strong: 0 36px 80px rgba(168, 85, 247, 0.25);
 }
 
 * {
@@ -47,6 +168,14 @@ body.affapp-body {
   border: 1px solid transparent;
 }
 
+.affapp-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .affapp-brand {
   display: inline-flex;
   align-items: center;
@@ -57,6 +186,40 @@ body.affapp-body {
 
 .affapp-brand-mark {
   font-size: 1.5em;
+}
+
+.affapp-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--affapp-border);
+  background: var(--affapp-card-bg);
+  color: var(--affapp-text);
+  padding: 0.45rem 0.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--affapp-transition);
+  box-shadow: none;
+}
+
+.affapp-theme-toggle:hover,
+.affapp-theme-toggle:focus-visible {
+  background: var(--affapp-accent-soft);
+  border-color: var(--affapp-outline-strong);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--affapp-outline);
+}
+
+.affapp-theme-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.affapp-theme-label {
+  line-height: 1;
 }
 
 .affapp-tabs {
@@ -82,15 +245,15 @@ body.affapp-body {
 .affapp-tab:hover,
 .affapp-tab:focus-visible {
   color: var(--affapp-text);
-  border-color: rgba(45, 106, 79, 0.2);
+  border-color: var(--affapp-outline);
   outline: none;
 }
 
 .affapp-tab.is-active {
   background: var(--affapp-accent);
-  color: #f4fff7;
+  color: var(--affapp-on-accent);
   border-color: var(--affapp-accent);
-  box-shadow: 0 16px 32px rgba(45, 106, 79, 0.25);
+  box-shadow: var(--affapp-accent-shadow);
 }
 
 .affapp-statusbar {
@@ -152,7 +315,7 @@ body.affapp-body {
   border-radius: var(--affapp-radius-medium);
   border: 1px solid var(--affapp-border);
   padding: 1rem;
-  background: #fbfaf7;
+  background: var(--affapp-surface-soft);
   line-height: 1.6;
   min-height: 120px;
   display: flex;
@@ -172,7 +335,7 @@ body.affapp-body {
 }
 
 .affapp-stage-panel {
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--affapp-panel-bg);
   border-radius: var(--affapp-radius-large);
   padding: 1.25rem;
   border: 1px solid var(--affapp-border);
@@ -218,7 +381,7 @@ body.affapp-body {
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
-  background: rgba(45, 106, 79, 0.1);
+  background: var(--affapp-chip-bg);
   color: var(--affapp-accent);
 }
 
@@ -260,7 +423,7 @@ body.affapp-body {
   border: 1px solid var(--affapp-border);
   padding: 0.65rem 0.8rem;
   font: inherit;
-  background: #fff;
+  background: var(--affapp-field-bg);
   color: inherit;
   transition: var(--affapp-transition);
 }
@@ -268,8 +431,8 @@ body.affapp-body {
 .affapp-input:focus,
 .affapp-textarea:focus,
 .affapp-select:focus {
-  outline: 2px solid rgba(45, 106, 79, 0.25);
-  border-color: rgba(45, 106, 79, 0.4);
+  outline: 2px solid var(--affapp-outline);
+  border-color: var(--affapp-outline-strong);
 }
 
 .affapp-textarea {
@@ -290,22 +453,22 @@ button.affapp-tertiary {
 
 button.affapp-primary {
   background: var(--affapp-accent);
-  color: #f5fff9;
-  box-shadow: 0 16px 32px rgba(45, 106, 79, 0.25);
+  color: var(--affapp-on-accent);
+  box-shadow: var(--affapp-accent-shadow);
 }
 
 button.affapp-primary:hover {
-  background: #24543d;
+  background: var(--affapp-accent-strong);
 }
 
 button.affapp-secondary {
-  background: #ffffff;
+  background: var(--affapp-surface);
   color: var(--affapp-text);
   border: 1px solid var(--affapp-border);
 }
 
 button.affapp-secondary:hover {
-  border-color: rgba(45, 106, 79, 0.3);
+  border-color: var(--affapp-outline-strong);
 }
 
 button.affapp-tertiary {
@@ -316,7 +479,7 @@ button.affapp-tertiary {
 
 button.affapp-tertiary:hover {
   color: var(--affapp-text);
-  border-color: rgba(45, 106, 79, 0.3);
+  border-color: var(--affapp-outline-strong);
 }
 
 .affapp-card-list {
@@ -328,8 +491,8 @@ button.affapp-tertiary:hover {
   border-radius: var(--affapp-radius-medium);
   border: 1px solid var(--affapp-border);
   padding: 1rem;
-  background: #fff;
-  box-shadow: 0 12px 24px rgba(35, 30, 20, 0.05);
+  background: var(--affapp-card-bg);
+  box-shadow: var(--affapp-card-shadow);
   display: grid;
   gap: 0.75rem;
 }
@@ -340,7 +503,7 @@ button.affapp-tertiary:hover {
 
 .affapp-card[data-selected="true"] {
   border-color: var(--affapp-accent);
-  box-shadow: 0 18px 36px rgba(45, 106, 79, 0.16);
+  box-shadow: var(--affapp-shadow);
 }
 
 .affapp-card h2,
@@ -351,13 +514,13 @@ button.affapp-tertiary:hover {
 
 .affapp-card-collapse {
   border-radius: var(--affapp-radius-small);
-  border: 1px solid rgba(228, 223, 214, 0.8);
+  border: 1px solid var(--affapp-border);
   padding: 0.75rem 1rem;
-  background: #fbfaf7;
+  background: var(--affapp-collapse-bg);
 }
 
 .affapp-card-collapse[open] {
-  background: #f7f4ef;
+  background: var(--affapp-collapse-open-bg);
 }
 
 .affapp-card-collapse summary {
@@ -381,7 +544,7 @@ button.affapp-tertiary:hover {
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  background: rgba(45, 106, 79, 0.12);
+  background: var(--affapp-tag-bg);
   color: var(--affapp-accent);
 }
 
@@ -391,7 +554,7 @@ button.affapp-tertiary:hover {
   padding: 1rem;
   text-align: center;
   color: var(--affapp-muted);
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--affapp-empty-bg);
 }
 
 .affapp-list {
@@ -406,8 +569,8 @@ button.affapp-tertiary:hover {
   padding: 0.75rem 1rem;
   border-radius: var(--affapp-radius-small);
   border: 1px solid var(--affapp-border);
-  background: #fff;
-  box-shadow: 0 10px 20px rgba(35, 30, 20, 0.05);
+  background: var(--affapp-card-bg);
+  box-shadow: var(--affapp-list-shadow);
   display: grid;
   gap: 0.35rem;
 }
@@ -416,7 +579,7 @@ button.affapp-tertiary:hover {
   border-radius: var(--affapp-radius-medium);
   border: 1px solid var(--affapp-border);
   padding: 0.9rem 1rem;
-  background: #fff;
+  background: var(--affapp-card-bg);
   text-align: left;
   display: grid;
   gap: 0.35rem;
@@ -457,7 +620,7 @@ button.affapp-tertiary:hover {
   padding: 0.4rem 0.7rem;
   border-radius: 999px;
   border: 1px solid var(--affapp-border);
-  background: #fff;
+  background: var(--affapp-card-bg);
   font-size: 0.85rem;
 }
 
@@ -484,7 +647,7 @@ button.affapp-tertiary:hover {
 .affapp-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(31, 24, 17, 0.28);
+  background: var(--affapp-overlay-backdrop);
   display: none;
   align-items: center;
   justify-content: center;
@@ -499,10 +662,10 @@ button.affapp-tertiary:hover {
 .affapp-drawer {
   width: min(720px, 100%);
   max-height: min(640px, 100%);
-  background: #ffffff;
+  background: var(--affapp-drawer-bg);
   border-radius: var(--affapp-radius-large);
   box-shadow: var(--affapp-shadow-strong);
-  border: 1px solid var(--affapp-border);
+  border: 1px solid var(--affapp-drawer-border);
   padding: clamp(1rem, 2vw, 1.75rem);
   display: flex;
   flex-direction: column;
@@ -544,7 +707,7 @@ button.affapp-tertiary:hover {
 }
 
 .affapp-icon-button:hover {
-  background: rgba(45, 106, 79, 0.08);
+  background: var(--affapp-icon-hover);
   color: var(--affapp-text);
 }
 
@@ -556,7 +719,7 @@ button.affapp-tertiary:hover {
 .affapp-toast {
   position: fixed;
   inset: auto clamp(1rem, 5vw, 2rem) clamp(1rem, 5vw, 2rem);
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--affapp-toast-bg);
   border-radius: var(--affapp-radius-medium);
   color: var(--affapp-text);
   padding: 0.9rem 1.25rem;
@@ -589,23 +752,23 @@ button.affapp-tertiary:hover {
   display: grid;
   place-items: center;
   font-size: 0.85rem;
-  background: rgba(45, 106, 79, 0.08);
+  background: var(--affapp-heatmap-base);
   color: var(--affapp-text);
 }
 
 .affapp-heatmap-cell[data-count="0"] {
-  background: rgba(125, 118, 110, 0.08);
+  background: var(--affapp-heatmap-zero);
 }
 
 .affapp-heatmap-cell[data-count="2"],
 .affapp-heatmap-cell[data-count="3"] {
-  background: rgba(45, 106, 79, 0.2);
+  background: var(--affapp-heatmap-mid);
 }
 
 .affapp-heatmap-cell[data-count="4"],
 .affapp-heatmap-cell[data-count="5"] {
-  background: rgba(45, 106, 79, 0.35);
-  color: #f6fff9;
+  background: var(--affapp-heatmap-strong);
+  color: var(--affapp-heatmap-on-strong);
 }
 
 .affapp-confetti {
@@ -621,7 +784,7 @@ button.affapp-tertiary:hover {
   top: -10vh;
   width: 12px;
   height: 18px;
-  background: linear-gradient(180deg, #2d6a4f, #95d5b2);
+  background: var(--affapp-confetti-gradient);
   opacity: 0.8;
   border-radius: 4px;
   animation: affapp-confetti-fall linear forwards;
@@ -637,11 +800,11 @@ button.affapp-tertiary:hover {
 .affapp-noscript {
   margin: 1rem;
   text-align: center;
-  background: #fff3cd;
-  color: #8a6d3b;
+  background: var(--affapp-alert-bg);
+  color: var(--affapp-alert-text);
   padding: 1rem;
   border-radius: var(--affapp-radius-medium);
-  border: 1px solid #f1e2b7;
+  border: 1px solid var(--affapp-alert-border);
 }
 
 .affapp-pill-group {
@@ -653,7 +816,7 @@ button.affapp-tertiary:hover {
   border-radius: var(--affapp-radius-medium);
   border: 1px solid var(--affapp-border);
   padding: 0.75rem 1rem;
-  background: #fff;
+  background: var(--affapp-card-bg);
   text-align: left;
   display: grid;
   gap: 0.35rem;

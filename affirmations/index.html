@@ -1,10 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-affapp-theme="sand">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#f6f4f1">
   <meta name="description" content="Affirmation studio for WalletHabit — craft, practice, and track daily affirmations with offline support.">
+  <script>
+    (function () {
+      try {
+        var stored = window.localStorage && window.localStorage.getItem('affapp_theme_v1');
+        if (stored) {
+          var theme = JSON.parse(stored);
+          if (typeof theme === 'string') {
+            document.documentElement.setAttribute('data-affapp-theme', theme);
+          }
+        }
+      } catch (error) {
+        console.warn('[Affirmations] Unable to preload theme', error);
+      }
+    })();
+  </script>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
   <link rel="apple-touch-icon" href="./assets/icon-192.svg">
@@ -26,9 +41,15 @@
   <noscript class="affapp-noscript">JavaScript is required to use WalletHabit Affirmations.</noscript>
   <div class="affapp-shell" data-route="create">
     <header class="affapp-header">
-      <div class="affapp-brand">
-        <span class="affapp-brand-mark" aria-hidden="true">🌱</span>
-        <span class="affapp-brand-text">WalletHabit Affirmations</span>
+      <div class="affapp-header-top">
+        <div class="affapp-brand">
+          <span class="affapp-brand-mark" aria-hidden="true">🌱</span>
+          <span class="affapp-brand-text">WalletHabit Affirmations</span>
+        </div>
+        <button type="button" class="affapp-theme-toggle" id="affapp-theme-toggle" aria-label="Switch theme" data-theme="sand">
+          <span class="affapp-theme-icon" aria-hidden="true">🏖️</span>
+          <span class="affapp-theme-label">Sand</span>
+        </button>
       </div>
       <nav class="affapp-tabs" aria-label="Affirmations sections">
         <a class="affapp-tab is-active" href="#/create" data-route="create">Create</a>

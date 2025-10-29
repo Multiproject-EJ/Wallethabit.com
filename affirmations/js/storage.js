@@ -9,6 +9,7 @@
   var SETTINGS_KEY = 'affapp_settings_v1';
   var QUEUE_KEY = 'affapp_queue_v1';
   var META_KEY = 'affapp_meta_v1';
+  var THEME_KEY = 'affapp_theme_v1';
 
   AFF.storage = {
     init: init,
@@ -22,7 +23,9 @@
     enqueue: enqueue,
     flushQueue: flushQueue,
     getMeta: getMeta,
-    saveMeta: saveMeta
+    saveMeta: saveMeta,
+    getTheme: getTheme,
+    saveTheme: saveTheme
   };
 
   function init() {
@@ -73,6 +76,21 @@
 
   function saveSettings(settings) {
     writeJSON(SETTINGS_KEY, settings);
+  }
+
+  function getTheme() {
+    var stored = readJSON(THEME_KEY, 'sand');
+    if (typeof stored === 'string' && ['sand', 'dark', 'bliss'].indexOf(stored) !== -1) {
+      return stored;
+    }
+    return 'sand';
+  }
+
+  function saveTheme(theme) {
+    if (['sand', 'dark', 'bliss'].indexOf(theme) === -1) {
+      return;
+    }
+    writeJSON(THEME_KEY, theme);
   }
 
   function enqueue(item) {
