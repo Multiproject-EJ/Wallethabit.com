@@ -7,6 +7,13 @@
   var config = window.__AFF_CFG__ || {};
   var ttsUtterance = null;
 
+  var THEMES = ['sand', 'dark', 'bliss'];
+  var THEME_LABELS = {
+    sand: 'Sand',
+    dark: 'Midnight',
+    bliss: 'Bliss'
+  };
+
   var state = {
     route: parseRoute(window.location.hash),
     affirmations: [],
@@ -22,7 +29,8 @@
     streak: { streak: 0, lastPracticeDate: null },
     isOnline: navigator.onLine,
     user: null,
-    highContrast: false
+    highContrast: false,
+    theme: 'sand'
   };
 
   AFF.state = state;
@@ -42,7 +50,8 @@
     updateAffirmation: updateAffirmation,
     shiftHistoryMonth: shiftHistoryMonth,
     playTextToSpeech: playTextToSpeech,
-    toggleContrast: toggleContrast
+    toggleContrast: toggleContrast,
+    cycleTheme: cycleTheme
   };
 
   document.addEventListener('DOMContentLoaded', init);
@@ -53,13 +62,18 @@
     state.affirmations = AFF.storage.getAffirmations();
     state.sessions = AFF.storage.getSessions();
     state.queueStatus = { pending: AFF.storage.getQueue().length };
+    state.theme = AFF.storage.getTheme();
     var today = new Date();
     state.historyMonth = today.getUTCMonth() + 1;
     state.historyYear = today.getUTCFullYear();
     state.streak = computeLocalStreak(state.sessions);
+    if (document && document.documentElement) {
+      document.documentElement.setAttribute('data-affapp-theme', state.theme);
+    }
 
     AFF.ui.init(AFF);
     AFF.ui.highlightRoute(state.route);
+    AFF.ui.applyTheme(state.theme);
     AFF.ui.render(state);
     AFF.ui.setStatus('Ready in guest mode.');
     AFF.ui.updateAuthBadge('Guest mode', 'info');
@@ -158,6 +172,19 @@
 
   function render() {
     AFF.ui.render(state);
+  }
+
+  function cycleTheme() {
+    var currentIndex = THEMES.indexOf(state.theme);
+    if (currentIndex === -1) {
+      currentIndex = 0;
+    }
+    var next = THEMES[(currentIndex + 1) % THEMES.length];
+    state.theme = next;
+    AFF.storage.saveTheme(next);
+    AFF.ui.applyTheme(next);
+    var label = THEME_LABELS[next] || 'Theme';
+    AFF.ui.setStatus('Theme switched to ' + label + '.');
   }
 
   function saveAffirmation(payload) {
