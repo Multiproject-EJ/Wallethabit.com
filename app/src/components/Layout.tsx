@@ -150,11 +150,18 @@ export default function Layout() {
   } = useDemoData()
 
   const navItems = useMemo<NavItem[]>(() => {
-    const primaryNav: NavItem = isAuthenticated
-      ? { type: 'internal', to: '/dashboard', label: 'Dashboard', end: true }
-      : { type: 'internal', to: '/', label: 'Start', end: true }
+    if (!isAuthenticated) {
+      return [...baseNavItems]
+    }
 
-    return [primaryNav, ...baseNavItems]
+    const dashboardNav: NavItem = {
+      type: 'internal',
+      to: '/dashboard',
+      label: 'Dashboard',
+      end: true,
+    }
+
+    return [dashboardNav, ...baseNavItems]
   }, [isAuthenticated])
 
   const skin = profile.skin ?? 'classic'
