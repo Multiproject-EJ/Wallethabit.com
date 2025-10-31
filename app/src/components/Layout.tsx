@@ -173,6 +173,17 @@ export default function Layout() {
   const modulesButtonRef = useRef<HTMLButtonElement | null>(null)
   const modulesPanelRef = useRef<HTMLDivElement | null>(null)
   const mobileMenuId = 'mobile-navigation-panel'
+  const [isUnderConstructionVisible, setUnderConstructionVisible] = useState(true)
+  const constructionStorageKey = 'wallethabit-under-construction-dismissed'
+
+  const handleDismissUnderConstruction = () => {
+    setUnderConstructionVisible(false)
+    try {
+      window.localStorage.setItem(constructionStorageKey, 'true')
+    } catch (error) {
+      console.error('Unable to write to local storage', error)
+    }
+  }
 
   const moduleGroups = useMemo(() => {
     const myModules = moduleCatalog.filter((module) => myModuleKeys.has(module.key))
@@ -207,6 +218,30 @@ export default function Layout() {
       setMobileModulesOpen(false)
     }
   }, [isAuthenticated])
+
+  useEffect(() => {
+    try {
+      const storedValue = window.localStorage.getItem(constructionStorageKey)
+      if (storedValue === 'true') {
+        setUnderConstructionVisible(false)
+      }
+    } catch (error) {
+      console.error('Unable to access local storage', error)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isUnderConstructionVisible) {
+      return
+    }
+
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isUnderConstructionVisible])
 
   useEffect(() => {
     if (!isMobileMenuOpen) {
@@ -279,6 +314,49 @@ export default function Layout() {
         isUltimate ? 'bg-[#f4efe6] text-[#3f2a1e]' : 'bg-sand text-navy'
       }`}
     >
+      {isUnderConstructionVisible && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-6 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="under-construction-title"
+        >
+          <div className="relative w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-8 text-center text-white shadow-[0_30px_80px_rgba(15,23,42,0.5)] backdrop-blur-2xl">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-9 w-9 text-white/80"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 18v-4a2 2 0 0 0-2-2h-1" />
+                <path d="M7 6H5a2 2 0 0 0-2 2v4" />
+                <rect width="14" height="12" x="7" y="6" rx="2" />
+                <path d="m7 10 4 0" />
+                <path d="m15 13 2 0" />
+                <path d="M12 16h.01" />
+              </svg>
+            </div>
+            <h2 id="under-construction-title" className="text-2xl font-semibold tracking-tight">
+              We're laying the foundation
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-white/80">
+              WalletHabit is still under construction. Expect fresh scaffolding, new features, and the occasional hard hat.
+            </p>
+            <button
+              type="button"
+              onClick={handleDismissUnderConstruction}
+              className="mt-6 text-[0.7rem] font-semibold uppercase tracking-[0.5em] text-white/20 underline decoration-dotted underline-offset-4 transition-colors hover:text-white/55 focus-visible:text-white/55 focus-visible:outline-none"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
 
       <header
         className={`border-b backdrop-blur transition-colors ${
