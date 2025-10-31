@@ -3221,7 +3221,7 @@ export default function Onboarding() {
                 </ul>
               ) : (
                 <p className="mt-3 text-[11px] text-slate-400">
-                  You're clear to complete this step — take a moment to wrap it up.
+                  You’re clear to complete this step — take a moment to wrap it up.
                 </p>
               )}
               <div className="mt-4 flex flex-wrap gap-2">

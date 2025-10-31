@@ -465,7 +465,7 @@ const taxRegions: Record<TaxRegionDefinition['id'], TaxRegionDefinition> = {
       },
     ],
     buildScenario: ({ inputs, formatters }) => {
-      const { scenario, annualTaxRelief, metrics } = buildUkScenario(inputs, formatters)
+      const { scenario, metrics } = buildUkScenario(inputs, formatters)
 
       return {
         metrics,
