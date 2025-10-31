@@ -1,8 +1,14 @@
-import { useMemo } from 'react'
+import { type ReactNode, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useStatusFeed } from '../lib/statusFeed'
 import type { StatusHealth } from '../lib/statusDemoData'
+import {
+  computeOverallHealth,
+  summarizeIncidents,
+  summarizeMaintenance,
+  summarizeServiceHealth,
+} from '../lib/statusUtils'
 
 const HEALTH_LABELS: Record<StatusHealth, string> = {
   operational: 'Operational',
@@ -59,19 +65,6 @@ const formatRelative = (iso: string) => {
   }
 }
 
-const computeOverallHealth = (healths: StatusHealth[]): StatusHealth => {
-  if (healths.some((state) => state === 'outage')) {
-    return 'outage'
-  }
-  if (healths.some((state) => state === 'degraded')) {
-    return 'degraded'
-  }
-  if (healths.some((state) => state === 'maintenance')) {
-    return 'maintenance'
-  }
-  return 'operational'
-}
-
 export default function Status() {
   const { snapshot, isLoading, error, refresh, isSupabaseLive } = useStatusFeed()
 
@@ -95,6 +88,21 @@ export default function Status() {
   const overallHealth = useMemo(
     () => computeOverallHealth(snapshot.services.map((service) => service.health)),
     [snapshot.services],
+  )
+
+  const serviceHealthSummary = useMemo(
+    () => summarizeServiceHealth(snapshot.services),
+    [snapshot.services],
+  )
+
+  const maintenanceSummary = useMemo(
+    () => summarizeMaintenance(snapshot.maintenance),
+    [snapshot.maintenance],
+  )
+
+  const incidentSummary = useMemo(
+    () => summarizeIncidents(snapshot.incidents),
+    [snapshot.incidents],
   )
 
   return (
@@ -152,6 +160,96 @@ export default function Status() {
           </div>
         </div>
       </header>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <SummaryCard
+          title="Service health distribution"
+          description="Snapshot of Supabase-backed components and the number of modules in each state."
+          supabaseReference={serviceHealthSummary.supabaseReference}
+        >
+          <dl className="grid grid-cols-2 gap-3 text-sm text-navy/80">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Operational</dt>
+              <dd className="text-lg font-semibold text-emerald-700">
+                {serviceHealthSummary.byHealth.operational}
+              </dd>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Maintenance</dt>
+              <dd className="text-lg font-semibold text-sky-700">
+                {serviceHealthSummary.byHealth.maintenance}
+              </dd>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Degraded</dt>
+              <dd className="text-lg font-semibold text-amber-600">
+                {serviceHealthSummary.byHealth.degraded}
+              </dd>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Outage</dt>
+              <dd className="text-lg font-semibold text-coral">
+                {serviceHealthSummary.byHealth.outage}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-3 text-xs text-navy/60">
+            Total tracked services: <span className="font-semibold text-navy">{serviceHealthSummary.total}</span>
+          </p>
+        </SummaryCard>
+
+        <SummaryCard
+          title="Maintenance pipeline"
+          description="Upcoming change windows pulled from status_maintenance so operations can prepare."
+          supabaseReference={maintenanceSummary.nextWindow?.supabaseReference ?? 'status_maintenance (no windows)'}
+        >
+          {maintenanceSummary.nextWindow ? (
+            <div className="space-y-3 text-sm text-navy/80">
+              <p className="text-lg font-semibold text-navy">{maintenanceSummary.nextWindow.title}</p>
+              <p className="text-xs text-navy/60">
+                {formatDateTime(maintenanceSummary.nextWindow.scheduledFor)} · {formatRelative(maintenanceSummary.nextWindow.scheduledFor)}
+              </p>
+              <p className="text-xs text-navy/60">Duration {maintenanceSummary.nextWindow.durationMinutes} minutes</p>
+              <p className="text-xs text-navy/60">
+                Components: {maintenanceSummary.nextWindow.components.length ? maintenanceSummary.nextWindow.components.join(', ') : 'TBC'}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-navy/70">No change windows are scheduled right now.</p>
+          )}
+          <p className="mt-3 text-xs text-navy/60">
+            Upcoming windows in Supabase: <span className="font-semibold text-navy">{maintenanceSummary.upcomingCount}</span>
+          </p>
+        </SummaryCard>
+
+        <SummaryCard
+          title="Incident pulse"
+          description="Quick read on unresolved incidents and the latest postmortem from status_incidents."
+          supabaseReference={incidentSummary.supabaseReference}
+        >
+          <dl className="grid gap-3 text-sm text-navy/80">
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Open incidents</dt>
+              <dd className="text-lg font-semibold text-coral">{incidentSummary.openCount}</dd>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Resolved last 30 days</dt>
+              <dd className="text-lg font-semibold text-emerald-700">{incidentSummary.recentlyResolvedCount}</dd>
+            </div>
+          </dl>
+          {incidentSummary.latestIncident ? (
+            <div className="mt-3 space-y-1 rounded-2xl border border-slate-200 bg-white/80 p-3 text-xs text-navy/70">
+              <p className="font-semibold text-navy">{incidentSummary.latestIncident.title}</p>
+              <p>{formatDateTime(incidentSummary.latestIncident.startedAt)}</p>
+              <p className="uppercase tracking-wide text-navy/50">
+                Components: {incidentSummary.latestIncident.components.length ? incidentSummary.latestIncident.components.join(', ') : 'All systems'}
+              </p>
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-navy/70">No incidents have been recorded yet.</p>
+          )}
+        </SummaryCard>
+      </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
         {Object.entries(groupedServices).map(([category, services]) => (
@@ -290,5 +388,25 @@ export default function Status() {
         </ul>
       </section>
     </div>
+  )
+}
+
+type SummaryCardProps = {
+  title: string
+  description: string
+  supabaseReference: string
+  children: ReactNode
+}
+
+function SummaryCard({ title, description, supabaseReference, children }: SummaryCardProps) {
+  return (
+    <article className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <header className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-primary">{supabaseReference}</p>
+        <h2 className="text-lg font-semibold text-navy">{title}</h2>
+        <p className="text-sm text-navy/70">{description}</p>
+      </header>
+      <div className="flex flex-1 flex-col justify-between gap-3">{children}</div>
+    </article>
   )
 }
