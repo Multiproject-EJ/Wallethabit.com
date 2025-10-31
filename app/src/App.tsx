@@ -27,6 +27,7 @@ import Auth from './pages/Auth'
 import Account from './pages/Account'
 import MobileModule from './pages/MobileModule'
 import Affirmation from './pages/Affirmation'
+import Status from './pages/Status'
 import { useDemoData } from './lib/demoDataStore'
 import { useSupabaseApp } from './lib/supabaseDataStore'
 
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="auth" element={<Auth />} />
           <Route path="account" element={<Account />} />
           <Route path="affirmation" element={<Affirmation />} />
+          <Route path="status" element={<Status />} />
           <Route path="update" element={<UpdateHub />} />
           <Route path="budget" element={<Budget />} />
           <Route path="debt" element={<Debt />} />

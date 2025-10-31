@@ -22,13 +22,13 @@
 - [x] Tax strategy lab (contribution & conversion planning)
 - [x] Estate planning lab (legacy readiness modeling)
 - [x] Security & trust center page
-- [ ] Publish public status page & changelog updates
+- [x] Publish public status page & changelog updates
 
 ## LATER
 - [ ] Bank import integration (production credentials)
 - [ ] Family/shared budgets
 - [ ] Multi-language
-- [ ] PWA
+- [x] PWA shell + offline caching
 
 ## TECH / DEVOPS
 - [ ] Add ESLint + Prettier config

@@ -188,10 +188,10 @@ const disclosureChannels: Channel[] = [
   },
   {
     name: 'Status dashboard',
-    description: 'Real-time uptime metrics and historical incident retrospectives (coming soon).',
+    description: 'Live uptime metrics and historical incident retrospectives served from the status hub.',
     action: {
       label: 'View status page',
-      href: 'https://status.wallethabit.com',
+      href: '/status',
     },
   },
   {

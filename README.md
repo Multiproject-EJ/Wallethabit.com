@@ -8,11 +8,13 @@
 
 | Area | Progress | Notes |
 |------|----------|------|
-| Overall Build | ![p](https://progress-bar.dev/72/) | Landing, dashboard, budget/goals planners, bank, debt, income, investing, retirement, protection, tax, and estate labs |
+| Overall Build | ![p](https://progress-bar.dev/76/) | Landing, dashboard, budget/goals planners, bank, debt, income, investing, retirement, protection, tax, estate labs, installable PWA shell, and public status hub |
 | Deployment | ![p](https://progress-bar.dev/100/) | Actions + Pages wired |
+| Status & Comms | ![p](https://progress-bar.dev/65/) | Status dashboard + changelog page with Supabase-ready schema |
 | Supabase | ![p](https://progress-bar.dev/70/) | Auth, customer accounts, and module unlocks backed by Supabase (see supabase/schema.sql) |
 | Stripe | ![p](https://progress-bar.dev/25/) | Checkout placeholders blocked on publishable key |
 | UI/UX | ![p](https://progress-bar.dev/97/) | Home, dashboard, pricing, budget, goals, strategy lab, settings, AI copilot, bank sync, debt payoff, income boost, investment, retirement, protection, tax, estate labs, and security & trust center |
+| PWA | ![p](https://progress-bar.dev/55/) | Installable manifest, offline caching, and auto-update service worker |
 
 ## 🌟 Vision
 WalletHabit makes budgeting, saving, and planning **clear, calm, and motivating**.  
