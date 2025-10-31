@@ -26,7 +26,17 @@ const randomId = () => {
   return `status-${Math.random().toString(36).slice(2, 10)}`
 }
 
-const transformServices = (rows: any[] | null | undefined): StatusServiceRecord[] => {
+type StatusComponentRow = {
+  id?: string | null
+  name?: string | null
+  category?: StatusServiceRecord['category'] | null
+  description?: string | null
+  regions?: string[] | null
+  health_status?: StatusServiceRecord['health'] | null
+  last_checked_at?: string | null
+}
+
+const transformServices = (rows: StatusComponentRow[] | null | undefined): StatusServiceRecord[] => {
   if (!rows?.length) {
     return []
   }
@@ -43,7 +53,19 @@ const transformServices = (rows: any[] | null | undefined): StatusServiceRecord[
   }))
 }
 
-const transformMaintenance = (rows: any[] | null | undefined): StatusMaintenanceRecord[] => {
+type StatusMaintenanceRow = {
+  id?: string | null
+  title?: string | null
+  scheduled_for?: string | null
+  duration_minutes?: number | null
+  components?: string[] | null
+  impact?: StatusMaintenanceRecord['impact'] | null
+  notes?: string | null
+}
+
+const transformMaintenance = (
+  rows: StatusMaintenanceRow[] | null | undefined,
+): StatusMaintenanceRecord[] => {
   if (!rows?.length) {
     return []
   }
@@ -59,7 +81,24 @@ const transformMaintenance = (rows: any[] | null | undefined): StatusMaintenance
   }))
 }
 
-const transformIncidents = (rows: any[] | null | undefined): StatusIncidentRecord[] => {
+type StatusIncidentUpdateRow = {
+  id?: string | null
+  status?: StatusIncidentRecord['updates'][number]['status'] | null
+  posted_at?: string | null
+  body?: string | null
+}
+
+type StatusIncidentRow = {
+  id?: string | null
+  title?: string | null
+  started_at?: string | null
+  resolved_at?: string | null
+  severity?: StatusIncidentRecord['severity'] | null
+  components?: string[] | null
+  updates?: StatusIncidentUpdateRow[] | null
+}
+
+const transformIncidents = (rows: StatusIncidentRow[] | null | undefined): StatusIncidentRecord[] => {
   if (!rows?.length) {
     return []
   }
@@ -72,7 +111,7 @@ const transformIncidents = (rows: any[] | null | undefined): StatusIncidentRecor
     severity: (row.severity ?? 'minor') as StatusIncidentRecord['severity'],
     components: Array.isArray(row.components) ? row.components : [],
     updates: Array.isArray(row.updates)
-      ? row.updates.map((update: any) => ({
+      ? row.updates.map((update) => ({
           id: update.id ?? randomId(),
           status: (update.status ?? 'investigating') as StatusIncidentRecord['updates'][number]['status'],
           postedAt: update.posted_at ?? new Date().toISOString(),
@@ -82,7 +121,15 @@ const transformIncidents = (rows: any[] | null | undefined): StatusIncidentRecor
   }))
 }
 
-const transformReleases = (rows: any[] | null | undefined): StatusReleaseRecord[] => {
+type StatusReleaseRow = {
+  id?: string | null
+  version?: string | null
+  published_at?: string | null
+  summary?: string | null
+  highlights?: string[] | null
+}
+
+const transformReleases = (rows: StatusReleaseRow[] | null | undefined): StatusReleaseRecord[] => {
   if (!rows?.length) {
     return []
   }

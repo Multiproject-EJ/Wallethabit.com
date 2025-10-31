@@ -343,7 +343,7 @@ export default function Layout() {
               </svg>
             </div>
             <h2 id="under-construction-title" className="text-2xl font-semibold tracking-tight">
-              We're laying the foundation
+              We’re laying the foundation
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-white/80">
               WalletHabit is still under construction. Expect fresh scaffolding, new features, and the occasional hard hat.

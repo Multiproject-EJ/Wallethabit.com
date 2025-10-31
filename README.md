@@ -24,6 +24,7 @@ Design principles: clarity, momentum, and honest monetization (free + fair upgra
 - All code in GitHub; no local Node needed.
 - Actions run `npm ci`, `lint`, `test`, `build`; Pages deploys `/app/dist`.
 - Supabase & Stripe keys stored as **GitHub Secrets**.
+- Frontend linting via `npm run lint` (ESLint flat config) and formatting with `npm run format` (Prettier).
 
 See: [`docs/workflow_overview.md`](docs/workflow_overview.md)
 

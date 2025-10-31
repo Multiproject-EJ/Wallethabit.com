@@ -31,7 +31,7 @@
 - [x] PWA shell + offline caching
 
 ## TECH / DEVOPS
-- [ ] Add ESLint + Prettier config
+- [x] Add ESLint + Prettier config
 - [ ] Vitest base tests
 - [ ] Automate dependency and vulnerability alerts summary in trust center
 - [ ] Error monitoring (later)
