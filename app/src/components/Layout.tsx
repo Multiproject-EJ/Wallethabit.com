@@ -346,14 +346,15 @@ export default function Layout() {
               We’re laying the foundation
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-white/80">
-              WalletHabit is still under construction. Expect fresh scaffolding, new features, and the occasional hard hat.
+              WalletHabit is still under construction.
             </p>
             <button
               type="button"
               onClick={handleDismissUnderConstruction}
-              className="mt-6 text-[0.7rem] font-semibold uppercase tracking-[0.5em] text-white/20 underline decoration-dotted underline-offset-4 transition-colors hover:text-white/55 focus-visible:text-white/55 focus-visible:outline-none"
+              className="mt-6 text-xs font-semibold text-white/30 transition-colors hover:text-white/55 focus-visible:text-white/55 focus-visible:outline-none"
             >
-              Continue
+              <span aria-hidden="true">•</span>
+              <span className="sr-only">Continue</span>
             </button>
           </div>
         </div>
