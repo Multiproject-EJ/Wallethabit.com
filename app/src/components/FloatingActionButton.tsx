@@ -40,9 +40,8 @@ export default function FloatingActionButton() {
         </svg>
       ),
       onClick: () => {
-        console.log('Import Excel/CSV clicked')
-        // TODO: Implement file import functionality
-        alert('Import Excel/CSV functionality will be implemented here')
+        // TODO: Implement file import functionality with proper modal/dialog
+        console.log('Import Excel/CSV clicked - functionality to be implemented')
         setIsExpanded(false)
       },
     },
