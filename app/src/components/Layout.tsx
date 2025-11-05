@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import DemoUserBadge from './DemoUserBadge'
+import FloatingActionButton from './FloatingActionButton'
 import { useDemoData } from '../lib/demoDataStore'
 
 type InternalNavItem = {
@@ -814,6 +815,8 @@ export default function Layout() {
           </a>
         </div>
       </footer>
+
+      <FloatingActionButton />
     </div>
   )
 }
