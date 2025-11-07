@@ -14,9 +14,9 @@
 | Supabase | ![p](https://progress-bar.dev/70/) | Auth, customer accounts, and module unlocks backed by Supabase (see supabase/schema.sql) |
 | Stripe | ![p](https://progress-bar.dev/25/) | Checkout placeholders blocked on publishable key |
 | UI/UX | ![p](https://progress-bar.dev/97/) | Home, dashboard, pricing, budget, goals, strategy lab, settings, AI copilot, bank sync, debt payoff, income boost, investment, retirement, protection, tax, estate labs, and security & trust center |
-| PWA | ![p](https://progress-bar.dev/55/) | Installable manifest, offline caching, and auto-update service worker |
+| PWA | ![p](https://progress-bar.dev/72/) | Installable manifest, offline caching, auto-update service worker, and in-app prompts |
 
-- **New:** Status dashboard now surfaces service health distribution, maintenance pipeline, and incident pulse summaries using Supabase-aligned demo data for smooth fallback.
+- **New:** In-app PWA hub now handles install prompts, update refreshes, and offline-ready notices alongside the refreshed status dashboard data feed.
 
 ## 🌟 Vision
 WalletHabit makes budgeting, saving, and planning **clear, calm, and motivating**.  
