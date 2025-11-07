@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import DemoUserBadge from './DemoUserBadge'
 import FloatingActionButton from './FloatingActionButton'
+import PwaPromptHub from './PwaPromptHub'
 import { useDemoData } from '../lib/demoDataStore'
 
 type InternalNavItem = {
@@ -791,6 +792,7 @@ export default function Layout() {
       </header>
 
       <main className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-6xl flex-1 flex-col px-6 py-12">
+        <PwaPromptHub />
         <Outlet />
       </main>
 
