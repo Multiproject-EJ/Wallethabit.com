@@ -16,7 +16,7 @@
 | UI/UX | ![p](https://progress-bar.dev/97/) | Home, dashboard, pricing, budget, goals, strategy lab, settings, AI copilot, bank sync, debt payoff, income boost, investment, retirement, protection, tax, estate labs, and security & trust center |
 | PWA | ![p](https://progress-bar.dev/72/) | Installable manifest, offline caching, auto-update service worker, and in-app prompts |
 
-- **New:** In-app PWA hub now handles install prompts, update refreshes, and offline-ready notices alongside the refreshed status dashboard data feed.
+- **New:** Dedicated PWA experience page now centralises install guidance, offline coverage, and update controls alongside the in-app prompt hub and refreshed status dashboard feed.
 
 ## 🌟 Vision
 WalletHabit makes budgeting, saving, and planning **clear, calm, and motivating**.  
