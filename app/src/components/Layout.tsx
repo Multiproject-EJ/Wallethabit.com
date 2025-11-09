@@ -27,6 +27,7 @@ type NavItem = InternalNavItem | ExternalNavItem
 
 const baseNavItems: NavItem[] = [
   { type: 'external', href: '/app/', label: 'Launch app' },
+  { type: 'external', href: 'https://www.SavePixie.com', label: 'SavePixie' },
   { type: 'internal', to: '/status', label: 'Status' },
   { type: 'internal', to: '/pwa', label: 'PWA' },
   { type: 'internal', to: '/habits', label: 'Habits', accent: true },
