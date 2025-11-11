@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import Layout from './components/Layout'
 import Home from './pages/Home'
+import DevBlocks from './pages/DevBlocks'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import UpdateHub from './pages/Update'
@@ -55,6 +56,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="dev-blocks" element={<DevBlocks />} />
           <Route path="start" element={<Onboarding />} />
           <Route path="onboarding" element={<Onboarding />} />
           <Route path="dashboard" element={<Dashboard />} />
