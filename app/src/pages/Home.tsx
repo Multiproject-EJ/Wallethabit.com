@@ -122,6 +122,59 @@ export default function Home() {
         </form>
       </section>
 
+      <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-sand/40 via-white to-white p-10 shadow-sm">
+        <div className="grid gap-10 lg:grid-cols-[1fr,1.1fr]">
+          <div className="space-y-4">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+              Creative promise
+            </span>
+            <h2 className="text-3xl font-semibold text-navy sm:text-4xl">
+              Decide to co-steer every step of your money story
+            </h2>
+            <p className="text-sm text-navy/80">
+              You never get into a better financial position unless you take charge. You decide to get organized. You decide to
+              improve. You decide to learn. WalletHabit is built for people who embrace continuous improvements and habits that
+              move real life forward.
+            </p>
+            <p className="text-sm text-navy/80">
+              We welcome you to outsource the heavy lift while you co-steer with WalletHabit.com. Onboarding is intentionally
+              easy—even fun—with a digital teacher you choose, periodic check-ins, and gradual improvement baked into every
+              module.
+            </p>
+          </div>
+
+          <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-inner">
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold text-navy">Why members stay</h3>
+              <p className="text-sm text-navy/60">Pick what fits, leave what does not, and keep everything flowing in one place.</p>
+            </div>
+            <ul className="grid gap-3 text-sm text-navy/80">
+              <li className="flex items-start gap-3">
+                <svg className="mt-1 h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
+                </svg>
+                Built-in personal tips and periodic check-ins keep your momentum honest.
+              </li>
+              <li className="flex items-start gap-3">
+                <svg className="mt-1 h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
+                </svg>
+                Access shared financial advice and habit playbooks from the entire community.
+              </li>
+              <li className="flex items-start gap-3">
+                <svg className="mt-1 h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l5 5L20 7" />
+                </svg>
+                One space for every financial matter, seamlessly designed across devices.
+              </li>
+            </ul>
+            <p className="rounded-2xl bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
+              WalletHabit.com — the home for habits that make reality happen.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="rounded-3xl border border-slate-200 bg-white/95 p-10 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="space-y-3 max-w-xl">
