@@ -3,7 +3,9 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import DemoUserBadge from './DemoUserBadge'
 import FloatingActionButton from './FloatingActionButton'
+import LanguageSwitcher from './LanguageSwitcher'
 import PwaPromptHub from './PwaPromptHub'
+import ThemeSwitcher from './ThemeSwitcher'
 import { useDemoData } from '../lib/demoDataStore'
 import { useSupabaseApp } from '../lib/supabaseDataStore'
 
@@ -601,6 +603,10 @@ export default function Layout() {
                   </span>
                 </button>
               )}
+              <div className="hidden items-center gap-2 sm:flex">
+                <ThemeSwitcher />
+                <LanguageSwitcher />
+              </div>
               <div className="min-w-0 flex-1 sm:flex-none">
                 <DemoUserBadge />
               </div>
