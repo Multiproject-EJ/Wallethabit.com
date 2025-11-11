@@ -11,7 +11,6 @@ export default function DemoUserBadge() {
     isAuthenticated,
     signIn,
     signOut,
-    toggleSkin,
   } = useDemoData()
 
   const supabaseApp = useSupabaseApp()
@@ -104,23 +103,6 @@ export default function DemoUserBadge() {
           }`}
         >
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleSkin}
-              aria-label={`Switch to ${isUltimate ? 'classic WalletHabit' : 'Ultimate Budget'} skin`}
-              className={`flex h-5 w-5 items-center justify-center rounded-full p-0 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                isUltimate
-                  ? 'text-[#5c7751] hover:text-[#4f6745] focus-visible:outline-[#5c7751]'
-                  : 'text-brand hover:text-brand-dark focus-visible:outline-brand'
-              }`}
-            >
-              <span
-                aria-hidden
-                className={`block h-2.5 w-2.5 rounded-full transition-colors ${
-                  isUltimate ? 'bg-[#5c7751]' : 'bg-brand'
-                }`}
-              />
-            </button>
             <span
               className={`flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-semibold uppercase tracking-[0.2em] ${
                 isUltimate ? 'bg-[#e4d3bf] text-[#4f3826]' : 'bg-brand/15 text-brand-dark'
@@ -149,23 +131,6 @@ export default function DemoUserBadge() {
           </div>
         </div>
         <div className="flex items-center justify-end gap-2 sm:hidden">
-          <button
-            type="button"
-            onClick={toggleSkin}
-            aria-label={`Switch to ${isUltimate ? 'classic WalletHabit' : 'Ultimate Budget'} skin`}
-            className={`flex h-9 w-9 items-center justify-center rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-              isUltimate
-                ? 'text-[#5c7751] hover:text-[#4f6745] focus-visible:outline-[#5c7751]'
-                : 'text-brand hover:text-brand-dark focus-visible:outline-brand'
-            }`}
-          >
-            <span
-              aria-hidden
-              className={`block h-2.5 w-2.5 rounded-full transition-colors ${
-                isUltimate ? 'bg-[#5c7751]' : 'bg-brand'
-              }`}
-            />
-          </button>
           <button
             type="button"
             onClick={handleOpenAuth}
@@ -203,23 +168,6 @@ export default function DemoUserBadge() {
         }`}
       >
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleSkin}
-            aria-label={`Switch to ${isUltimate ? 'classic WalletHabit' : 'Ultimate Budget'} skin`}
-            className={`flex h-5 w-5 items-center justify-center rounded-full p-0 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-              isUltimate
-                ? 'text-[#5c7751] hover:text-[#4f6745] focus-visible:outline-[#5c7751]'
-                : 'text-brand hover:text-brand-dark focus-visible:outline-brand'
-            }`}
-          >
-            <span
-              aria-hidden
-              className={`block h-2.5 w-2.5 rounded-full transition-colors ${
-                isUltimate ? 'bg-[#5c7751]' : 'bg-brand'
-              }`}
-            />
-          </button>
           <span
             className={`flex h-10 w-10 items-center justify-center rounded-full px-2 text-sm font-semibold uppercase tracking-wide transition-colors ${
               isUltimate ? 'bg-[#e4d3bf] text-[#4f3826]' : 'bg-brand/20 text-brand-dark'
@@ -268,23 +216,6 @@ export default function DemoUserBadge() {
         </div>
       </div>
       <div className="flex items-center justify-end gap-2 sm:hidden">
-        <button
-          type="button"
-          onClick={toggleSkin}
-          aria-label={`Switch to ${isUltimate ? 'classic WalletHabit' : 'Ultimate Budget'} skin`}
-          className={`flex h-9 w-9 items-center justify-center rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-            isUltimate
-              ? 'text-[#5c7751] hover:text-[#4f6745] focus-visible:outline-[#5c7751]'
-              : 'text-brand hover:text-brand-dark focus-visible:outline-brand'
-          }`}
-        >
-          <span
-            aria-hidden
-            className={`block h-2.5 w-2.5 rounded-full transition-colors ${
-              isUltimate ? 'bg-[#5c7751]' : 'bg-brand'
-            }`}
-          />
-        </button>
         <button
           type="button"
           aria-expanded={isMobileActionMenuOpen}
