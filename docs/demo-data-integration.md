@@ -71,11 +71,17 @@ This document explains how the demo data for Alex Rivera fits together so the da
 
 ## 9. Insurance & Protection
 - Policies: Renter’s insurance (£14/mo) and phone insurance (£9/mo), both auto-renewing with a renewal reminder 60 days out.
+- Protection lab presets pull from the profile region so copy, coverage gaps, and partner suggestions align with UK, US, or Norway demos.
 - **Feeds:**
   - Optional protection card lists active policies and renewal notice.
   - Insight feed surfaces upcoming renewal reminder.
 
-## 10. Taxes Layer
+## 10. Estate & Legacy Planning
+- Estate lab references the profile `region` to swap in UK, US, or Norway personas, terminology, and trust strategies.
+- Slider ranges and hero metrics respect the locale’s currency using compact formatting so valuations read as £2.1M, $4.2M, or kr 3.1M out of the box.
+- Guardianship checklists and rollout milestones auto-refresh with the right legal touchpoints when the demo region changes.
+
+## 11. Taxes Layer
 - Region-aware tax lab renders calculators, copy, and opportunity signals tuned to the demo profile’s `region` (`uk`, `us`, or `no`).
 - For freelance months, a 20–25% tax set-aside transaction leaves Monzo for a virtual “Tax Reserve” tag.
 - Annual summary aggregates side-hustle earnings vs. tax reserved.
@@ -83,14 +89,14 @@ This document explains how the demo data for Alex Rivera fits together so the da
   - Insights remind Alex to set aside ~£85 in tax when freelance income lands.
   - Export CTA links to a prepped CSV of categorized transactions.
 
-## 11. AI Advisor Narratives
+## 12. AI Advisor Narratives
 - Monthly report: 3–5 bullets that reference net worth change, budget wins/slips, savings streaks, and debt progress.
 - What-if scenarios (e.g., “Add £200/mo to savings”) rely on goal completion formulas.
 - All flagged as demo-only content.
 - **Feeds:**
   - Insights drawer houses these narratives and simulations.
 
-## 12. Dashboard Wiring Summary
+## 13. Dashboard Wiring Summary
 | Dashboard Widget | Upstream Modules | Notes |
 | --- | --- | --- |
 | Net Worth Line | Accounts, Debts, Investments | Falls back to cash − debts if investments off. |
@@ -102,18 +108,18 @@ This document explains how the demo data for Alex Rivera fits together so the da
 | Investments Card | Investments, Accounts | Allocation, valuation trend, monthly change. |
 | Insights Feed | All modules | Rule engine emits contextual nudges. |
 
-## 13. Seeding Strategy
+## 14. Seeding Strategy
 - Recommended path: SQL or JSON fixtures that create one profile, four accounts, 12 months of transactions, six budget rows, two debts, three assets, two goals, two policies, and 8–12 seeded insights.
 - Every row carries `is_demo = true` so users can reset or replace with live data.
 - Seeded datasets precompute monthly aggregates so charts render instantly at first load.
 
-## 14. First-Open Experience
+## 15. First-Open Experience
 - Top banner: “You’re trending +£820 over the last 12 months. 🎯” (derived from net worth delta).
 - Focus chip: “Remaining This Month: £420” from budget vs. actual aggregation.
 - Primary CTAs: Add transaction, Create a goal, Connect bank.
 - Hero insight: “Save £45/month by trimming subscriptions you barely use.” built from subscription spend analysis.
 
-## 15. Resilience to Module Toggles
+## 16. Resilience to Module Toggles
 - `modules_enabled` flag controls which widgets render.
 - Dependencies gracefully degrade: disabling Investments removes allocation + valuations but net worth recalculates from cash and debts; disabling Debts removes payoff card but net worth excludes liabilities; disabling Goals hides the goals widget and surfaces a CTA to create the first goal.
 
